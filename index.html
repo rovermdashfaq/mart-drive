@@ -16,6 +16,7 @@
   --radius:10px; --radius-lg:14px;
   --shadow-sm:0 1px 2px rgba(15,23,42,.06);
   --shadow-md:0 4px 12px rgba(15,23,42,.08);
+  --shadow-lg:0 12px 32px rgba(15,23,42,.16);
   --sidebar-w:260px; --header-h:64px;
   --transition:200ms cubic-bezier(.4,0,.2,1);
 }
@@ -40,9 +41,9 @@ a:hover{text-decoration:underline}
   width:100%;max-width:400px;box-shadow:0 20px 50px rgba(0,0,0,.25);
 }
 .auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:24px;justify-content:center}
-.auth-brand .logo-fallback{
-  width:44px;height:44px;border-radius:10px;background:var(--navy);color:#fff;
-  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;
+.auth-brand .logo-img{
+  width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:0;
+  background:var(--navy);
 }
 .auth-brand h1{font-size:20px;margin:0;color:var(--navy);font-weight:700}
 .auth-brand p{font-size:12px;margin:2px 0 0;color:var(--muted)}
@@ -80,9 +81,9 @@ a:hover{text-decoration:underline}
   display:flex;flex-direction:column;z-index:40;transition:transform var(--transition);
 }
 .sidebar-brand{display:flex;align-items:center;gap:10px;padding:18px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap}
-.sidebar-brand .logo-fallback{
-  width:36px;height:36px;border-radius:9px;background:var(--navy);color:#fff;
-  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0;
+.sidebar-brand .logo-img{
+  width:36px;height:36px;border-radius:9px;object-fit:cover;flex-shrink:0;
+  background:var(--navy);
 }
 .sidebar-brand-text strong{display:block;font-size:15px;color:var(--navy);font-weight:700;line-height:1.2}
 .sidebar-brand-text span{font-size:11px;color:var(--muted)}
@@ -102,6 +103,8 @@ a:hover{text-decoration:underline}
 .nav-item:hover{background:var(--bg)}
 .nav-item.active{background:#E8F0F7;color:var(--navy);font-weight:600}
 .nav-item svg{width:18px;height:18px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2}
+.nav-item .badge{margin-left:auto;background:var(--blue);color:#fff;font-size:10px;
+  font-weight:600;padding:1px 6px;border-radius:8px;min-width:18px;text-align:center}
 .nav-section-label{
   font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;
   letter-spacing:.5px;padding:14px 14px 6px;
@@ -169,6 +172,20 @@ a:hover{text-decoration:underline}
 .view-toggle button{padding:6px 10px;border:none;background:none;border-radius:6px;color:var(--muted)}
 .view-toggle button.active{background:var(--surface);color:var(--navy);box-shadow:var(--shadow-sm)}
 
+/* Selection toolbar */
+.selection-bar{
+  display:none;background:var(--navy);color:#fff;border-radius:10px;
+  padding:10px 16px;margin-bottom:14px;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.selection-bar.active{display:flex}
+.selection-bar .count{font-weight:600}
+.selection-bar button{
+  background:rgba(255,255,255,.12);color:#fff;border:none;padding:6px 12px;
+  border-radius:6px;font-size:12px;font-weight:500;transition:background var(--transition);
+}
+.selection-bar button:hover{background:rgba(255,255,255,.22)}
+.selection-bar .spacer{flex:1}
+
 .dropzone{
   border:2px dashed var(--border);border-radius:var(--radius-lg);
   padding:28px;text-align:center;margin-bottom:20px;background:var(--surface);
@@ -200,6 +217,7 @@ a:hover{text-decoration:underline}
   padding:14px;cursor:pointer;transition:all var(--transition);position:relative;
 }
 .file-card:hover{box-shadow:var(--shadow-md);border-color:#CBD5E1}
+.file-card.selected{border-color:var(--blue);background:#EFF6FC;box-shadow:0 0 0 2px rgba(36,91,136,.15)}
 .file-card-icon{
   width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;
   margin-bottom:10px;background:#E8F0F7;color:var(--navy);overflow:hidden;
@@ -208,12 +226,26 @@ a:hover{text-decoration:underline}
 .file-card-icon img{width:100%;height:100%;object-fit:cover}
 .file-card-name{font-weight:500;font-size:13px;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .file-card-meta{font-size:11px;color:var(--muted)}
+.file-card-badge{
+  position:absolute;top:8px;right:8px;background:#E8F0F7;color:var(--navy);
+  font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;
+}
+.file-card-actions{
+  position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;
+  transition:opacity var(--transition);background:rgba(255,255,255,.95);
+  border-radius:6px;padding:2px;
+}
+.file-card:hover .file-card-actions{opacity:1}
+.file-card-actions .icon-btn{padding:4px}
+.file-card-actions .icon-btn svg{width:14px;height:14px}
+
 .file-row{
   display:grid;grid-template-columns:32px 1fr 100px 120px 100px 40px;
   gap:10px;align-items:center;background:var(--surface);border:1px solid var(--border);
   border-radius:8px;padding:10px 12px;cursor:pointer;transition:all var(--transition);
 }
 .file-row:hover{background:#FAFBFC;border-color:#CBD5E1}
+.file-row.selected{background:#EFF6FC;border-color:var(--blue)}
 .file-row .file-card-icon{width:32px;height:32px;margin:0}
 .file-row .file-card-icon svg{width:18px;height:18px}
 .file-row-name{font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -232,6 +264,22 @@ a:hover{text-decoration:underline}
 .empty-state h3{margin:0 0 6px;font-size:16px;color:var(--text);font-weight:600}
 .empty-state p{margin:0;font-size:13px}
 
+/* Context menu */
+.ctx-menu{
+  position:fixed;background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;box-shadow:var(--shadow-lg);padding:6px;display:none;
+  z-index:150;min-width:200px;
+}
+.ctx-menu.open{display:block}
+.ctx-menu button{
+  display:flex;width:100%;padding:8px 12px;border:none;background:none;
+  text-align:left;font-size:13px;border-radius:6px;color:var(--text);gap:10px;align-items:center;
+}
+.ctx-menu button:hover{background:var(--bg)}
+.ctx-menu .danger{color:var(--error)}
+.ctx-menu hr{border:none;border-top:1px solid var(--border);margin:4px 0}
+.ctx-menu button svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+
 .modal-backdrop{
   position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:80;
   display:none;align-items:center;justify-content:center;padding:16px;
@@ -241,6 +289,7 @@ a:hover{text-decoration:underline}
   background:var(--surface);border-radius:var(--radius-lg);width:100%;max-width:520px;
   max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.3);
 }
+.modal.wide{max-width:720px}
 .modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 .modal-head h3{margin:0;font-size:16px;color:var(--navy)}
 .modal-body{padding:20px;overflow-y:auto}
@@ -253,6 +302,7 @@ a:hover{text-decoration:underline}
 .field{margin-bottom:14px}
 .field label{display:block;font-size:12px;font-weight:500;margin-bottom:6px}
 .field input,.field select{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font:inherit}
+.field input:focus,.field select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(36,91,136,.1)}
 .detail-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;gap:12px}
 .detail-row:last-child{border-bottom:none}
 .detail-row strong{font-weight:500;color:var(--muted);flex-shrink:0}
@@ -262,12 +312,35 @@ a:hover{text-decoration:underline}
 
 .preview-wrap{margin-bottom:16px;text-align:center}
 .preview-box{
-  background:#0f172a;border-radius:8px;min-height:120px;max-height:320px;
+  background:#0f172a;border-radius:8px;min-height:120px;max-height:360px;
   display:flex;align-items:center;justify-content:center;color:#94a3b8;
   font-size:12px;padding:10px;overflow:hidden;
 }
-.preview-box img,.preview-box video{max-width:100%;max-height:300px;border-radius:6px;display:block}
+.preview-box img,.preview-box video{max-width:100%;max-height:340px;border-radius:6px;display:block}
 .preview-box audio{width:100%;margin:20px}
+
+/* Share panel */
+.share-link-row{
+  display:flex;gap:6px;align-items:center;background:var(--bg);border-radius:8px;
+  padding:8px 10px;margin-bottom:14px;
+}
+.share-link-row input{flex:1;border:none;background:transparent;font-size:12px;color:var(--text);min-width:0}
+.share-link-row input:focus{outline:none}
+.member-list{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;max-height:200px;overflow-y:auto}
+.member-row{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg);
+  border-radius:8px;font-size:13px;
+}
+.member-avatar{
+  width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;
+}
+.member-info{flex:1;min-width:0}
+.member-info strong{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.member-info span{font-size:11px;color:var(--muted)}
+.member-row select{
+  padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--surface);
+}
 
 .toast-stack{position:fixed;bottom:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px}
 .toast{
@@ -276,6 +349,7 @@ a:hover{text-decoration:underline}
 }
 .toast.error{background:var(--error)}
 .toast.success{background:var(--success)}
+.toast.info{background:var(--blue)}
 
 .overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:35;display:none}
 .overlay.open{display:block}
@@ -284,6 +358,27 @@ a:hover{text-decoration:underline}
 .tg-status{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
 .tg-status.ok{background:#DCFCE7;color:var(--success)}
 .tg-status.off{background:#FEE2E2;color:var(--error)}
+
+/* Public share page */
+#share-page{
+  display:none;position:fixed;inset:0;background:var(--bg);z-index:120;overflow-y:auto;
+  padding:40px 20px;
+}
+#share-page.active{display:block}
+.share-header{
+  max-width:800px;margin:0 auto 20px;background:var(--surface);border-radius:var(--radius-lg);
+  padding:20px;box-shadow:var(--shadow-md);display:flex;align-items:center;gap:12px;
+}
+.share-header .logo-img{width:36px;height:36px;border-radius:9px}
+.share-header h2{margin:0;font-size:16px;color:var(--navy)}
+.share-header p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.share-content{
+  max-width:800px;margin:0 auto;background:var(--surface);border-radius:var(--radius-lg);
+  padding:24px;box-shadow:var(--shadow-md);
+}
+.share-preview{text-align:center;margin-bottom:20px}
+.share-preview img,.share-preview video{max-width:100%;max-height:400px;border-radius:8px}
+.share-preview audio{width:100%}
 
 @media(max-width:900px){
   :root{--sidebar-w:0px}
@@ -299,6 +394,7 @@ a:hover{text-decoration:underline}
   .files-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
   .file-row{grid-template-columns:32px 1fr 40px;padding:10px}
   .file-row-meta{display:none}
+  .file-card-actions{opacity:1}
   .mobile-nav{
     display:flex;position:fixed;bottom:0;left:0;right:0;height:60px;
     background:var(--surface);border-top:1px solid var(--border);z-index:30;
@@ -320,7 +416,7 @@ a:hover{text-decoration:underline}
 <div id="auth-screen">
   <div class="auth-card">
     <div class="auth-brand">
-      <div class="logo-fallback">MD</div>
+      <img class="logo-img" src="https://i.ibb.co/XZ3Zzcx0/1000026301.png" alt="MART Drive" />
       <div>
         <h1>MART Drive</h1>
         <p>Secure personal cloud storage</p>
@@ -370,7 +466,7 @@ a:hover{text-decoration:underline}
 
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-      <div class="logo-fallback" id="logo-holder">MD</div>
+      <img class="logo-img" id="logo-holder" src="https://i.ibb.co/XZ3Zzcx0/1000026301.png" alt="MART Drive" />
       <div class="sidebar-brand-text">
         <strong>MART Drive</strong>
         <span>Personal storage</span>
@@ -392,7 +488,10 @@ a:hover{text-decoration:underline}
         Starred</button></li>
       <li><button class="nav-item" data-view="shared">
         <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
-        Shared</button></li>
+        Shared by me</button></li>
+      <li><button class="nav-item" data-view="withme">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Shared with me <span class="badge" id="shared-badge" style="display:none">0</span></button></li>
       <li><button class="nav-item" data-view="trash">
         <svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
         Trash</button></li>
@@ -474,6 +573,16 @@ a:hover{text-decoration:underline}
         </div>
       </div>
 
+      <div class="selection-bar" id="selection-bar">
+        <span class="count" id="selection-count">0 selected</span>
+        <span class="spacer"></span>
+        <button data-bulk="download">Download</button>
+        <button data-bulk="star">Star</button>
+        <button data-bulk="move">Move</button>
+        <button data-bulk="trash">Trash</button>
+        <button data-bulk="clear">Clear</button>
+      </div>
+
       <div class="dropzone" id="dropzone">
         <h3>Upload files to MART Drive</h3>
         <p>Tap to choose a file, or drag and drop. Stored on Telegram.</p>
@@ -509,8 +618,12 @@ a:hover{text-decoration:underline}
   </nav>
 </div>
 
+<!-- Context menu -->
+<div class="ctx-menu" id="ctx-menu"></div>
+
+<!-- Modal -->
 <div class="modal-backdrop" id="modal-backdrop">
-  <div class="modal" role="dialog" aria-modal="true">
+  <div class="modal" role="dialog" aria-modal="true" id="modal-box">
     <div class="modal-head">
       <h3 id="modal-title">Dialog</h3>
       <button class="icon-btn" id="modal-close" aria-label="Close">
@@ -524,11 +637,30 @@ a:hover{text-decoration:underline}
 
 <div class="toast-stack" id="toast-stack"></div>
 
+<!-- Public share page (no login required) -->
+<div id="share-page">
+  <div class="share-header">
+    <img class="logo-img" src="https://i.ibb.co/XZ3Zzcx0/1000026301.png" alt="MART Drive" />
+    <div style="flex:1">
+      <h2>MART Drive</h2>
+      <p id="share-meta">Shared file</p>
+    </div>
+  </div>
+  <div class="share-content" id="share-content">
+    <p>Loading shared item…</p>
+  </div>
+</div>
+
 <script type="module">
 /* ============================================================
-   MART Drive — v3
-   Fixes: chunk upload verification, CORS-safe downloads,
-   inline previews for images / video / audio.
+   MART Drive — v5
+   Google Drive–class features:
+   - Sharing (email invite, permission levels, public links)
+   - Right-click context menu
+   - Multi-select + bulk actions
+   - Move / Copy / Duplicate
+   - "Shared with me" view
+   - Public share page (#/share/<token>)
    ============================================================ */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -537,8 +669,8 @@ import {
   signOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
-  serverTimestamp, onSnapshot
+  getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, getDoc, setDoc,
+  serverTimestamp, onSnapshot, query, where, getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ============ FIREBASE ============
@@ -561,18 +693,22 @@ const state = {
   user: null,
   files: [],
   folders: [],
+  sharedWithMe: [],       // files/folders shared with current user's email
   view: "drive",
   currentFolderId: null,
   search: "",
   filterType: "",
   sortBy: "createdAt_desc",
   viewMode: "grid",
+  selection: new Set(),   // Set of "file:<id>" / "folder:<id>"
+  lastClicked: null,
   unsubFiles: null,
   unsubFolders: null,
+  unsubShared: null,
   tg: { token: "", chatId: "", botName: "", ready: false }
 };
 
-const previewCache = new Map(); // fileId -> { url, revoke }
+const previewCache = new Map();
 
 // ============ HELPERS ============
 const $ = (s, r=document) => r.querySelector(s);
@@ -626,6 +762,10 @@ function classifyMime(mime, name) {
   if (["doc","docx","txt","rtf","odt","xls","xlsx","ppt","pptx"].includes(ext)) return "document";
   return "other";
 }
+function makeToken() {
+  return Array.from(crypto.getRandomValues(new Uint8Array(18)))
+    .map(b => b.toString(16).padStart(2, "0")).join("");
+}
 const ICONS = {
   folder: `<svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>`,
   image: `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>`,
@@ -634,7 +774,8 @@ const ICONS = {
   pdf: `<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>`,
   document: `<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></svg>`,
   archive: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/></svg>`,
-  other: `<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>`
+  other: `<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>`,
+  share: `<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>`
 };
 
 // ============ AUTH UI ============
@@ -702,7 +843,7 @@ function friendlyAuthError(err) {
 }
 
 // ============ AUTH STATE ============
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
     state.user = user;
     $("#auth-screen").style.display = "none";
@@ -713,116 +854,157 @@ onAuthStateChanged(auth, (user) => {
     subscribeData();
     loadTelegramConfig();
     const h = location.hash.replace("#","");
-    if (h && ["drive","recent","starred","shared","trash","settings","help"].includes(h)) setView(h, false);
+    if (h && ["drive","recent","starred","shared","withme","trash","settings","help"].includes(h)) setView(h, false);
+    else setView("drive", false);
   } else {
     state.user = null;
     if (state.unsubFiles) state.unsubFiles();
     if (state.unsubFolders) state.unsubFolders();
-    state.unsubFiles = state.unsubFolders = null;
-    state.files = []; state.folders = [];
+    if (state.unsubShared) state.unsubShared();
+    state.unsubFiles = state.unsubFolders = state.unsubShared = null;
+    state.files = []; state.folders = []; state.sharedWithMe = [];
+    state.selection.clear();
     clearPreviewCache();
     $("#app").classList.remove("ready");
     $("#auth-screen").style.display = "flex";
     resetAuthButtons();
     switchAuthTab("login");
+    // If we're on a share URL, keep the share page visible
+    maybeShowSharePage();
   }
 });
 
 // ============ DATA ============
 function subscribeData() {
   const uid = state.user.uid;
+  const email = state.user.email;
+
   if (state.unsubFiles) state.unsubFiles();
   state.unsubFiles = onSnapshot(collection(db, "users", uid, "files"), (snap) => {
     state.files = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    render();
-    renderStorageWidget();
-  }, (err) => { console.error(err); });
+    render(); renderStorageWidget();
+  }, (err) => console.error(err));
 
   if (state.unsubFolders) state.unsubFolders();
   state.unsubFolders = onSnapshot(collection(db, "users", uid, "folders"), (snap) => {
     state.folders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    render();
-    renderStorageWidget();
-  }, (err) => { console.error(err); });
+    render(); renderStorageWidget();
+  }, (err) => console.error(err));
+
+  // Files shared with me — search sharedFiles collection by member email
+  if (state.unsubShared) state.unsubShared();
+  const q = query(collection(db, "sharedFiles"), where("memberEmails", "array-contains", email.toLowerCase()));
+  state.unsubShared = onSnapshot(q, (snap) => {
+    state.sharedWithMe = snap.docs.map(d => ({ id: d.id, _shared: true, ...d.data() }));
+    const n = state.sharedWithMe.length;
+    const badge = $("#shared-badge");
+    if (n > 0) { badge.textContent = n; badge.style.display = ""; }
+    else badge.style.display = "none";
+    if (state.view === "withme") render();
+  }, (err) => console.warn("sharedFiles query:", err.message));
 }
 
 // ============ VIEW ROUTER ============
-const VIEWS = ["drive","recent","starred","shared","trash","settings","help"];
+const VIEWS = ["drive","recent","starred","shared","withme","trash","settings","help"];
 function setView(view, push=true) {
   state.view = view;
   state.currentFolderId = null;
+  state.selection.clear();
   if (push) location.hash = view;
   $$("[data-view]").forEach(b => b.classList.toggle("active", b.dataset.view === view));
   $$(".mobile-nav [data-view]").forEach(b => b.classList.toggle("active", b.dataset.view === view));
-  const titles = { drive:"My Drive", recent:"Recent", starred:"Starred", shared:"Shared",
-    trash:"Trash", settings:"Settings", help:"Help & About" };
+  const titles = { drive:"My Drive", recent:"Recent", starred:"Starred", shared:"Shared by me",
+    withme:"Shared with me", trash:"Trash", settings:"Settings", help:"Help & About" };
   $("#page-title").textContent = titles[view] || "My Drive";
   const isFileView = view !== "settings" && view !== "help";
   $("#dropzone").style.display = view === "drive" ? "" : "none";
   $("#new-folder-btn").style.display = view === "drive" ? "" : "none";
   $("#toolbar").style.display = isFileView ? "" : "none";
+  updateSelectionBar();
   closeSidebar();
   render();
 }
 $$("[data-view]").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
 window.addEventListener("hashchange", () => {
+  if (location.hash.startsWith("#/share/")) { maybeShowSharePage(); return; }
   const h = location.hash.replace("#","");
   if (VIEWS.includes(h) && h !== state.view) setView(h, false);
 });
 
 // ============ RENDER ============
-function getFilteredFiles() {
-  let list = state.files.slice();
-  list = state.view === "trash" ? list.filter(f => f.isTrashed) : list.filter(f => !f.isTrashed);
-  if (state.view === "starred") list = list.filter(f => f.isStarred);
-  if (state.view === "shared")  list = list.filter(f => f.sharingEnabled);
-  if (state.view === "recent") {
-    list.sort((a,b) => tsVal(b.createdAt) - tsVal(a.createdAt));
-    list = list.slice(0, 50);
+function getDisplayItems() {
+  if (state.view === "withme") {
+    return state.sharedWithMe.map(f => ({ type: f.itemType === "folder" ? "folder" : "file", data: f }));
   }
-  if (state.view === "drive") list = list.filter(f => (f.parentFolderId || null) === state.currentFolderId);
+  let files = state.files.slice();
+  let folders = state.folders.slice();
+  files = state.view === "trash" ? files.filter(f => f.isTrashed) : files.filter(f => !f.isTrashed);
+  folders = state.view === "trash" ? folders.filter(f => f.isTrashed) : folders.filter(f => !f.isTrashed);
+  if (state.view === "starred") { files = files.filter(f => f.isStarred); folders = folders.filter(f => f.isStarred); }
+  if (state.view === "shared")  { files = files.filter(f => f.sharing && f.sharing.enabled); }
+  if (state.view === "drive") {
+    files = files.filter(f => (f.parentFolderId || null) === state.currentFolderId);
+    folders = folders.filter(f => (f.parentFolderId || null) === state.currentFolderId);
+  } else {
+    folders = [];
+  }
+  if (state.view === "recent") {
+    files = files.filter(f => f.createdAt);
+    files.sort((a,b) => tsVal(b.createdAt) - tsVal(a.createdAt));
+    files = files.slice(0, 100);
+    folders = [];
+  }
   if (state.search) {
     const s = state.search.toLowerCase();
-    list = list.filter(f => (f.name || "").toLowerCase().includes(s));
+    files = files.filter(f => (f.name || "").toLowerCase().includes(s));
+    folders = folders.filter(f => (f.name || "").toLowerCase().includes(s));
   }
-  if (state.filterType) list = list.filter(f => classifyMime(f.mimeType, f.name) === state.filterType);
+  if (state.filterType) {
+    files = files.filter(f => classifyMime(f.mimeType, f.name) === state.filterType);
+    folders = folders.filter(() => state.filterType === "folder");
+  }
   if (state.view !== "recent") {
     const [key, dir] = state.sortBy.split("_");
-    list.sort((a,b) => {
+    const cmp = (a, b) => {
       let av = a[key], bv = b[key];
       if (key === "createdAt" || key === "updatedAt") { av = tsVal(av); bv = tsVal(bv); }
       else if (typeof av === "string") { av = av.toLowerCase(); bv = (bv||"").toLowerCase(); }
       if (av < bv) return dir === "asc" ? -1 : 1;
       if (av > bv) return dir === "asc" ? 1 : -1;
       return 0;
-    });
+    };
+    files.sort(cmp); folders.sort(cmp);
   }
-  return list;
+  const out = [];
+  for (const f of folders) out.push({ type: "folder", data: f });
+  for (const f of files) out.push({ type: "file", data: f });
+  return out;
 }
-function currentFolders() {
-  if (state.view !== "drive" || state.search || state.filterType) return [];
-  return state.folders.filter(f => !f.isTrashed && (f.parentFolderId || null) === state.currentFolderId);
-}
+function selKey(type, id) { return type + ":" + id; }
+function isSelected(type, id) { return state.selection.has(selKey(type, id)); }
+
 function render() {
   if (state.view === "settings") return renderSettingsView();
   if (state.view === "help") return renderHelpView();
+  if (location.hash.startsWith("#/share/")) return; // public page owns the screen
 
   const grid = $("#files-grid");
   const container = $("#files-container");
   grid.innerHTML = "";
   container.querySelectorAll(".files-list").forEach(n => n.remove());
 
-  const files = getFilteredFiles();
-  const folders = currentFolders();
-  const total = files.length + folders.length;
+  const items = getDisplayItems();
+  const total = items.length;
   $("#page-meta").textContent = `${total} item${total === 1 ? "" : "s"}`;
   renderBreadcrumb();
+  updateSelectionBar();
 
   if (total === 0) {
     let msg = "No files yet", sub = "Upload a file or create a folder.";
     if (state.view === "trash") { msg = "Trash is empty"; sub = "Deleted files appear here."; }
-    else if (state.view === "starred") { msg = "No starred files"; sub = "Star files to find them quickly."; }
-    else if (state.view === "shared") { msg = "No shared files"; sub = "Enable sharing on a file."; }
+    else if (state.view === "starred") { msg = "No starred items"; sub = "Star files to find them quickly."; }
+    else if (state.view === "shared") { msg = "No shared items"; sub = "Share a file to see it here."; }
+    else if (state.view === "withme") { msg = "Nothing shared with you"; sub = "When someone shares a file, it appears here."; }
     else if (state.view === "recent") { msg = "Nothing recent"; sub = "Uploaded files show up here."; }
     else if (state.search) { msg = "No matches"; sub = "Try a different search."; }
     grid.appendChild(el("div", { class: "empty-state" }, [
@@ -837,14 +1019,18 @@ function render() {
   if (state.viewMode === "grid") {
     grid.style.display = "";
     if (state.view === "drive" && state.currentFolderId) grid.appendChild(backCard());
-    for (const folder of folders) grid.appendChild(folderCard(folder));
-    for (const file of files) grid.appendChild(fileCard(file));
+    for (const it of items) {
+      if (it.type === "folder") grid.appendChild(folderCard(it.data));
+      else grid.appendChild(fileCard(it.data));
+    }
   } else {
     grid.style.display = "none";
     const list = el("div", { class: "files-list" });
     if (state.view === "drive" && state.currentFolderId) list.appendChild(backRow());
-    for (const folder of folders) list.appendChild(folderRow(folder));
-    for (const file of files) list.appendChild(fileRow(file));
+    for (const it of items) {
+      if (it.type === "folder") list.appendChild(folderRow(it.data));
+      else list.appendChild(fileRow(it.data));
+    }
     container.appendChild(list);
   }
 }
@@ -895,40 +1081,102 @@ function renderBreadcrumb() {
     bc.appendChild(el("span", { class: f.id === state.currentFolderId ? "current" : "" }, f.name));
   }
 }
+function selectionClickHandler(e, type, id) {
+  if (e.ctrlKey || e.metaKey) {
+    e.preventDefault();
+    const k = selKey(type, id);
+    if (state.selection.has(k)) state.selection.delete(k); else state.selection.add(k);
+    state.lastClicked = { type, id };
+    render(); return true;
+  }
+  if (e.shiftKey && state.lastClicked) {
+    e.preventDefault();
+    // Build a flat list of visible items to shift-select
+    const items = getDisplayItems();
+    const idxA = items.findIndex(i => i.type === state.lastClicked.type && i.data.id === state.lastClicked.id);
+    const idxB = items.findIndex(i => i.type === type && i.data.id === id);
+    if (idxA >= 0 && idxB >= 0) {
+      const [s,e2] = idxA < idxB ? [idxA, idxB] : [idxB, idxA];
+      for (let i = s; i <= e2; i++) state.selection.add(selKey(items[i].type, items[i].data.id));
+      render(); return true;
+    }
+  }
+  return false;
+}
+
 function fileCard(file) {
   const cat = classifyMime(file.mimeType, file.name);
   const iconWrap = el("div", { class: "file-card-icon" });
   iconWrap.innerHTML = ICONS[cat];
-  // Lazy thumbnail for images
   if (cat === "image" && file.uploadStatus === "uploaded" && file.telegramChunks?.length === 1 && state.tg.ready) {
     loadPreviewUrl(file).then(url => {
       iconWrap.innerHTML = "";
       iconWrap.appendChild(el("img", { src: url, alt: "", loading: "lazy" }));
     }).catch(() => {});
   }
-  const card = el("div", { class: "file-card", tabindex:"0" }, [
+  const selected = isSelected("file", file.id);
+  const badge = file.sharing?.enabled ? el("span", { class: "file-card-badge" }, "Shared") : null;
+
+  const actions = el("div", { class: "file-card-actions" }, [
+    (() => { const b = el("button", { class: "icon-btn" + (file.isStarred ? " starred" : ""), title: "Star" });
+      b.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.8 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z"/></svg>`;
+      b.addEventListener("click", (e) => { e.stopPropagation(); toggleStar(file, "file"); });
+      return b; })(),
+    (() => { const b = el("button", { class: "icon-btn", title: "Share" });
+      b.innerHTML = ICONS.share;
+      b.addEventListener("click", (e) => { e.stopPropagation(); openShareDialog("file", file); });
+      return b; })(),
+    (() => { const b = el("button", { class: "icon-btn", title: "More" });
+      b.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>`;
+      b.addEventListener("click", (e) => { e.stopPropagation(); openContextMenu(e, "file", file); });
+      return b; })()
+  ]);
+
+  const card = el("div", { class: "file-card" + (selected ? " selected" : ""), tabindex:"0" }, [
+    badge, actions,
     iconWrap,
     el("div", { class: "file-card-name", title: file.name }, file.name),
     el("div", { class: "file-card-meta" }, `${fmtSize(file.size)} · ${fmtDate(file.createdAt)}`)
   ]);
-  card.addEventListener("click", () => openDetails(file));
+  card.addEventListener("click", (e) => {
+    if (selectionClickHandler(e, "file", file.id)) return;
+    openDetails(file, "file");
+  });
+  card.addEventListener("contextmenu", (e) => { e.preventDefault(); openContextMenu(e, "file", file); });
   return card;
 }
 function folderCard(folder) {
-  const card = el("div", { class: "file-card", tabindex:"0" }, [
+  const selected = isSelected("folder", folder.id);
+  const actions = el("div", { class: "file-card-actions" }, [
+    (() => { const b = el("button", { class: "icon-btn", title: "Share" });
+      b.innerHTML = ICONS.share;
+      b.addEventListener("click", (e) => { e.stopPropagation(); openShareDialog("folder", folder); });
+      return b; })(),
+    (() => { const b = el("button", { class: "icon-btn", title: "More" });
+      b.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>`;
+      b.addEventListener("click", (e) => { e.stopPropagation(); openContextMenu(e, "folder", folder); });
+      return b; })()
+  ]);
+  const card = el("div", { class: "file-card" + (selected ? " selected" : ""), tabindex:"0" }, [
+    actions,
     el("div", { class: "file-card-icon", html: ICONS.folder }),
     el("div", { class: "file-card-name", title: folder.name }, folder.name),
     el("div", { class: "file-card-meta" }, "Folder")
   ]);
-  card.addEventListener("click", () => { state.currentFolderId = folder.id; render(); });
+  card.addEventListener("click", (e) => {
+    if (selectionClickHandler(e, "folder", folder.id)) return;
+    state.currentFolderId = folder.id; render();
+  });
+  card.addEventListener("contextmenu", (e) => { e.preventDefault(); openContextMenu(e, "folder", folder); });
   return card;
 }
 function fileRow(file) {
   const cat = classifyMime(file.mimeType, file.name);
   const starBtn = el("button", { class: "icon-btn" + (file.isStarred ? " starred" : ""), "aria-label": "Star" });
   starBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.8 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z"/></svg>`;
-  starBtn.addEventListener("click", (e) => { e.stopPropagation(); toggleStar(file); });
-  const row = el("div", { class: "file-row", tabindex:"0" }, [
+  starBtn.addEventListener("click", (e) => { e.stopPropagation(); toggleStar(file, "file"); });
+  const selected = isSelected("file", file.id);
+  const row = el("div", { class: "file-row" + (selected ? " selected" : ""), tabindex:"0" }, [
     el("div", { class: "file-card-icon", html: ICONS[cat] }),
     el("div", { class: "file-row-name", title: file.name }, file.name),
     el("div", { class: "file-row-meta" }, fmtSize(file.size)),
@@ -936,11 +1184,16 @@ function fileRow(file) {
     el("div", { class: "file-row-meta" }, file.uploadStatus || "—"),
     starBtn
   ]);
-  row.addEventListener("click", () => openDetails(file));
+  row.addEventListener("click", (e) => {
+    if (selectionClickHandler(e, "file", file.id)) return;
+    openDetails(file, "file");
+  });
+  row.addEventListener("contextmenu", (e) => { e.preventDefault(); openContextMenu(e, "file", file); });
   return row;
 }
 function folderRow(folder) {
-  const row = el("div", { class: "file-row", tabindex:"0" }, [
+  const selected = isSelected("folder", folder.id);
+  const row = el("div", { class: "file-row" + (selected ? " selected" : ""), tabindex:"0" }, [
     el("div", { class: "file-card-icon", html: ICONS.folder }),
     el("div", { class: "file-row-name" }, folder.name),
     el("div", { class: "file-row-meta" }, "—"),
@@ -948,7 +1201,11 @@ function folderRow(folder) {
     el("div", { class: "file-row-meta" }, "Folder"),
     el("div")
   ]);
-  row.addEventListener("click", () => { state.currentFolderId = folder.id; render(); });
+  row.addEventListener("click", (e) => {
+    if (selectionClickHandler(e, "folder", folder.id)) return;
+    state.currentFolderId = folder.id; render();
+  });
+  row.addEventListener("contextmenu", (e) => { e.preventDefault(); openContextMenu(e, "folder", folder); });
   return row;
 }
 function renderStorageWidget() {
@@ -959,74 +1216,443 @@ function renderStorageWidget() {
     `<strong>${files.length} files · ${folders} folders</strong><span>${fmtSize(totalSize)} stored</span>`;
 }
 
-// ============ SEARCH / SORT / FILTERS ============
-let searchTimer;
-$("#search-input").addEventListener("input", (e) => {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => { state.search = e.target.value.trim(); render(); }, 250);
-});
-$("#filter-type").addEventListener("change", (e) => { state.filterType = e.target.value; render(); });
-$("#sort-by").addEventListener("change", (e) => { state.sortBy = e.target.value; render(); });
-$$("[data-view-mode]").forEach(b => b.addEventListener("click", () => {
-  state.viewMode = b.dataset.viewMode;
-  $$("[data-view-mode]").forEach(x => x.classList.toggle("active", x === b));
+// ============ SELECTION BAR ============
+function updateSelectionBar() {
+  const bar = $("#selection-bar");
+  const n = state.selection.size;
+  if (n === 0) { bar.classList.remove("active"); return; }
+  bar.classList.add("active");
+  $("#selection-count").textContent = `${n} selected`;
+}
+$("#selection-bar").addEventListener("click", async (e) => {
+  const action = e.target.dataset.bulk;
+  if (!action) return;
+  if (action === "clear") { state.selection.clear(); render(); return; }
+  const entries = Array.from(state.selection).map(k => {
+    const [type, id] = k.split(":");
+    return { type, id };
+  });
+  if (action === "download") {
+    const files = entries.filter(x => x.type === "file").map(x => state.files.find(f => f.id === x.id)).filter(Boolean);
+    for (const f of files) await downloadFile(f);
+  } else if (action === "star") {
+    for (const x of entries) {
+      if (x.type === "file") {
+        const f = state.files.find(f => f.id === x.id);
+        if (f && !f.isStarred) await toggleStar(f, "file", true);
+      } else {
+        const f = state.folders.find(f => f.id === x.id);
+        if (f && !f.isStarred) await toggleStar(f, "folder", true);
+      }
+    }
+    toast("Starred", "success");
+  } else if (action === "trash") {
+    for (const x of entries) {
+      if (x.type === "file") {
+        const f = state.files.find(f => f.id === x.id);
+        if (f) await setTrashed(f, "file", true, true);
+      } else {
+        const f = state.folders.find(f => f.id === x.id);
+        if (f) await setTrashed(f, "folder", true, true);
+      }
+    }
+    toast("Moved to trash", "success");
+    state.selection.clear();
+  } else if (action === "move") {
+    openMoveDialog(entries);
+  }
   render();
-}));
+});
+
+// ============ CONTEXT MENU ============
+let ctxTarget = null;
+function openContextMenu(e, type, item) {
+  ctxTarget = { type, item };
+  const menu = $("#ctx-menu");
+  menu.innerHTML = "";
+  const mk = (label, icon, fn, danger) => {
+    const b = el("button", { class: danger ? "danger" : "" });
+    if (icon) b.innerHTML = icon;
+    b.appendChild(document.createTextNode(label));
+    b.addEventListener("click", () => { closeContextMenu(); fn(); });
+    return b;
+  };
+  if (type === "file") {
+    menu.appendChild(mk("Open", null, () => openDetails(item, "file")));
+    menu.appendChild(mk("Download", null, () => downloadFile(item)));
+    menu.appendChild(mk("Share", ICONS.share, () => openShareDialog("file", item)));
+    menu.appendChild(el("hr"));
+    menu.appendChild(mk("Rename", null, () => openRename(item, "file")));
+    menu.appendChild(mk(item.isStarred ? "Remove star" : "Add star", null, () => toggleStar(item, "file")));
+    menu.appendChild(mk("Make a copy", null, () => duplicateItem(item, "file")));
+    menu.appendChild(mk("Move to…", null, () => openMoveDialog([{ type, id: item.id }])));
+  } else {
+    menu.appendChild(mk("Open", null, () => { state.currentFolderId = item.id; render(); }));
+    menu.appendChild(mk("Share", ICONS.share, () => openShareDialog("folder", item)));
+    menu.appendChild(el("hr"));
+    menu.appendChild(mk("Rename", null, () => openRename(item, "folder")));
+    menu.appendChild(mk("Move to…", null, () => openMoveDialog([{ type, id: item.id }])));
+  }
+  menu.appendChild(el("hr"));
+  if (item.isTrashed) {
+    menu.appendChild(mk("Restore", null, () => setTrashed(item, type, false)));
+    menu.appendChild(mk("Delete forever", null, () => confirmPermanentDelete(item, type), true));
+  } else {
+    menu.appendChild(mk("Move to trash", null, () => setTrashed(item, type, true), true));
+  }
+  const x = Math.min(e.clientX, window.innerWidth - 220);
+  const y = Math.min(e.clientY, window.innerHeight - 320);
+  menu.style.left = x + "px";
+  menu.style.top = y + "px";
+  menu.classList.add("open");
+}
+function closeContextMenu() { $("#ctx-menu").classList.remove("open"); }
+document.addEventListener("click", (e) => {
+  if (!e.target.closest("#ctx-menu")) closeContextMenu();
+});
+window.addEventListener("scroll", closeContextMenu, true);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeContextMenu();
+    if ($("#modal-backdrop").classList.contains("open")) closeModal();
+    if (state.selection.size) { state.selection.clear(); render(); }
+  }
+  if (e.key === "Delete" && state.selection.size && !isTyping(e)) {
+    e.preventDefault();
+    const entries = Array.from(state.selection).map(k => {
+      const [type, id] = k.split(":"); return { type, id };
+    });
+    entries.forEach(async x => {
+      if (x.type === "file") {
+        const f = state.files.find(f => f.id === x.id); if (f) await setTrashed(f, "file", true, true);
+      } else {
+        const f = state.folders.find(f => f.id === x.id); if (f) await setTrashed(f, "folder", true, true);
+      }
+    });
+    state.selection.clear();
+    render();
+  }
+});
+function isTyping(e) {
+  const t = e.target;
+  return t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+}
 
 // ============ FILE ACTIONS ============
-async function toggleStar(file) {
+async function toggleStar(item, type, silent=false) {
+  const coll = type === "file" ? "files" : "folders";
   try {
-    await updateDoc(doc(db, "users", state.user.uid, "files", file.id), {
-      isStarred: !file.isStarred, updatedAt: serverTimestamp()
+    await updateDoc(doc(db, "users", state.user.uid, coll, item.id), {
+      isStarred: !item.isStarred, updatedAt: serverTimestamp()
     });
-    closeModal();
-  } catch { toast("Could not update star.", "error"); }
+    if (!silent) toast(item.isStarred ? "Unstarred" : "Starred", "success");
+  } catch { if (!silent) toast("Could not update star.", "error"); }
 }
-async function renameFile(file, newName) {
-  if (!newName || newName === file.name) return;
+async function setTrashed(item, type, trashed, silent=false) {
+  const coll = type === "file" ? "files" : "folders";
   try {
-    await updateDoc(doc(db, "users", state.user.uid, "files", file.id), {
+    await updateDoc(doc(db, "users", state.user.uid, coll, item.id), {
+      isTrashed: trashed, updatedAt: serverTimestamp()
+    });
+    if (!silent) toast(trashed ? "Moved to trash" : "Restored", "success");
+  } catch { if (!silent) toast("Failed.", "error"); }
+}
+async function renameFile(item, type, newName) {
+  if (!newName || newName === item.name) return;
+  const coll = type === "file" ? "files" : "folders";
+  try {
+    await updateDoc(doc(db, "users", state.user.uid, coll, item.id), {
       name: newName, originalName: newName, updatedAt: serverTimestamp()
     });
     toast("Renamed", "success");
     closeModal();
   } catch { toast("Rename failed.", "error"); }
 }
-async function trashFile(file) {
+async function duplicateItem(item, type) {
+  if (type !== "file") { toast("Folder duplication not supported yet.", "info"); return; }
   try {
-    await updateDoc(doc(db, "users", state.user.uid, "files", file.id), {
-      isTrashed: true, updatedAt: serverTimestamp()
-    });
-    toast("Moved to trash", "success");
-    closeModal();
-  } catch { toast("Failed to trash.", "error"); }
+    const { id, ...rest } = item;
+    const copy = { ...rest, name: "Copy of " + item.name, createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
+    delete copy.sharing;
+    await addDoc(collection(db, "users", state.user.uid, "files"), copy);
+    toast("Duplicated", "success");
+  } catch (err) { toast("Duplicate failed: " + err.message, "error"); }
 }
-async function restoreFile(file) {
-  try {
-    await updateDoc(doc(db, "users", state.user.uid, "files", file.id), {
-      isTrashed: false, updatedAt: serverTimestamp()
-    });
-    toast("Restored", "success");
-    closeModal();
-  } catch { toast("Failed to restore.", "error"); }
+async function confirmPermanentDelete(item, type) {
+  const body = el("div", {}, [
+    el("p", { style:"margin:0" }, `Permanently delete "${item.name}"? This cannot be undone.`)
+  ]);
+  openModal("Delete forever", body, [
+    btn("Cancel", closeModal, "btn"),
+    btn("Delete", async () => {
+      try {
+        if (type === "file" && state.tg.ready && Array.isArray(item.telegramChunks)) {
+          await Promise.allSettled(item.telegramChunks.map(c =>
+            tgApi("deleteMessage", { chat_id: state.tg.chatId, message_id: c.messageId })));
+        }
+        const coll = type === "file" ? "files" : "folders";
+        await deleteDoc(doc(db, "users", state.user.uid, coll, item.id));
+        clearPreviewCacheFor(item.id);
+        toast("Deleted", "success");
+        closeModal();
+      } catch { toast("Delete failed.", "error"); }
+    }, "btn btn-danger")
+  ]);
 }
-async function permanentDelete(file) {
-  try {
-    if (state.tg.ready && Array.isArray(file.telegramChunks)) {
-      await Promise.allSettled(file.telegramChunks.map(c =>
-        tgApi("deleteMessage", { chat_id: state.tg.chatId, message_id: c.messageId })));
+
+// ============ MOVE ============
+function openMoveDialog(entries) {
+  const tree = buildFolderTree();
+  const selectedFolder = el("select", {});
+  selectedFolder.appendChild(el("option", { value: "" }, "My Drive (root)"));
+  for (const opt of flattenTree(tree, 0)) {
+    selectedFolder.appendChild(el("option", { value: opt.id }, "  ".repeat(opt.depth) + opt.name));
+  }
+  const wrap = el("div", {}, [
+    el("p", { style:"margin:0 0 12px;font-size:13px;color:var(--muted)" },
+      `Move ${entries.length} item${entries.length===1?"":"s"} to:`),
+    el("div", { class:"field" }, [el("label",{}, "Destination folder"), selectedFolder])
+  ]);
+  openModal("Move to…", wrap, [
+    btn("Cancel", closeModal, "btn"),
+    btn("Move", async () => {
+      const dest = selectedFolder.value || null;
+      try {
+        for (const x of entries) {
+          const coll = x.type === "file" ? "files" : "folders";
+          await updateDoc(doc(db, "users", state.user.uid, coll, x.id), {
+            parentFolderId: dest, updatedAt: serverTimestamp()
+          });
+        }
+        toast("Moved", "success");
+        state.selection.clear();
+        closeModal();
+      } catch { toast("Move failed.", "error"); }
+    }, "btn btn-primary")
+  ]);
+}
+function buildFolderTree() {
+  const byParent = new Map();
+  for (const f of state.folders.filter(f => !f.isTrashed)) {
+    const k = f.parentFolderId || null;
+    if (!byParent.has(k)) byParent.set(k, []);
+    byParent.get(k).push(f);
+  }
+  const build = (parentId) => (byParent.get(parentId) || []).map(f => ({
+    id: f.id, name: f.name, children: build(f.id)
+  }));
+  return build(null);
+}
+function flattenTree(nodes, depth) {
+  const out = [];
+  for (const n of nodes) {
+    out.push({ id: n.id, name: n.name, depth });
+    out.push(...flattenTree(n.children, depth + 1));
+  }
+  return out;
+}
+
+// ============ SHARING ============
+async function openShareDialog(type, item) {
+  const sharing = item.sharing || { enabled: false, members: [], linkToken: null, linkAccess: "viewer" };
+  const members = sharing.members || [];
+
+  const shareUrl = sharing.linkToken
+    ? `${location.origin}${location.pathname}#/share/${sharing.linkToken}`
+    : "";
+
+  // --- Public link section ---
+  const linkRow = el("div", { class: "share-link-row" });
+  if (sharing.enabled && shareUrl) {
+    const inp = el("input", { type:"text", readonly:"", value: shareUrl });
+    const copyBtn = btn("Copy", () => {
+      navigator.clipboard.writeText(shareUrl).then(() => toast("Link copied", "success"));
+    }, "btn btn-primary");
+    const accessSel = el("select", {});
+    for (const [v,l] of [["viewer","Viewer"],["commenter","Commenter"],["editor","Editor"]]) {
+      const o = el("option", { value: v }, l);
+      if (sharing.linkAccess === v) o.selected = true;
+      accessSel.appendChild(o);
     }
-    await deleteDoc(doc(db, "users", state.user.uid, "files", file.id));
-    clearPreviewCacheFor(file.id);
-    toast("Deleted", "success");
-    closeModal();
-  } catch { toast("Delete failed.", "error"); }
+    accessSel.addEventListener("change", async () => {
+      await saveSharing(type, item, { ...sharing, linkAccess: accessSel.value });
+      toast("Access updated", "success");
+    });
+    const revokeBtn = btn("Revoke", async () => {
+      await saveSharing(type, item, { ...sharing, linkToken: null });
+      toast("Public link revoked", "success");
+      closeModal(); openShareDialog(type, item);
+    }, "btn btn-danger");
+    linkRow.appendChild(inp);
+    linkRow.appendChild(copyBtn);
+    linkRow.appendChild(accessSel);
+    linkRow.appendChild(revokeBtn);
+  } else {
+    const enableBtn = btn("Create public link", async () => {
+      const token = makeToken();
+      await saveSharing(type, item, { ...sharing, enabled: true, linkToken: token, linkAccess: sharing.linkAccess || "viewer" });
+      toast("Public link created", "success");
+      closeModal(); openShareDialog(type, item);
+    }, "btn btn-primary");
+    linkRow.appendChild(el("span", { style:"flex:1;font-size:12px;color:var(--muted)" }, "Anyone with the link can view"));
+    linkRow.appendChild(enableBtn);
+  }
+
+  // --- Invite by email ---
+  const emailInput = el("input", { type:"email", placeholder:"Add people by email", autocomplete:"off" });
+  const permSel = el("select", {});
+  for (const [v,l] of [["viewer","Viewer"],["commenter","Commenter"],["editor","Editor"]]) {
+    permSel.appendChild(el("option", { value: v }, l));
+  }
+  const inviteRow = el("div", { style:"display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap" }, [
+    el("div", { style:"flex:1;min-width:180px" }, [emailInput]),
+    permSel,
+    btn("Invite", async () => {
+      const email = emailInput.value.trim().toLowerCase();
+      if (!/^\S+@\S+\.\S+$/.test(email)) { toast("Enter a valid email.", "error"); return; }
+      if (email === state.user.email.toLowerCase()) { toast("That's you.", "error"); return; }
+      const existing = members.filter(m => m.email !== email);
+      existing.push({ email, role: permSel.value, addedAt: Date.now() });
+      await saveSharing(type, item, { ...sharing, enabled: true, members: existing });
+      toast("Invited " + email, "success");
+      emailInput.value = "";
+      closeModal(); openShareDialog(type, item);
+    }, "btn btn-primary")
+  ]);
+
+  // --- Member list ---
+  const memberList = el("div", { class: "member-list" });
+  if (members.length === 0) {
+    memberList.appendChild(el("div", { style:"padding:12px;font-size:12px;color:var(--muted);text-align:center" }, "No people yet"));
+  } else {
+    for (const m of members) {
+      const roleSel = el("select", {});
+      for (const [v,l] of [["viewer","Viewer"],["commenter","Commenter"],["editor","Editor"]]) {
+        const o = el("option", { value: v }, l);
+        if (m.role === v) o.selected = true;
+        roleSel.appendChild(o);
+      }
+      roleSel.addEventListener("change", async () => {
+        const updated = members.map(x => x.email === m.email ? { ...x, role: roleSel.value } : x);
+        await saveSharing(type, item, { ...sharing, members: updated });
+        toast("Role updated", "success");
+      });
+      const removeBtn = btn("Remove", async () => {
+        const updated = members.filter(x => x.email !== m.email);
+        await saveSharing(type, item, { ...sharing, members: updated });
+        toast("Removed", "success");
+        closeModal(); openShareDialog(type, item);
+      }, "btn btn-danger");
+      removeBtn.style.padding = "4px 10px";
+      removeBtn.style.fontSize = "12px";
+      memberList.appendChild(el("div", { class: "member-row" }, [
+        el("div", { class: "member-avatar" }, initials(m.email.split("@")[0])),
+        el("div", { class: "member-info" }, [
+          el("strong", {}, m.email),
+          el("span", {}, `Added ${new Date(m.addedAt || Date.now()).toLocaleDateString()}`)
+        ]),
+        roleSel, removeBtn
+      ]));
+    }
+  }
+
+  const body = el("div", {}, [
+    el("p", { style:"margin:0 0 14px;font-size:13px;font-weight:600;color:var(--navy)" },
+      `Share "${item.name}"`),
+    el("h4", { style:"margin:0 0 8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px" }, "Public link"),
+    linkRow,
+    el("h4", { style:"margin:14px 0 8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px" }, "Invite people"),
+    inviteRow,
+    el("h4", { style:"margin:0 0 8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px" }, `People with access (${members.length})`),
+    memberList
+  ]);
+
+  openModal("Share", body, [btn("Done", closeModal, "btn btn-primary")], null, true);
+}
+
+async function saveSharing(type, item, sharingObj) {
+  // Update user's private copy
+  const coll = type === "file" ? "files" : "folders";
+  await updateDoc(doc(db, "users", state.user.uid, coll, item.id), {
+    sharing: sharingObj,
+    sharingEnabled: sharingObj.enabled && (sharingObj.members.length > 0 || sharingObj.linkToken),
+    updatedAt: serverTimestamp()
+  });
+  // Mirror to sharedFiles collection so recipients can find it via query
+  const mirrorId = type + "_" + item.id;
+  const memberEmails = (sharingObj.members || []).map(m => m.email.toLowerCase());
+  const mirror = {
+    ownerId: state.user.uid,
+    ownerEmail: state.user.email,
+    itemType: type,
+    itemId: item.id,
+    name: item.name,
+    mimeType: item.mimeType || null,
+    size: item.size || null,
+    createdAt: item.createdAt || null,
+    telegramChunks: item.telegramChunks || null,
+    sharing: sharingObj,
+    memberEmails: memberEmails,
+    linkToken: sharingObj.linkToken || null,
+    linkAccess: sharingObj.linkAccess || "viewer"
+  };
+  if (sharingObj.enabled && (memberEmails.length || sharingObj.linkToken)) {
+    await setDoc(doc(db, "sharedFiles", mirrorId), mirror);
+  } else {
+    try { await deleteDoc(doc(db, "sharedFiles", mirrorId)); } catch {}
+  }
+}
+
+// ============ PUBLIC SHARE PAGE ============
+async function maybeShowSharePage() {
+  const h = location.hash;
+  if (!h.startsWith("#/share/")) {
+    $("#share-page").classList.remove("active");
+    return;
+  }
+  const token = h.slice("#/share/".length);
+  if (!token) return;
+  $("#share-page").classList.add("active");
+  const content = $("#share-content");
+  content.innerHTML = "<p>Loading…</p>";
+  try {
+    const snap = await getDocs(query(collection(db, "sharedFiles"), where("linkToken", "==", token)));
+    if (snap.empty) {
+      content.innerHTML = "<p>This share link is invalid or has been revoked.</p>";
+      return;
+    }
+    const data = snap.docs[0].data();
+    $("#share-meta").textContent = `${data.ownerEmail} shared "${data.name}"`;
+    renderShareContent(data, content);
+  } catch (err) {
+    content.innerHTML = `<p>Error: ${err.message}</p>`;
+  }
+}
+function renderShareContent(data, content) {
+  content.innerHTML = "";
+  const cat = classifyMime(data.mimeType, data.name);
+  const preview = el("div", { class: "share-preview" }, "Preview unavailable");
+  if (data.itemType === "file" && data.telegramChunks?.length === 1) {
+    // Public previews need a working Telegram bot token — but sharing a token publicly is unsafe.
+    // So public viewers get download-only, and we surface a clear message.
+    preview.textContent = "Download available below.";
+  }
+  content.appendChild(el("h2", { style:"margin:0 0 6px;font-size:18px;color:var(--navy)" }, data.name));
+  content.appendChild(el("p", { style:"margin:0 0 16px;color:var(--muted);font-size:13px" },
+    `${data.mimeType || "File"} · ${fmtSize(data.size)}`));
+  content.appendChild(preview);
+  content.appendChild(el("div", { style:"margin-top:16px;padding:14px;background:var(--bg);border-radius:10px;font-size:13px;color:var(--muted)" }, [
+    el("p", { style:"margin:0" },
+      "To download this file, sign in to MART Drive — the file will appear in your 'Shared with me' section."),
+    el("a", { href: "#drive", onclick: () => { location.hash = "#drive"; setTimeout(() => $("#share-page").classList.remove("active"), 50); } }, "Go to MART Drive →")
+  ]));
 }
 
 // ============ MODAL ============
 let modalOnClose = null;
-function openModal(title, bodyNode, footNodes=[], onClose=null) {
+function openModal(title, bodyNode, footNodes=[], onClose=null, wide=false) {
   modalOnClose = onClose;
+  $("#modal-box").classList.toggle("wide", !!wide);
   $("#modal-title").textContent = title;
   const body = $("#modal-body"); body.innerHTML = ""; body.appendChild(bodyNode);
   const foot = $("#modal-foot"); foot.innerHTML = "";
@@ -1042,69 +1668,53 @@ $("#modal-close").addEventListener("click", closeModal);
 $("#modal-backdrop").addEventListener("click", (e) => { if (e.target.id === "modal-backdrop") closeModal(); });
 function btn(label, onclick, cls="btn") { return el("button", { class: cls, onclick }, label); }
 
-// --- Preview cache management ---
-function clearPreviewCache() {
-  for (const { url } of previewCache.values()) URL.revokeObjectURL(url);
-  previewCache.clear();
-}
-function clearPreviewCacheFor(fileId) {
-  const v = previewCache.get(fileId);
-  if (v) { URL.revokeObjectURL(v.url); previewCache.delete(fileId); }
-}
+function clearPreviewCache() { previewCache.clear(); }
+function clearPreviewCacheFor(fileId) { previewCache.delete(fileId); }
 
-/**
- * Build a preview blob URL for a file. Only single-chunk files (≤18 MB)
- * can be previewed reliably since we need a CORS-accessible blob URL.
- * Multi-chunk files fall back to a "download to preview" message.
- */
 async function loadPreviewUrl(file) {
   if (previewCache.has(file.id)) return previewCache.get(file.id).url;
   if (!state.tg.ready) throw new Error("Telegram not connected");
   const chunks = file.telegramChunks;
   if (!Array.isArray(chunks) || !chunks.length) throw new Error("No Telegram reference");
-  if (chunks.length > 1) throw new Error("Multi-chunk file — download to view");
-
+  if (chunks.length > 1) throw new Error("File is larger than 18 MB — download to view.");
   const info = await tgApi("getFile", { file_id: chunks[0].fileId });
   if (!info.file_path) throw new Error("Telegram returned no file path");
   const url = `https://api.telegram.org/file/bot${state.tg.token}/${info.file_path}`;
-
-  // Try to fetch as blob so image/video/audio elements get proper mime type.
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Telegram HTTP ${res.status}`);
-  const buf = await res.arrayBuffer();
-  const blob = new Blob([buf], { type: file.mimeType || "application/octet-stream" });
-  const objUrl = URL.createObjectURL(blob);
-  previewCache.set(file.id, { url: objUrl });
-  return objUrl;
+  previewCache.set(file.id, { url });
+  return url;
 }
 
-function openDetails(file) {
+function openDetails(file, type="file") {
   const cat = classifyMime(file.mimeType, file.name);
-
-  // Preview container
   const previewBox = el("div", { class: "preview-box" }, "Loading preview…");
   const previewWrap = el("div", { class: "preview-wrap" }, [previewBox]);
 
-  if (["image","video","audio"].includes(cat)) {
+  if (["image","video","audio"].includes(cat) && file.telegramChunks?.length === 1 && state.tg.ready) {
     loadPreviewUrl(file).then(url => {
       previewBox.innerHTML = "";
       if (cat === "image") {
         const img = el("img", { src: url, alt: file.name });
-        img.onerror = () => { previewBox.textContent = "Preview could not be decoded."; };
+        img.onerror = () => { previewBox.textContent = "Preview could not be decoded (try Download)."; };
         previewBox.appendChild(img);
       } else if (cat === "video") {
-        previewBox.appendChild(el("video", { src: url, controls: "", preload: "metadata" }));
+        previewBox.appendChild(el("video", { src: url, controls: "", preload: "metadata", playsinline: "" }));
       } else {
-        previewBox.appendChild(el("audio", { src: url, controls: "" }));
+        previewBox.appendChild(el("audio", { src: url, controls: "", preload: "metadata" }));
       }
-    }).catch(err => {
-      previewBox.textContent = err.message || "Preview unavailable.";
-    });
+    }).catch(err => { previewBox.textContent = err.message || "Preview unavailable."; });
   } else if (cat === "pdf") {
     previewBox.textContent = "PDF — use Download to open in a new tab.";
+  } else if (file.telegramChunks?.length > 1) {
+    previewBox.textContent = "Large file — download to view.";
   } else {
     previewBox.textContent = "No inline preview for this file type.";
   }
+
+  const sharing = file.sharing || {};
+  const shareCount = (sharing.members || []).length;
+  const shareStatus = sharing.enabled
+    ? `On${shareCount ? ` · ${shareCount} member${shareCount===1?"":"s"}` : ""}${sharing.linkToken ? " · public link" : ""}`
+    : "Off";
 
   const wrap = el("div", {}, [
     previewWrap,
@@ -1114,27 +1724,31 @@ function openDetails(file) {
     el("div", { class:"detail-row" }, [el("strong",{}, "Type"), el("span",{}, file.mimeType || "Unknown")]),
     el("div", { class:"detail-row" }, [el("strong",{}, "Size"), el("span",{}, fmtSize(file.size))]),
     el("div", { class:"detail-row" }, [el("strong",{}, "Uploaded"), el("span",{}, fmtDate(file.createdAt))]),
-    el("div", { class:"detail-row" }, [el("strong",{}, "Status"), el("span",{}, file.uploadStatus || "—")]),
+    el("div", { class:"detail-row" }, [el("strong",{}, "Sharing"), el("span",{}, shareStatus)]),
     el("div", { class:"detail-row" }, [el("strong",{}, "Chunks"), el("span",{}, String(file.telegramChunks?.length || 0))])
   ]);
 
   const foot = [
     btn("Download", () => downloadFile(file), "btn btn-primary"),
-    btn("Rename", () => openRename(file), "btn"),
-    btn(file.isStarred ? "Unstar" : "Star", () => toggleStar(file), "btn"),
-    file.isTrashed
-      ? btn("Restore", () => restoreFile(file), "btn btn-primary")
-      : btn("Trash", () => trashFile(file), "btn btn-danger")
+    btn("Share", () => openShareDialog("file", file), "btn"),
+    btn("Rename", () => openRename(file, "file"), "btn"),
+    btn(file.isStarred ? "Unstar" : "Star", () => toggleStar(file, "file"), "btn"),
+    btn("Move", () => openMoveDialog([{ type:"file", id:file.id }]), "btn")
   ];
-  if (file.isTrashed) foot.push(btn("Delete forever", () => permanentDelete(file), "btn btn-danger"));
-  openModal("File details", wrap, foot);
+  if (file.isTrashed) {
+    foot.push(btn("Restore", () => setTrashed(file, "file", false), "btn btn-primary"));
+    foot.push(btn("Delete forever", () => confirmPermanentDelete(file, "file"), "btn btn-danger"));
+  } else {
+    foot.push(btn("Trash", () => setTrashed(file, "file", true), "btn btn-danger"));
+  }
+  openModal("File details", wrap, foot, null, true);
 }
-function openRename(file) {
-  const input = el("input", { type:"text", value: file.name });
+function openRename(item, type) {
+  const input = el("input", { type:"text", value: item.name });
   const wrap = el("div", { class:"field" }, [el("label",{}, "New name"), input]);
-  openModal("Rename file", wrap, [
+  openModal("Rename " + type, wrap, [
     btn("Cancel", closeModal, "btn"),
-    btn("Save", () => renameFile(file, input.value.trim()), "btn btn-primary")
+    btn("Save", () => renameFile(item, type, input.value.trim()), "btn btn-primary")
   ]);
   setTimeout(() => input.focus(), 50);
 }
@@ -1151,7 +1765,7 @@ $("#new-folder-btn").addEventListener("click", () => {
       try {
         await addDoc(collection(db, "users", state.user.uid, "folders"), {
           name, parentFolderId: state.currentFolderId || null,
-          createdAt: serverTimestamp(), updatedAt: serverTimestamp(), isTrashed: false
+          createdAt: serverTimestamp(), updatedAt: serverTimestamp(), isTrashed: false, isStarred: false
         });
         toast("Folder created", "success");
         closeModal();
@@ -1162,7 +1776,7 @@ $("#new-folder-btn").addEventListener("click", () => {
 });
 
 // ============================================================
-// TELEGRAM — Bot API
+// TELEGRAM
 // ============================================================
 const TG_KEY = "martdrive.tg.bot";
 const CHUNK_SIZE = 18 * 1024 * 1024;
@@ -1177,8 +1791,7 @@ function loadTelegramConfig() {
   updateTgStatus(state.tg.ready);
 }
 function saveTelegramConfig() {
-  const { token, chatId, botName } = state.tg;
-  localStorage.setItem(TG_KEY, JSON.stringify({ token, chatId, botName }));
+  localStorage.setItem(TG_KEY, JSON.stringify(state.tg));
 }
 function clearTelegramConfig() {
   localStorage.removeItem(TG_KEY);
@@ -1194,25 +1807,15 @@ function updateTgStatus(ok) {
     ok ? "● Telegram connected" : "○ Telegram not connected");
   $(".sidebar-brand").appendChild(badge);
 }
-
 async function tgApi(method, params = {}, token = state.tg.token) {
   const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params)
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(params)
   });
   let data;
   try { data = await res.json(); } catch { throw new Error("Telegram returned an invalid response"); }
   if (!data.ok) throw new Error(data.description || "Telegram API error");
   return data.result;
 }
-
-/**
- * Upload one chunk with progress via XHR.
- * Verifies Telegram actually returned a `document` object — otherwise it
- * mis-detected the type (e.g. as a photo), and the file wouldn't be
- * downloadable via getFile with a file_id.
- */
 function tgSendDocument(blob, filename, caption, onProgress) {
   return new Promise((resolve, reject) => {
     const fd = new FormData();
@@ -1220,7 +1823,6 @@ function tgSendDocument(blob, filename, caption, onProgress) {
     fd.append("document", blob, filename);
     fd.append("caption", caption);
     fd.append("disable_content_type_detection", "true");
-
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `https://api.telegram.org/bot${state.tg.token}/sendDocument`);
     xhr.upload.onprogress = (e) => { if (e.lengthComputable) onProgress(e.loaded); };
@@ -1228,22 +1830,16 @@ function tgSendDocument(blob, filename, caption, onProgress) {
     xhr.onload = () => {
       let data;
       try { data = JSON.parse(xhr.responseText); }
-      catch { return reject(new Error("Invalid Telegram response: " + xhr.responseText.slice(0, 200))); }
+      catch { return reject(new Error("Invalid Telegram response")); }
       if (!data.ok) return reject(new Error("Telegram: " + (data.description || "upload failed")));
       if (!data.result?.document?.file_id) {
-        const wrongKey = Object.keys(data.result || {}).find(k =>
-          ["photo","video","audio","animation","voice","document"].includes(k));
-        return reject(new Error(
-          "Telegram saved this as '" + (wrongKey || "unknown") +
-          "' instead of 'document'. Ensure the filename has an extension and try again."
-        ));
+        return reject(new Error("Telegram did not return a document file_id."));
       }
       resolve(data.result);
     };
     xhr.send(fd);
   });
 }
-
 function openTelegramSetup() {
   if (state.tg.ready) {
     const wrap = el("div", {}, [
@@ -1256,21 +1852,20 @@ function openTelegramSetup() {
     ]);
     return;
   }
-
-  const tokenInput = el("input", { type:"text", placeholder:"123456789:AA…", autocomplete:"off", autocapitalize:"off", spellcheck:"false" });
+  const tokenInput = el("input", { type:"text", placeholder:"123456789:AA…" });
   const status = el("p", { style:"font-size:12px;color:var(--muted);margin:0 0 12px;min-height:18px" }, "");
   const wrap = el("div", {}, [
     el("ol", { class:"steps", html:
       "<li>In Telegram, open <b>@BotFather</b> and send <b>/newbot</b>.</li>" +
-      "<li>Copy the <b>bot token</b> it gives you and paste it below.</li>" +
-      "<li>Open your new bot, tap <b>Start</b> and send it any message.</li>" +
-      "<li>Come back here and tap <b>Connect</b>.</li>" }),
+      "<li>Copy the <b>bot token</b> and paste below.</li>" +
+      "<li>Open your bot, tap <b>Start</b>, send any message.</li>" +
+      "<li>Tap <b>Connect</b>.</li>" }),
     el("div", { class:"field" }, [el("label",{}, "Bot token"), tokenInput]),
     status
   ]);
   const connectBtn = btn("Connect", async () => {
     const token = tokenInput.value.trim();
-    if (!/^\d+:[\w-]{30,}$/.test(token)) { toast("That doesn’t look like a bot token.", "error"); return; }
+    if (!/^\d+:[\w-]{30,}$/.test(token)) { toast("Invalid token format.", "error"); return; }
     connectBtn.disabled = true; connectBtn.textContent = "Checking…";
     try {
       const me = await tgApi("getMe", {}, token);
@@ -1278,22 +1873,19 @@ function openTelegramSetup() {
       const updates = await tgApi("getUpdates", { limit: 100, allowed_updates: ["message"] }, token);
       const msgs = updates.map(u => u.message).filter(m => m && m.chat && m.chat.type === "private");
       if (!msgs.length) {
-        status.textContent = `Almost there — open @${me.username}, tap Start, send any message, then tap Connect again.`;
-        connectBtn.disabled = false; connectBtn.textContent = "Connect";
-        return;
+        status.textContent = `Open @${me.username}, tap Start, send a message, then retry.`;
+        connectBtn.disabled = false; connectBtn.textContent = "Connect"; return;
       }
       const chat = msgs[msgs.length - 1].chat;
       state.tg = { token, chatId: String(chat.id), botName: me.username, ready: true };
       saveTelegramConfig();
-      await tgApi("sendMessage", { chat_id: chat.id, text: "✅ MART Drive connected. Files you upload are stored in this chat — please don’t delete them." }).catch(() => {});
+      await tgApi("sendMessage", { chat_id: chat.id, text: "✅ MART Drive connected." }).catch(() => {});
       updateTgStatus(true);
-      closeModal();
-      toast("Telegram connected", "success");
+      closeModal(); toast("Telegram connected", "success");
       if (state.view === "settings") render();
       render();
     } catch (err) {
-      console.error(err);
-      toast("Failed: " + (err.message || err), "error", 6000);
+      toast("Failed: " + err.message, "error", 6000);
       connectBtn.disabled = false; connectBtn.textContent = "Connect";
     }
   }, "btn btn-primary");
@@ -1313,22 +1905,15 @@ dz.addEventListener("drop", (e) => {
   e.preventDefault(); dz.classList.remove("dragover");
   if (e.dataTransfer?.files?.length) handleFiles({ target: { files: e.dataTransfer.files } });
 });
-
 async function handleFiles(e) {
   const files = Array.from(e.target.files || []);
   if (e.target.value !== undefined) e.target.value = "";
   if (!files.length) return;
-  if (!state.tg.ready) {
-    toast("Connect Telegram first.", "error");
-    openTelegramSetup();
-    return;
-  }
+  if (!state.tg.ready) { toast("Connect Telegram first.", "error"); openTelegramSetup(); return; }
   for (const file of files) await uploadOneFile(file);
 }
-
 async function uploadOneFile(file) {
-  if (file.size === 0) { toast("Empty files can’t be uploaded.", "error"); return; }
-
+  if (file.size === 0) { toast("Empty files can't be uploaded.", "error"); return; }
   const queue = $("#upload-queue");
   queue.classList.add("active");
   const item = el("div", { class:"upload-item" }, [
@@ -1339,126 +1924,71 @@ async function uploadOneFile(file) {
     el("div", { class:"progress-bar" }, [el("div", {})])
   ]);
   queue.appendChild(item);
-
   const pctEl = item.querySelector(".upload-percent");
   const fillEl = item.querySelector(".progress-bar > div");
-  const cleanupQueue = () => { item.remove(); if (!queue.children.length) queue.classList.remove("active"); };
+  const cleanup = () => { item.remove(); if (!queue.children.length) queue.classList.remove("active"); };
   const setPct = (p) => { const v = Math.min(100, Math.round(p)); pctEl.textContent = v + "%"; fillEl.style.width = v + "%"; };
-
   let docRef;
   try {
     docRef = await addDoc(collection(db, "users", state.user.uid, "files"), {
-      name: file.name,
-      originalName: file.name,
+      name: file.name, originalName: file.name,
       mimeType: file.type || "application/octet-stream",
-      size: file.size,
-      parentFolderId: state.currentFolderId || null,
-      isStarred: false,
-      isTrashed: false,
-      storageProvider: "telegram-bot",
-      uploadStatus: "pending",
-      telegramChunks: [],
-      telegramMessageId: null,
-      telegramChatId: state.tg.chatId,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
+      size: file.size, parentFolderId: state.currentFolderId || null,
+      isStarred: false, isTrashed: false, storageProvider: "telegram-bot",
+      uploadStatus: "pending", telegramChunks: [], telegramMessageId: null,
+      telegramChatId: state.tg.chatId, createdAt: serverTimestamp(), updatedAt: serverTimestamp()
     });
   } catch (err) {
-    console.error(err);
-    toast("Could not create file record.", "error");
-    cleanupQueue();
-    return;
+    toast("Could not create file record.", "error"); cleanup(); return;
   }
-
   try {
     const total = Math.ceil(file.size / CHUNK_SIZE);
     const chunks = [];
     for (let i = 0; i < total; i++) {
       const start = i * CHUNK_SIZE;
       const blob = file.slice(start, Math.min(start + CHUNK_SIZE, file.size));
-      const partName = total === 1
-        ? file.name
-        : `${file.name}.part${String(i + 1).padStart(3, "0")}`;
-      const caption = `MART:${file.name}` + (total > 1 ? ` [${i + 1}/${total}]` : "");
-      const sent = await tgSendDocument(blob, partName, caption,
-        (loaded) => setPct(((start + loaded) / file.size) * 100));
-      const d = sent.document;
-      if (!d?.file_id) throw new Error("Telegram did not return a document file_id");
-
-      // Verify this chunk is actually retrievable via getFile before committing.
-      const head = await tgApi("getFile", { file_id: d.file_id });
-      if (!head?.file_path) throw new Error("Chunk " + (i + 1) + " is not retrievable from Telegram");
-
-      chunks.push({ fileId: d.file_id, messageId: sent.message_id, size: blob.size });
+      const partName = total === 1 ? file.name : `${file.name}.part${String(i+1).padStart(3,"0")}`;
+      const caption = `MART:${file.name}` + (total > 1 ? ` [${i+1}/${total}]` : "");
+      const sent = await tgSendDocument(blob, partName, caption, (loaded) => setPct(((start+loaded)/file.size)*100));
+      chunks.push({ fileId: sent.document.file_id, messageId: sent.message_id, size: blob.size });
     }
-
-    await updateDoc(docRef, {
-      uploadStatus: "uploaded",
-      telegramChunks: chunks,
-      telegramMessageId: chunks[0].messageId,
-      updatedAt: serverTimestamp()
-    });
-
-    setPct(100);
-    pctEl.textContent = "Done";
+    await updateDoc(docRef, { uploadStatus: "uploaded", telegramChunks: chunks,
+      telegramMessageId: chunks[0].messageId, updatedAt: serverTimestamp() });
+    setPct(100); pctEl.textContent = "Done";
     toast(`Uploaded: ${file.name}`, "success");
-    setTimeout(cleanupQueue, 2000);
+    setTimeout(cleanup, 2000);
   } catch (err) {
-    console.error(err);
     try { await updateDoc(docRef, { uploadStatus: "failed", updatedAt: serverTimestamp() }); } catch {}
     pctEl.textContent = "Failed";
-    toast("Upload failed: " + (err.message || err), "error", 6000);
+    toast("Upload failed: " + err.message, "error", 6000);
   }
 }
-
 async function downloadFile(file) {
   const chunks = file.telegramChunks;
-  if (!Array.isArray(chunks) || !chunks.length) {
-    toast("This file has no Telegram reference.", "error");
-    return;
-  }
-  if (!state.tg.ready) {
-    toast("Connect Telegram first.", "error");
-    openTelegramSetup();
-    return;
-  }
-
+  if (!Array.isArray(chunks) || !chunks.length) { toast("No Telegram reference.", "error"); return; }
+  if (!state.tg.ready) { toast("Connect Telegram first.", "error"); openTelegramSetup(); return; }
   const prog = toast("Preparing download…", "", 600000);
   try {
     if (chunks.length === 1) {
-      // Single-chunk — navigate directly to the file URL so CORS never applies.
       const info = await tgApi("getFile", { file_id: chunks[0].fileId });
-      if (!info?.file_path) throw new Error("Telegram returned no file path");
+      if (!info?.file_path) throw new Error("No file path");
       const url = `https://api.telegram.org/file/bot${state.tg.token}/${info.file_path}`;
       const a = document.createElement("a");
-      a.href = url;
-      a.download = file.name;
-      a.target = "_blank";
-      a.rel = "noopener";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      prog.remove();
-      toast("Download started — check your downloads / new tab.", "success");
-      return;
+      a.href = url; a.download = file.name; a.target = "_blank"; a.rel = "noopener";
+      document.body.appendChild(a); a.click(); a.remove();
+      prog.remove(); toast("Download started", "success"); return;
     }
-
-    // Multi-chunk — fetch each chunk as blob, concatenate, save.
-    const parts = [];
-    let done = 0;
-    const totalBytes = Number(file.size) || chunks.reduce((s, c) => s + (c.size || 0), 0);
+    const parts = []; let done = 0;
+    const totalBytes = Number(file.size) || 0;
     for (const c of chunks) {
       const info = await tgApi("getFile", { file_id: c.fileId });
-      if (!info?.file_path) throw new Error("Telegram returned no file path for a chunk");
       const url = `https://api.telegram.org/file/bot${state.tg.token}/${info.file_path}`;
-      const res = await fetch(url, { mode: "cors", credentials: "omit" });
-      if (!res.ok) {
-        throw new Error(`Chunk HTTP ${res.status} — file_path may have expired, retry shortly.`);
-      }
+      let res;
+      try { res = await fetch(url, { mode:"cors", credentials:"omit" }); }
+      catch { throw new Error("Multi-chunk download blocked by CORS. Re-upload <18 MB."); }
       const buf = await res.arrayBuffer();
-      parts.push(buf);
-      done += buf.byteLength;
-      if (totalBytes) prog.textContent = `Downloading… ${Math.min(100, Math.round((done / totalBytes) * 100))}%`;
+      parts.push(buf); done += buf.byteLength;
+      if (totalBytes) prog.textContent = `Downloading… ${Math.round(done/totalBytes*100)}%`;
     }
     const blob = new Blob(parts, { type: file.mimeType || "application/octet-stream" });
     const url = URL.createObjectURL(blob);
@@ -1466,12 +1996,9 @@ async function downloadFile(file) {
     a.href = url; a.download = file.name;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 60000);
-    prog.remove();
-    toast("Download complete", "success");
+    prog.remove(); toast("Download complete", "success");
   } catch (err) {
-    console.error(err);
-    prog.remove();
-    toast("Download failed: " + (err.message || err), "error", 6000);
+    prog.remove(); toast("Download failed: " + err.message, "error", 6000);
   }
 }
 
@@ -1480,11 +2007,7 @@ function openSidebar() { $("#sidebar").classList.add("open"); $("#overlay").clas
 function closeSidebar() { $("#sidebar").classList.remove("open"); $("#overlay").classList.remove("open"); }
 $("#menu-toggle").addEventListener("click", openSidebar);
 $("#overlay").addEventListener("click", closeSidebar);
-
-$("#user-btn").addEventListener("click", (e) => {
-  e.stopPropagation();
-  $("#user-dropdown").classList.toggle("open");
-});
+$("#user-btn").addEventListener("click", (e) => { e.stopPropagation(); $("#user-dropdown").classList.toggle("open"); });
 document.addEventListener("click", () => $("#user-dropdown").classList.remove("open"));
 $("#user-dropdown").addEventListener("click", async (e) => {
   const action = e.target.closest("button")?.dataset.action;
@@ -1495,12 +2018,25 @@ $("#user-dropdown").addEventListener("click", async (e) => {
   else if (action === "telegram") openTelegramSetup();
 });
 
+// ============ SEARCH / FILTERS ============
+let searchTimer;
+$("#search-input").addEventListener("input", (e) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { state.search = e.target.value.trim(); render(); }, 250);
+});
+$("#filter-type").addEventListener("change", (e) => { state.filterType = e.target.value; render(); });
+$("#sort-by").addEventListener("change", (e) => { state.sortBy = e.target.value; render(); });
+$$("[data-view-mode]").forEach(b => b.addEventListener("click", () => {
+  state.viewMode = b.dataset.viewMode;
+  $$("[data-view-mode]").forEach(x => x.classList.toggle("active", x === b));
+  render();
+}));
+
 // ============ SETTINGS / HELP ============
 function renderSettingsView() {
   const grid = $("#files-grid");
   $("#files-container").querySelectorAll(".files-list").forEach(n => n.remove());
-  grid.innerHTML = "";
-  grid.style.display = "";
+  grid.innerHTML = ""; grid.style.display = "";
   $("#page-meta").textContent = "";
   renderBreadcrumb();
   grid.appendChild(el("div", { style:"grid-column:1/-1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px" }, [
@@ -1511,37 +2047,37 @@ function renderSettingsView() {
   grid.appendChild(el("div", { style:"grid-column:1/-1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px" }, [
     el("h3", { style:"margin:0 0 10px;color:var(--navy);font-size:15px" }, "Telegram"),
     el("p", { style:"margin:0 0 10px;font-size:13px" },
-      state.tg.ready ? "Connected on this browser" + (state.tg.botName ? " (@" + state.tg.botName + ")." : ".") : "Not connected."),
-    el("button", { class:"btn btn-primary", onclick: openTelegramSetup }, "Manage Telegram connection")
+      state.tg.ready ? "Connected" + (state.tg.botName ? " (@" + state.tg.botName + ")" : "") : "Not connected."),
+    el("button", { class:"btn btn-primary", onclick: openTelegramSetup }, "Manage Telegram")
   ]));
 }
 function renderHelpView() {
   const grid = $("#files-grid");
   $("#files-container").querySelectorAll(".files-list").forEach(n => n.remove());
-  grid.innerHTML = "";
-  grid.style.display = "";
+  grid.innerHTML = ""; grid.style.display = "";
   $("#page-meta").textContent = "";
   renderBreadcrumb();
   grid.appendChild(el("div", { style:"grid-column:1/-1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;line-height:1.7;font-size:13px" }, [
-    el("h3", { style:"margin:0 0 10px;color:var(--navy);font-size:15px" }, "About MART Drive"),
-    el("p", {}, "Personal cloud storage. Metadata in Firebase Firestore, file bytes in your own private Telegram bot chat (large files are split into chunks automatically)."),
-    el("h3", { style:"margin:16px 0 8px;color:var(--navy);font-size:15px" }, "How to use"),
-    el("ol", { style:"margin:0;padding-left:20px" }, [
-      el("li", {}, "Create a bot with @BotFather in Telegram and copy its token."),
-      el("li", {}, "Open your bot, tap Start and send it any message."),
-      el("li", {}, "In MART Drive: user menu → Telegram setup → paste the token → Connect."),
-      el("li", {}, "Tap Upload file and pick a file."),
-      el("li", {}, "Click any image / video / audio file to preview inline."),
-      el("li", {}, "Tap Download to save the original file.")
+    el("h3", { style:"margin:0 0 10px;color:var(--navy);font-size:15px" }, "Advanced features"),
+    el("ul", { style:"margin:0;padding-left:20px" }, [
+      el("li", {}, "Right-click any file or folder for a context menu."),
+      el("li", {}, "Ctrl/Cmd-click or Shift-click to select multiple items."),
+      el("li", {}, "Hover a card and click the share icon to invite people by email."),
+      el("li", {}, "Create public links under Share → Create public link."),
+      el("li", {}, "Press Delete to trash selected items, Escape to clear selection."),
+      el("li", {}, "Use 'Move to…' to relocate items between folders.")
     ]),
     el("h3", { style:"margin:16px 0 8px;color:var(--navy);font-size:15px" }, "Notes"),
     el("ul", { style:"margin:0;padding-left:20px;color:var(--muted)" }, [
-      el("li", {}, "Telegram bots can download at most 20 MB per file, so large files are split into 18 MB chunks."),
-      el("li", {}, "Previews work for single-chunk (≤18 MB) images, videos and audio. Larger files must be downloaded."),
-      el("li", {}, "If downloads fail with a CORS error, deploy a tiny proxy (see code comments) or use single-chunk files.")
+      el("li", {}, "Files are split into 18 MB chunks for Telegram."),
+      el("li", {}, "Inline preview works for single-chunk (≤18 MB) files."),
+      el("li", {}, "Multi-chunk downloads may hit CORS — use a proxy or smaller files.")
     ])
   ]));
 }
+
+// Show share page on initial load if URL has #/share/
+maybeShowSharePage();
 </script>
 </body>
 </html>
