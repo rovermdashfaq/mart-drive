@@ -202,9 +202,10 @@ a:hover{text-decoration:underline}
 .file-card:hover{box-shadow:var(--shadow-md);border-color:#CBD5E1}
 .file-card-icon{
   width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;
-  margin-bottom:10px;background:#E8F0F7;color:var(--navy);
+  margin-bottom:10px;background:#E8F0F7;color:var(--navy);overflow:hidden;
 }
 .file-card-icon svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8}
+.file-card-icon img{width:100%;height:100%;object-fit:cover}
 .file-card-name{font-weight:500;font-size:13px;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .file-card-meta{font-size:11px;color:var(--muted)}
 .file-row{
@@ -237,7 +238,7 @@ a:hover{text-decoration:underline}
 }
 .modal-backdrop.open{display:flex}
 .modal{
-  background:var(--surface);border-radius:var(--radius-lg);width:100%;max-width:480px;
+  background:var(--surface);border-radius:var(--radius-lg);width:100%;max-width:520px;
   max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.3);
 }
 .modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
@@ -258,6 +259,15 @@ a:hover{text-decoration:underline}
 .detail-row span{text-align:right;word-break:break-word;overflow-wrap:anywhere}
 .steps{margin:0 0 14px;padding-left:18px;font-size:13px;color:var(--muted);line-height:1.7}
 .steps b{color:var(--text);font-weight:600}
+
+.preview-wrap{margin-bottom:16px;text-align:center}
+.preview-box{
+  background:#0f172a;border-radius:8px;min-height:120px;max-height:320px;
+  display:flex;align-items:center;justify-content:center;color:#94a3b8;
+  font-size:12px;padding:10px;overflow:hidden;
+}
+.preview-box img,.preview-box video{max-width:100%;max-height:300px;border-radius:6px;display:block}
+.preview-box audio{width:100%;margin:20px}
 
 .toast-stack{position:fixed;bottom:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px}
 .toast{
@@ -516,10 +526,9 @@ a:hover{text-decoration:underline}
 
 <script type="module">
 /* ============================================================
-   MART Drive — v2: Telegram Bot API storage (no GramJS)
-   GramJS can't be loaded from a CDN (esm.sh / jsDelivr break its
-   Node-only modules like "net"). The Bot API is plain HTTPS, works
-   in any browser, and needs no heavy library.
+   MART Drive — v3
+   Fixes: chunk upload verification, CORS-safe downloads,
+   inline previews for images / video / audio.
    ============================================================ */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -562,6 +571,8 @@ const state = {
   unsubFolders: null,
   tg: { token: "", chatId: "", botName: "", ready: false }
 };
+
+const previewCache = new Map(); // fileId -> { url, revoke }
 
 // ============ HELPERS ============
 const $ = (s, r=document) => r.querySelector(s);
@@ -709,6 +720,7 @@ onAuthStateChanged(auth, (user) => {
     if (state.unsubFolders) state.unsubFolders();
     state.unsubFiles = state.unsubFolders = null;
     state.files = []; state.folders = [];
+    clearPreviewCache();
     $("#app").classList.remove("ready");
     $("#auth-screen").style.display = "flex";
     resetAuthButtons();
@@ -885,8 +897,17 @@ function renderBreadcrumb() {
 }
 function fileCard(file) {
   const cat = classifyMime(file.mimeType, file.name);
+  const iconWrap = el("div", { class: "file-card-icon" });
+  iconWrap.innerHTML = ICONS[cat];
+  // Lazy thumbnail for images
+  if (cat === "image" && file.uploadStatus === "uploaded" && file.telegramChunks?.length === 1 && state.tg.ready) {
+    loadPreviewUrl(file).then(url => {
+      iconWrap.innerHTML = "";
+      iconWrap.appendChild(el("img", { src: url, alt: "", loading: "lazy" }));
+    }).catch(() => {});
+  }
   const card = el("div", { class: "file-card", tabindex:"0" }, [
-    el("div", { class: "file-card-icon", html: ICONS[cat] }),
+    iconWrap,
     el("div", { class: "file-card-name", title: file.name }, file.name),
     el("div", { class: "file-card-meta" }, `${fmtSize(file.size)} · ${fmtDate(file.createdAt)}`)
   ]);
@@ -991,12 +1012,12 @@ async function restoreFile(file) {
 }
 async function permanentDelete(file) {
   try {
-    // Best effort: Telegram only lets bots delete messages younger than 48h.
     if (state.tg.ready && Array.isArray(file.telegramChunks)) {
       await Promise.allSettled(file.telegramChunks.map(c =>
         tgApi("deleteMessage", { chat_id: state.tg.chatId, message_id: c.messageId })));
     }
     await deleteDoc(doc(db, "users", state.user.uid, "files", file.id));
+    clearPreviewCacheFor(file.id);
     toast("Deleted", "success");
     closeModal();
   } catch { toast("Delete failed.", "error"); }
@@ -1021,17 +1042,80 @@ $("#modal-close").addEventListener("click", closeModal);
 $("#modal-backdrop").addEventListener("click", (e) => { if (e.target.id === "modal-backdrop") closeModal(); });
 function btn(label, onclick, cls="btn") { return el("button", { class: cls, onclick }, label); }
 
+// --- Preview cache management ---
+function clearPreviewCache() {
+  for (const { url } of previewCache.values()) URL.revokeObjectURL(url);
+  previewCache.clear();
+}
+function clearPreviewCacheFor(fileId) {
+  const v = previewCache.get(fileId);
+  if (v) { URL.revokeObjectURL(v.url); previewCache.delete(fileId); }
+}
+
+/**
+ * Build a preview blob URL for a file. Only single-chunk files (≤18 MB)
+ * can be previewed reliably since we need a CORS-accessible blob URL.
+ * Multi-chunk files fall back to a "download to preview" message.
+ */
+async function loadPreviewUrl(file) {
+  if (previewCache.has(file.id)) return previewCache.get(file.id).url;
+  if (!state.tg.ready) throw new Error("Telegram not connected");
+  const chunks = file.telegramChunks;
+  if (!Array.isArray(chunks) || !chunks.length) throw new Error("No Telegram reference");
+  if (chunks.length > 1) throw new Error("Multi-chunk file — download to view");
+
+  const info = await tgApi("getFile", { file_id: chunks[0].fileId });
+  if (!info.file_path) throw new Error("Telegram returned no file path");
+  const url = `https://api.telegram.org/file/bot${state.tg.token}/${info.file_path}`;
+
+  // Try to fetch as blob so image/video/audio elements get proper mime type.
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Telegram HTTP ${res.status}`);
+  const buf = await res.arrayBuffer();
+  const blob = new Blob([buf], { type: file.mimeType || "application/octet-stream" });
+  const objUrl = URL.createObjectURL(blob);
+  previewCache.set(file.id, { url: objUrl });
+  return objUrl;
+}
+
 function openDetails(file) {
   const cat = classifyMime(file.mimeType, file.name);
+
+  // Preview container
+  const previewBox = el("div", { class: "preview-box" }, "Loading preview…");
+  const previewWrap = el("div", { class: "preview-wrap" }, [previewBox]);
+
+  if (["image","video","audio"].includes(cat)) {
+    loadPreviewUrl(file).then(url => {
+      previewBox.innerHTML = "";
+      if (cat === "image") {
+        const img = el("img", { src: url, alt: file.name });
+        img.onerror = () => { previewBox.textContent = "Preview could not be decoded."; };
+        previewBox.appendChild(img);
+      } else if (cat === "video") {
+        previewBox.appendChild(el("video", { src: url, controls: "", preload: "metadata" }));
+      } else {
+        previewBox.appendChild(el("audio", { src: url, controls: "" }));
+      }
+    }).catch(err => {
+      previewBox.textContent = err.message || "Preview unavailable.";
+    });
+  } else if (cat === "pdf") {
+    previewBox.textContent = "PDF — use Download to open in a new tab.";
+  } else {
+    previewBox.textContent = "No inline preview for this file type.";
+  }
+
   const wrap = el("div", {}, [
+    previewWrap,
     el("div", { style:"text-align:center;margin-bottom:16px" }, [
-      el("div", { class:"file-card-icon", style:"width:56px;height:56px;margin:0 auto 10px", html: ICONS[cat] }),
       el("div", { style:"font-weight:600;font-size:15px;word-break:break-word" }, file.name)
     ]),
     el("div", { class:"detail-row" }, [el("strong",{}, "Type"), el("span",{}, file.mimeType || "Unknown")]),
     el("div", { class:"detail-row" }, [el("strong",{}, "Size"), el("span",{}, fmtSize(file.size))]),
     el("div", { class:"detail-row" }, [el("strong",{}, "Uploaded"), el("span",{}, fmtDate(file.createdAt))]),
-    el("div", { class:"detail-row" }, [el("strong",{}, "Status"), el("span",{}, file.uploadStatus || "—")])
+    el("div", { class:"detail-row" }, [el("strong",{}, "Status"), el("span",{}, file.uploadStatus || "—")]),
+    el("div", { class:"detail-row" }, [el("strong",{}, "Chunks"), el("span",{}, String(file.telegramChunks?.length || 0))])
   ]);
 
   const foot = [
@@ -1078,10 +1162,7 @@ $("#new-folder-btn").addEventListener("click", () => {
 });
 
 // ============================================================
-// TELEGRAM — Bot API (plain HTTPS, CORS-enabled)
-// Files are split into 18 MB chunks (Telegram bots can download
-// at most 20 MB per file), each stored as a document message in
-// your private chat with your own bot.
+// TELEGRAM — Bot API
 // ============================================================
 const TG_KEY = "martdrive.tg.bot";
 const CHUNK_SIZE = 18 * 1024 * 1024;
@@ -1102,6 +1183,7 @@ function saveTelegramConfig() {
 function clearTelegramConfig() {
   localStorage.removeItem(TG_KEY);
   state.tg = { token: "", chatId: "", botName: "", ready: false };
+  clearPreviewCache();
   updateTgStatus(false);
   if (state.view === "settings") render();
 }
@@ -1125,22 +1207,37 @@ async function tgApi(method, params = {}, token = state.tg.token) {
   return data.result;
 }
 
-// Upload one chunk with real progress via XHR
+/**
+ * Upload one chunk with progress via XHR.
+ * Verifies Telegram actually returned a `document` object — otherwise it
+ * mis-detected the type (e.g. as a photo), and the file wouldn't be
+ * downloadable via getFile with a file_id.
+ */
 function tgSendDocument(blob, filename, caption, onProgress) {
   return new Promise((resolve, reject) => {
     const fd = new FormData();
-    fd.append("chat_id", state.tg.chatId);
+    fd.append("chat_id", String(state.tg.chatId));
+    fd.append("document", blob, filename);
     fd.append("caption", caption);
     fd.append("disable_content_type_detection", "true");
-    fd.append("document", blob, filename);
+
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `https://api.telegram.org/bot${state.tg.token}/sendDocument`);
     xhr.upload.onprogress = (e) => { if (e.lengthComputable) onProgress(e.loaded); };
     xhr.onerror = () => reject(new Error("Network error while uploading"));
     xhr.onload = () => {
       let data;
-      try { data = JSON.parse(xhr.responseText); } catch { return reject(new Error("Invalid Telegram response")); }
-      if (!data.ok) return reject(new Error(data.description || "Telegram upload failed"));
+      try { data = JSON.parse(xhr.responseText); }
+      catch { return reject(new Error("Invalid Telegram response: " + xhr.responseText.slice(0, 200))); }
+      if (!data.ok) return reject(new Error("Telegram: " + (data.description || "upload failed")));
+      if (!data.result?.document?.file_id) {
+        const wrongKey = Object.keys(data.result || {}).find(k =>
+          ["photo","video","audio","animation","voice","document"].includes(k));
+        return reject(new Error(
+          "Telegram saved this as '" + (wrongKey || "unknown") +
+          "' instead of 'document'. Ensure the filename has an extension and try again."
+        ));
+      }
       resolve(data.result);
     };
     xhr.send(fd);
@@ -1193,6 +1290,7 @@ function openTelegramSetup() {
       closeModal();
       toast("Telegram connected", "success");
       if (state.view === "settings") render();
+      render();
     } catch (err) {
       console.error(err);
       toast("Failed: " + (err.message || err), "error", 6000);
@@ -1278,11 +1376,19 @@ async function uploadOneFile(file) {
     for (let i = 0; i < total; i++) {
       const start = i * CHUNK_SIZE;
       const blob = file.slice(start, Math.min(start + CHUNK_SIZE, file.size));
-      const partName = total === 1 ? file.name : `${file.name}.part${String(i + 1).padStart(3, "0")}`;
-      const caption = `MART Drive: ${file.name}` + (total > 1 ? ` (${i + 1}/${total})` : "");
-      const sent = await tgSendDocument(blob, partName, caption, (loaded) => setPct(((start + loaded) / file.size) * 100));
+      const partName = total === 1
+        ? file.name
+        : `${file.name}.part${String(i + 1).padStart(3, "0")}`;
+      const caption = `MART:${file.name}` + (total > 1 ? ` [${i + 1}/${total}]` : "");
+      const sent = await tgSendDocument(blob, partName, caption,
+        (loaded) => setPct(((start + loaded) / file.size) * 100));
       const d = sent.document;
-      if (!d?.file_id) throw new Error("Telegram did not return a file id");
+      if (!d?.file_id) throw new Error("Telegram did not return a document file_id");
+
+      // Verify this chunk is actually retrievable via getFile before committing.
+      const head = await tgApi("getFile", { file_id: d.file_id });
+      if (!head?.file_path) throw new Error("Chunk " + (i + 1) + " is not retrievable from Telegram");
+
       chunks.push({ fileId: d.file_id, messageId: sent.message_id, size: blob.size });
     }
 
@@ -1316,27 +1422,50 @@ async function downloadFile(file) {
     openTelegramSetup();
     return;
   }
+
   const prog = toast("Preparing download…", "", 600000);
   try {
+    if (chunks.length === 1) {
+      // Single-chunk — navigate directly to the file URL so CORS never applies.
+      const info = await tgApi("getFile", { file_id: chunks[0].fileId });
+      if (!info?.file_path) throw new Error("Telegram returned no file path");
+      const url = `https://api.telegram.org/file/bot${state.tg.token}/${info.file_path}`;
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = file.name;
+      a.target = "_blank";
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      prog.remove();
+      toast("Download started — check your downloads / new tab.", "success");
+      return;
+    }
+
+    // Multi-chunk — fetch each chunk as blob, concatenate, save.
     const parts = [];
     let done = 0;
     const totalBytes = Number(file.size) || chunks.reduce((s, c) => s + (c.size || 0), 0);
     for (const c of chunks) {
       const info = await tgApi("getFile", { file_id: c.fileId });
-      const res = await fetch(`https://api.telegram.org/file/bot${state.tg.token}/${info.file_path}`);
-      if (!res.ok) throw new Error("Telegram download failed (" + res.status + ")");
+      if (!info?.file_path) throw new Error("Telegram returned no file path for a chunk");
+      const url = `https://api.telegram.org/file/bot${state.tg.token}/${info.file_path}`;
+      const res = await fetch(url, { mode: "cors", credentials: "omit" });
+      if (!res.ok) {
+        throw new Error(`Chunk HTTP ${res.status} — file_path may have expired, retry shortly.`);
+      }
       const buf = await res.arrayBuffer();
       parts.push(buf);
       done += buf.byteLength;
       if (totalBytes) prog.textContent = `Downloading… ${Math.min(100, Math.round((done / totalBytes) * 100))}%`;
     }
-
     const blob = new Blob(parts, { type: file.mimeType || "application/octet-stream" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url; a.download = file.name;
     document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
     prog.remove();
     toast("Download complete", "success");
   } catch (err) {
@@ -1402,7 +1531,14 @@ function renderHelpView() {
       el("li", {}, "Open your bot, tap Start and send it any message."),
       el("li", {}, "In MART Drive: user menu → Telegram setup → paste the token → Connect."),
       el("li", {}, "Tap Upload file and pick a file."),
-      el("li", {}, "Tap a file → Download to save it.")
+      el("li", {}, "Click any image / video / audio file to preview inline."),
+      el("li", {}, "Tap Download to save the original file.")
+    ]),
+    el("h3", { style:"margin:16px 0 8px;color:var(--navy);font-size:15px" }, "Notes"),
+    el("ul", { style:"margin:0;padding-left:20px;color:var(--muted)" }, [
+      el("li", {}, "Telegram bots can download at most 20 MB per file, so large files are split into 18 MB chunks."),
+      el("li", {}, "Previews work for single-chunk (≤18 MB) images, videos and audio. Larger files must be downloaded."),
+      el("li", {}, "If downloads fail with a CORS error, deploy a tiny proxy (see code comments) or use single-chunk files.")
     ])
   ]));
 }
