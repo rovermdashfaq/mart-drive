@@ -267,6 +267,7 @@ let currentViewMode = 'grid';
 let searchTerm = '';
 let selectedIds = new Set();
 let unsubFiles = null;
+let hasTriedSilentLogin = false; // পপআপ বারবার আটকানোর জন্য
 
 // Expose to window for inline HTML handlers
 window.signIn = async () => {
@@ -289,33 +290,43 @@ window.logout = async () => {
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
-    if (!accessToken) {
-      try {
-        const provider = new GoogleAuthProvider();
-        provider.addScope('https://www.googleapis.com/auth/drive.file');
-        const result = await signInWithPopup(auth, provider);
-        accessToken = GoogleAuthProvider.credentialFromResult(result).accessToken;
-      } catch (e) { toast('Please re-authenticate to access Drive.', 'error'); }
-    }
-    
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app').classList.add('ready');
+    
     if (user.photoURL) {
       const av = document.getElementById('user-avatar');
       av.src = user.photoURL;
       av.style.display = 'block';
     }
     
+    // ফাইল লোড করা
     if (unsubFiles) unsubFiles();
     const q = query(collection(db, 'files'), where('uid', '==', user.uid));
     unsubFiles = onSnapshot(q, (snap) => {
       allFiles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       render();
     });
+
+    // 🔥 মূল সমাধান: অটোমেটিক সাইলেন্ট লগইন (পপআপ ছাড়াই)
+    if (!accessToken && !hasTriedSilentLogin) {
+      hasTriedSilentLogin = true;
+      try {
+        const provider = new GoogleAuthProvider();
+        provider.addScope('https://www.googleapis.com/auth/drive.file');
+        // prompt: '' দিলে গুগল ব্যাকগ্রাউন্ডে টোকেন রিফ্রেশ করে, ইউজারকে কিছু দেখায় না
+        provider.setCustomParameters({ prompt: '' }); 
+        const result = await signInWithPopup(auth, provider);
+        accessToken = GoogleAuthProvider.credentialFromResult(result).accessToken;
+        console.log("Silent login successful. Token refreshed.");
+      } catch (err) {
+        console.warn("Silent login failed, user may need to manually sign in to access Drive.");
+      }
+    }
   } else {
     currentUser = null;
     accessToken = null;
     allFiles = [];
+    hasTriedSilentLogin = false;
     document.getElementById('app').classList.remove('ready');
     document.getElementById('auth-screen').style.display = 'flex';
     if (unsubFiles) unsubFiles();
@@ -568,7 +579,10 @@ window.closeModal = () => {
 
 // Upload
 window.handleFiles = async (files) => {
-  if (!accessToken) return toast('Please sign in again', 'error');
+  if (!accessToken) {
+    toast('Session expired. Please sign out and sign in again.', 'error');
+    return;
+  }
   
   for (const file of files) {
     const t = toast(`Uploading: ${file.name}`);
