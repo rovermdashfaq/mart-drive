@@ -70,10 +70,14 @@ a{color:var(--blue); text-decoration:none;}
 .btn-primary{background:var(--navy); color:#fff; border-color:var(--navy);}
 .btn-primary:hover{background:var(--blue);}
 
-/* Dropzone */
+/* Dropzone & Progress */
 .dropzone{border:2px dashed var(--border); border-radius:var(--radius-lg); padding:30px 20px; text-align:center; margin-bottom:24px; background:var(--surface); transition:all .2s; cursor:pointer;}
 .dropzone:hover,.dropzone.dragover{border-color:var(--blue); background:#F0F6FB;}
 .dropzone h3{color:var(--navy); font-size:16px; margin-bottom:8px;}
+#upload-progress-container { display: none; margin-bottom: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.progress-bar-wrap { width: 100%; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; margin-top: 8px; }
+.progress-bar-fill { height: 100%; background: var(--blue); width: 0%; transition: width 0.2s; }
+.progress-text { font-size: 13px; display: flex; justify-content: space-between; margin-bottom: 4px; }
 
 /* Files Grid */
 .files-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px;}
@@ -193,6 +197,15 @@ a{color:var(--blue); text-decoration:none;}
         <input type="file" id="file-input" hidden multiple onchange="handleFiles(this.files)">
       </div>
 
+      <!-- Upload Progress Bar -->
+      <div id="upload-progress-container">
+        <div class="progress-text">
+          <span id="progress-filename">Uploading...</span>
+          <span id="progress-percent">0%</span>
+        </div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      </div>
+
       <!-- Breadcrumbs for folders -->
       <div id="breadcrumbs" style="margin-bottom:16px; font-size:14px; display:flex; gap:8px; align-items:center;"></div>
 
@@ -218,7 +231,7 @@ a{color:var(--blue); text-decoration:none;}
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot, query, where, serverTimestamp, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getFirestore, collection, doc, addDoc, deleteDoc, onSnapshot, query, where, serverTimestamp, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDUcT6hVqLHy3pYzwg1oktI7amTpF9Qj4c",
@@ -248,8 +261,6 @@ let searchTerm = '';
 let unsubFiles = null;
 let unsubFolders = null;
 let unsubOrgs = null;
-
-// Prevent popup loop
 let hasTriedSilentLogin = false;
 
 // ----------------------------------------------------
@@ -282,7 +293,6 @@ onAuthStateChanged(auth, async (user) => {
       av.style.display = 'block';
     }
 
-    // Auto-login token recovery (Silent)
     if (!accessToken && !hasTriedSilentLogin) {
       hasTriedSilentLogin = true;
       try {
@@ -292,7 +302,7 @@ onAuthStateChanged(auth, async (user) => {
         const result = await signInWithPopup(auth, provider);
         accessToken = GoogleAuthProvider.credentialFromResult(result).accessToken;
       } catch (err) {
-        console.warn("Silent login failed. Need manual sign in for Drive access.");
+        console.warn("Silent login failed.");
       }
     }
 
@@ -316,37 +326,30 @@ function setupListeners() {
   const uid = currentUser.uid;
   const email = currentUser.email;
 
-  // 1. Organizations (Where user is owner OR member)
   if (unsubOrgs) unsubOrgs();
   const qOrgs1 = query(collection(db, 'organizations'), where('owner', '==', uid));
-  const qOrgs2 = query(collection(db, 'organizations'), where('members', 'array-contains', email.toLowerCase()));
   
   unsubOrgs = onSnapshot(qOrgs1, (snap1) => {
     const orgs1 = snap1.docs.map(d => ({ id: d.id, ...d.data() }));
-    getDocs(qOrgs2).then(snap2 => {
-      const orgs2 = snap2.docs.map(d => ({ id: d.id, ...d.data() }));
-      // Combine and remove duplicates
-      const combined = [...orgs1];
-      orgs2.forEach(o2 => { if (!combined.find(o => o.id === o2.id)) combined.push(o2); });
-      organizations = combined;
-      renderOrgSidebar();
-    });
+    organizations = orgs1;
+    renderOrgSidebar();
+    loadFilesAndFolders(); // Reload files when org list changes
   });
 
-  // 2. Folders & Files
+  loadFilesAndFolders();
+}
+
+function loadFilesAndFolders() {
+  const uid = currentUser.uid;
   if (unsubFolders) unsubFolders();
   if (unsubFiles) unsubFiles();
 
   let fQuery, fiQuery;
-  if (currentOrgId) {
-    // Org Drive
-    fQuery = query(collection(db, 'folders'), where('orgId', '==', currentOrgId));
-    fiQuery = query(collection(db, 'files'), where('orgId', '==', currentOrgId));
-  } else {
-    // Personal Drive
-    fQuery = query(collection(db, 'folders'), where('uid', '==', uid), where('orgId', '==', null));
-    fiQuery = query(collection(db, 'files'), where('uid', '==', uid), where('orgId', '==', null));
-  }
+  
+  // FIXED: Firestore null query issue avoided by using "== false" or checking data later
+  // Here we will fetch all user's files and filter locally to prevent Index errors.
+  fQuery = query(collection(db, 'folders'), where('uid', '==', uid));
+  fiQuery = query(collection(db, 'files'), where('uid', '==', uid));
 
   unsubFolders = onSnapshot(fQuery, (snap) => {
     allFolders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -375,7 +378,6 @@ function switchOrg(orgId) {
   }
   
   renderOrgSidebar();
-  setupListeners();
   setView('drive');
 }
 
@@ -383,23 +385,20 @@ function renderOrgSidebar() {
   const container = document.getElementById('org-list-container');
   container.innerHTML = '';
   
-  // Personal Drive option
   const personalDiv = document.createElement('div');
-  personalDiv.className = 'nav-item';
+  personalDiv.className = 'nav-item' + (!currentOrgId ? ' active' : '');
   personalDiv.innerHTML = `<span class="material-symbols-outlined">person</span> Personal Drive`;
   personalDiv.onclick = () => switchOrg(null);
   container.appendChild(personalDiv);
 
-  // Org options
   organizations.forEach(org => {
     const div = document.createElement('div');
-    div.className = 'nav-item';
+    div.className = 'nav-item' + (currentOrgId === org.id ? ' active' : '');
     div.innerHTML = `<img src="${org.logoUrl || 'https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png'}" style="width:20px;height:20px;border-radius:4px;"> ${org.name}`;
     div.onclick = () => switchOrg(org.id);
     container.appendChild(div);
   });
 
-  // Create Org button
   const btnDiv = document.createElement('div');
   btnDiv.className = 'nav-item';
   btnDiv.style.color = 'var(--blue)';
@@ -444,9 +443,7 @@ window.createOrg = async () => {
     });
     toast('Organization created!', 'success');
     closeModal();
-  } catch (err) {
-    toast(err.message, 'error');
-  }
+  } catch (err) { toast(err.message, 'error'); }
 };
 
 // ----------------------------------------------------
@@ -470,10 +467,10 @@ window.createFolder = async () => {
   const data = {
     name,
     parentId: currentFolderId,
+    orgId: currentOrgId || null, // null for personal
+    uid: currentUser.uid,
     createdAt: serverTimestamp(),
   };
-  if (currentOrgId) data.orgId = currentOrgId;
-  else data.uid = currentUser.uid;
 
   try {
     await addDoc(collection(db, 'folders'), data);
@@ -541,17 +538,18 @@ function render() {
   
   let displayItems = [];
   
+  // Filter files by currentOrgId and currentFolderId locally
+  let filteredFiles = allFiles.filter(f => (f.orgId || null) === currentOrgId);
+  let filteredFolders = allFolders.filter(f => (f.orgId || null) === currentOrgId);
+
   if (currentView === 'drive') {
-    // 1. Folders in current path
-    const currentFolders = allFolders.filter(f => f.parentId === currentFolderId);
-    currentFolders.forEach(f => displayItems.push({ type: 'folder', ...f }));
+    filteredFolders = filteredFolders.filter(f => (f.parentId || null) === currentFolderId);
+    filteredFiles = filteredFiles.filter(f => (f.folderId || null) === currentFolderId);
     
-    // 2. Files in current path
-    const currentFiles = allFiles.filter(f => (f.folderId || null) === currentFolderId);
-    currentFiles.forEach(f => displayItems.push({ type: 'file', ...f }));
+    filteredFolders.forEach(f => displayItems.push({ type: 'folder', ...f }));
+    filteredFiles.forEach(f => displayItems.push({ type: 'file', ...f }));
   } else if (currentView === 'recent') {
-    // Recent files only
-    const sorted = [...allFiles].sort((a,b) => (b.createdAt?.toMillis()||0) - (a.createdAt?.toMillis()||0));
+    const sorted = [...filteredFiles].sort((a,b) => (b.createdAt?.toMillis()||0) - (a.createdAt?.toMillis()||0));
     sorted.slice(0, 50).forEach(f => displayItems.push({ type: 'file', ...f }));
   }
 
@@ -586,7 +584,7 @@ function render() {
     } else {
       const isImg = item.mimeType?.includes('image');
       let icon = `<span class="material-symbols-outlined">description</span>`;
-      if (isImg) icon = `<img src="https://drive.google.com/thumbnail?id=${item.driveFileId}&sz=w200">`;
+      if (isImg) icon = `<img src="https://drive.google.com/thumbnail?id=${item.driveFileId}&sz=w200&authuser=0">`;
       else if (item.mimeType?.includes('video')) icon = `<span class="material-symbols-outlined">movie</span>`;
       else if (item.mimeType?.includes('pdf')) icon = `<span class="material-symbols-outlined">picture_as_pdf</span>`;
 
@@ -595,67 +593,121 @@ function render() {
         <div class="file-name" title="${item.name}">${item.name}</div>
         <div class="file-meta">${fmtSize(item.size)}</div>
         <div class="file-actions">
-          <button class="icon-btn" onclick="event.stopPropagation(); previewFile('${item.driveFileId}', '${item.mimeType}')"><span class="material-symbols-outlined">visibility</span></button>
+          <button class="icon-btn" onclick="event.stopPropagation(); previewFile('${item.driveFileId}', '${item.mimeType}', '${item.name}')"><span class="material-symbols-outlined">visibility</span></button>
           <button class="icon-btn" onclick="event.stopPropagation(); deleteFile('${item.id}', '${item.driveFileId}')"><span class="material-symbols-outlined">delete</span></button>
         </div>
       `;
-      card.onclick = () => previewFile(item.driveFileId, item.mimeType);
+      card.onclick = () => previewFile(item.driveFileId, item.mimeType, item.name);
     }
     grid.appendChild(card);
   });
 }
 
 // ----------------------------------------------------
-// UPLOAD & PREVIEW
+// UPLOAD WITH PROGRESS BAR
 // ----------------------------------------------------
 window.handleFiles = async (files) => {
   if (!accessToken) return toast('Please sign in again to upload.', 'error');
   
+  const progressContainer = document.getElementById('upload-progress-container');
+  const progressFill = document.getElementById('progress-fill');
+  const progressPercent = document.getElementById('progress-percent');
+  const progressFilename = document.getElementById('progress-filename');
+  
+  progressContainer.style.display = 'block';
+
   for (const file of files) {
-    const t = toast(`Uploading: ${file.name}`);
+    progressFilename.textContent = `Uploading: ${file.name}`;
+    progressFill.style.width = '0%';
+    progressPercent.textContent = '0%';
+
     try {
       const metadata = { name: file.name, mimeType: file.type || 'application/octet-stream' };
       const form = new FormData();
       form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
       form.append('file', file);
       
-      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,size', {
-        method: 'POST', headers: { Authorization: `Bearer ${accessToken}` }, body: form
-      });
-      if (!res.ok) throw new Error('Upload failed');
-      const driveFile = await res.json();
+      // Using XHR to get upload progress
+      const driveFile = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,size');
+        xhr.setRequestHeader('Authorization', `Bearer ${accessToken}`);
+        
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const pct = Math.round((e.loaded / e.total) * 100);
+            progressFill.style.width = pct + '%';
+            progressPercent.textContent = pct + '%';
+          }
+        };
 
-      // Save link
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            reject(new Error('Upload failed with status ' + xhr.status));
+          }
+        };
+        xhr.onerror = () => reject(new Error('Network error'));
+        xhr.send(form);
+      });
+
+      // Make public for preview
+      await fetch(`https://www.googleapis.com/drive/v3/files/${driveFile.id}/permissions`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: 'reader', type: 'anyone' })
+      }).catch(() => {});
+
       const fileData = {
         driveFileId: driveFile.id,
         name: driveFile.name,
         mimeType: driveFile.mimeType,
         size: driveFile.size || file.size,
         folderId: currentFolderId,
+        orgId: currentOrgId || null,
+        uid: currentUser.uid,
         createdAt: serverTimestamp()
       };
-      if (currentOrgId) fileData.orgId = currentOrgId;
-      else fileData.uid = currentUser.uid;
 
       await addDoc(collection(db, 'files'), fileData);
-      t.remove();
-      toast('Uploaded: ' + file.name, 'success');
     } catch (err) {
-      t.remove(); toast('Error: ' + err.message, 'error');
+      toast(`Error uploading ${file.name}: ` + err.message, 'error');
     }
   }
+  
+  // Reset Progress Bar
+  setTimeout(() => {
+    progressContainer.style.display = 'none';
+    progressFill.style.width = '0%';
+    progressPercent.textContent = '0%';
+  }, 1000);
+  
+  toast('All uploads complete!', 'success');
 };
 
-window.previewFile = (driveId, mimeType) => {
+// ----------------------------------------------------
+// PREVIEW
+// ----------------------------------------------------
+window.previewFile = (driveId, mimeType, name) => {
   const body = document.getElementById('modal-body');
-  document.getElementById('modal-title').textContent = 'File Preview';
+  document.getElementById('modal-title').textContent = name || 'File Preview';
   
-  let html = `<div class="preview-box">Preview not available</div>`;
-  if (mimeType?.includes('image')) html = `<div class="preview-box"><img src="https://drive.google.com/thumbnail?id=${driveId}&sz=w1000"></div>`;
-  else if (mimeType?.includes('video') || mimeType?.includes('pdf')) html = `<div class="preview-box" style="background:#fff"><iframe src="https://drive.google.com/file/d/${driveId}/preview" width="100%" height="500px"></iframe></div>`;
+  let html = `<div class="preview-box">Preview not available for this file type.</div>`;
+  
+  if (mimeType?.includes('image')) {
+    // Using Google Drive thumbnail API (Works if file is public or user has access)
+    html = `<div class="preview-box"><img src="https://drive.google.com/thumbnail?id=${driveId}&sz=w1000&authuser=0"></div>`;
+  } else if (mimeType?.includes('video') || mimeType?.includes('pdf')) {
+    // Embed preview for video and pdf
+    html = `<div class="preview-box" style="background:#fff"><iframe src="https://drive.google.com/file/d/${driveId}/preview" width="100%" height="500px" allow="autoplay"></iframe></div>`;
+  }
   
   body.innerHTML = html;
-  document.getElementById('modal-foot').innerHTML = `<button class="btn btn-primary" onclick="closeModal()">Close</button>`;
+  document.getElementById('modal-foot').innerHTML = `
+    <button class="btn" onclick="window.open('https://drive.google.com/file/d/${driveId}/view', '_blank')">Open in Drive</button>
+    <button class="btn btn-primary" onclick="closeModal()">Close</button>
+  `;
   document.getElementById('modal-box').classList.add('wide');
   document.getElementById('modal-backdrop').classList.add('open');
 };
@@ -677,7 +729,8 @@ function toast(msg, type="") {
   setTimeout(() => { t.remove(); }, 3000);
 }
 function fmtSize(b) {
-  if (!b) return '0 B'; if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  if (!b) return '0 B'; if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
   return (b/1048576).toFixed(1) + ' MB';
 }
 
