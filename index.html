@@ -18,19 +18,23 @@
   --sidebar-w:260px; --header-h:64px;
   --transition:200ms cubic-bezier(.4,0,.2,1);
 }
+/* Dark Mode Variables */
+body.dark-mode {
+  --navy: #A8C7FA; --blue: #8AB4F8; --bg: #131314; --surface: #1E1F20;
+  --text: #E3E3E3; --muted: #A1A1A1; --border: #444746;
+}
 *{box-sizing:border-box; margin:0; padding:0;}
-body{background:var(--bg); color:var(--text); font-family:Inter,sans-serif; font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;}
-button{font:inherit; cursor:pointer; border:none; background:none;}
-a{color:var(--blue); text-decoration:none;}
+body{background:var(--bg); color:var(--text); font-family:Inter,sans-serif; font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; transition: background 0.3s;}
+button{font:inherit; cursor:pointer; border:none; background:none; color:var(--text);}
 :focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
 
 /* Auth Screen */
 #auth-screen{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#163A5F 0%,#245B88 100%); padding:20px; z-index:100;}
 .auth-card{background:var(--surface); border-radius:var(--radius-lg); padding:40px 32px; width:100%; max-width:420px; box-shadow:0 20px 50px rgba(0,0,0,.25); text-align:center;}
 .auth-card img{width:80px; margin-bottom:20px;}
-.auth-card h1{font-size:24px; color:var(--navy); margin-bottom:8px;}
+.auth-card h1{font-size:24px; color:var(--text); margin-bottom:8px;}
 .auth-card p{color:var(--muted); font-size:14px; margin-bottom:30px;}
-.google-btn{display:flex; align-items:center; justify-content:center; gap:12px; width:100%; padding:12px; background:#fff; border:1px solid var(--border); border-radius:8px; font-weight:600; font-size:14px; transition:all .2s; box-shadow:var(--shadow-sm); color:var(--text);}
+.google-btn{display:flex; align-items:center; justify-content:center; gap:12px; width:100%; padding:12px; background:#fff; border:1px solid var(--border); border-radius:8px; font-weight:600; font-size:14px; transition:all .2s; color:#000;}
 .google-btn:hover{background:#f8f9fa; box-shadow:var(--shadow-md);}
 
 /* Layout */
@@ -39,41 +43,40 @@ a{color:var(--blue); text-decoration:none;}
 .sidebar{position:fixed; top:0; left:0; bottom:0; width:var(--sidebar-w); background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; z-index:40;}
 .sidebar-brand{display:flex; align-items:center; gap:12px; padding:20px; border-bottom:1px solid var(--border); cursor:pointer;}
 .sidebar-brand img{width:36px; height:36px; border-radius:6px; object-fit:cover;}
-.sidebar-brand h2{font-size:16px; color:var(--navy); font-weight:700; line-height:1.2;}
+.sidebar-brand h2{font-size:16px; color:var(--text); font-weight:700; line-height:1.2;}
 .sidebar-brand span{font-size:11px; color:var(--muted);}
-.new-btn{margin:16px; padding:12px 20px; background:var(--navy); color:#fff; border-radius:30px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; transition:background .2s; box-shadow:var(--shadow-md);}
-.new-btn:hover{background:var(--blue);}
+.new-btn{margin:16px; padding:12px 20px; background:var(--navy); color:var(--surface); border-radius:30px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; transition:background .2s; box-shadow:var(--shadow-md);}
+.new-btn:hover{opacity:0.9;}
 .nav-list{list-style:none; padding:0 12px; flex:1; overflow-y:auto;}
 .nav-section{padding:12px 16px 4px; font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px;}
 .nav-item{display:flex; align-items:center; gap:14px; padding:10px 16px; border-radius:24px; color:var(--text); font-weight:500; cursor:pointer; transition:background .2s; margin-bottom:4px; font-size:13px;}
 .nav-item:hover{background:var(--bg);}
-.nav-item.active{background:#E8F0F7; color:var(--navy); font-weight:600;}
+.nav-item.active{background:#E8F0F7; color:var(--blue); font-weight:600;}
+body.dark-mode .nav-item.active{background:#2D3133;}
 .nav-item .material-symbols-outlined{font-size:20px;}
 
 /* Header */
 .header{position:fixed; top:0; left:var(--sidebar-w); right:0; height:var(--header-h); background:var(--surface); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px; padding:0 24px; z-index:30;}
 .search-box{display:flex; align-items:center; gap:10px; background:var(--bg); border-radius:24px; padding:0 16px; height:44px; width:100%; max-width:600px; transition:box-shadow .2s;}
 .search-box:focus-within{background:var(--surface); box-shadow:var(--shadow-md); border:1px solid var(--border);}
-.search-box input{border:none; background:transparent; flex:1; font-size:15px; outline:none;}
+.search-box input{border:none; background:transparent; flex:1; font-size:15px; outline:none; color:var(--text);}
 .user-btn{display:flex; align-items:center; gap:10px; padding:4px 12px 4px 4px; border:1px solid var(--border); border-radius:24px; background:var(--surface); transition:background .2s;}
-.user-btn:hover{background:var(--bg);}
 .user-avatar{width:32px; height:32px; border-radius:50%;}
+.icon-btn{padding:8px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background .2s;}
+.icon-btn:hover{background:var(--bg);}
 
 /* Main */
-.main{margin-left:var(--sidebar-w); padding-top:var(--header-h);}
+.main{margin-left:var(--sidebar-w); padding-top:var(--header-h); padding-bottom: 60px;}
 .content{padding:24px; max-width:1400px; margin:0 auto;}
 .page-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;}
-.page-title{font-size:24px; font-weight:700; color:var(--navy);}
+.page-title{font-size:24px; font-weight:700; color:var(--text);}
 .toolbar{display:flex; gap:8px; align-items:center;}
 .btn{padding:8px 16px; border-radius:8px; font-weight:500; border:1px solid var(--border); background:var(--surface); color:var(--text); transition:all .2s; display:flex; align-items:center; gap:6px;}
-.btn:hover{border-color:var(--blue);}
-.btn-primary{background:var(--navy); color:#fff; border-color:var(--navy);}
-.btn-primary:hover{background:var(--blue);}
+.btn-primary{background:var(--blue); color:#fff; border-color:var(--blue);}
 
 /* Dropzone & Progress */
 .dropzone{border:2px dashed var(--border); border-radius:var(--radius-lg); padding:30px 20px; text-align:center; margin-bottom:24px; background:var(--surface); transition:all .2s; cursor:pointer;}
-.dropzone:hover,.dropzone.dragover{border-color:var(--blue); background:#F0F6FB;}
-.dropzone h3{color:var(--navy); font-size:16px; margin-bottom:8px;}
+.dropzone:hover,.dropzone.dragover{border-color:var(--blue); background:var(--bg);}
 #upload-progress-container { display: none; margin-bottom: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
 .progress-bar-wrap { width: 100%; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; margin-top: 8px; }
 .progress-bar-fill { height: 100%; background: var(--blue); width: 0%; transition: width 0.2s; }
@@ -82,48 +85,61 @@ a{color:var(--blue); text-decoration:none;}
 /* Files Grid */
 .files-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px;}
 .file-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; cursor:pointer; transition:all .2s; position:relative; display:flex; flex-direction:column;}
-.file-card:hover{box-shadow:var(--shadow-md); border-color:#CBD5E1;}
-.file-icon-wrap{width:48px; height:48px; border-radius:8px; background:#E8F0F7; color:var(--navy); display:flex; align-items:center; justify-content:center; margin-bottom:12px; font-size:24px;}
+.file-card:hover{box-shadow:var(--shadow-md); border-color:var(--muted);}
+.file-icon-wrap{width:48px; height:48px; border-radius:8px; background:var(--bg); color:var(--text); display:flex; align-items:center; justify-content:center; margin-bottom:12px; font-size:24px;}
 .file-icon-wrap img{width:100%; height:100%; object-fit:cover; border-radius:8px;}
 .file-name{font-weight:600; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-bottom:4px;}
 .file-meta{font-size:12px; color:var(--muted); margin-bottom:12px;}
-.file-actions{display:flex; gap:4px; margin-top:auto; opacity:0; transition:opacity .2s;}
+.file-actions{display:flex; gap:4px; margin-top:auto; opacity:0; transition:opacity .2s; justify-content:flex-end;}
 .file-card:hover .file-actions{opacity:1;}
-.icon-btn{padding:6px; border-radius:6px; color:var(--muted); display:flex; align-items:center; justify-content:center; transition:background .2s;}
-.icon-btn:hover{background:var(--bg); color:var(--navy);}
-.icon-btn .material-symbols-outlined{font-size:18px;}
 
-/* Modals */
-.modal-backdrop{position:fixed; inset:0; background:rgba(15,23,42,.5); z-index:1000; display:none; align-items:center; justify-content:center; padding:20px; opacity:0; transition:opacity .2s;}
-.modal-backdrop.open{display:flex; opacity:1;}
-.modal{background:var(--surface); border-radius:var(--radius-lg); width:100%; max-width:500px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 20px 50px rgba(0,0,0,.3); transform:translateY(20px); transition:transform .2s;}
-.modal-backdrop.open .modal{transform:translateY(0);}
+/* Modals & Context Menu */
+.modal-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:1000; display:none; align-items:center; justify-content:center; padding:20px;}
+.modal-backdrop.open{display:flex;}
+.modal{background:var(--surface); border-radius:var(--radius-lg); width:100%; max-width:500px; max-height:90vh; display:flex; flex-direction:column; box-shadow:var(--shadow-lg);}
 .modal.wide{max-width:800px;}
 .modal-head{padding:20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;}
-.modal-head h3{font-size:18px; color:var(--navy);}
 .modal-body{padding:20px; overflow-y:auto;}
 .modal-foot{padding:16px 20px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px;}
 .field label{display:block; font-size:13px; font-weight:500; margin-bottom:8px;}
-.field input, .field select, .field textarea{width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; outline:none; font-size:14px; font-family:inherit;}
-.field input:focus{border-color:var(--blue);}
+.field input{width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); outline:none;}
+
+/* Context Menu */
+.context-menu {
+  position: fixed; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; box-shadow: var(--shadow-lg); padding: 6px; z-index: 2000;
+  display: none; flex-direction: column; min-width: 200px;
+}
+.context-menu.open { display: flex; }
+.ctx-item { padding: 10px 16px; display: flex; align-items: center; gap: 12px; font-size: 14px; border-radius: 6px; cursor: pointer; color: var(--text); }
+.ctx-item:hover { background: var(--bg); }
+.ctx-item .material-symbols-outlined { font-size: 20px; color: var(--muted); }
+.ctx-divider { height: 1px; background: var(--border); margin: 6px 0; }
+
+/* Mobile Nav */
+.mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--surface); border-top: 1px solid var(--border); z-index: 50; justify-content: space-around; align-items: center; }
+.mobile-nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--muted); gap: 4px; cursor: pointer; }
+.mobile-nav-item.active { color: var(--blue); }
 
 /* Preview */
-.preview-box{background:#0f172a; border-radius:10px; min-height:200px; max-height:500px; display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:20px;}
+.preview-box{background:#000; border-radius:10px; min-height:200px; max-height:500px; display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:20px;}
 .preview-box img, .preview-box video{max-width:100%; max-height:480px; object-fit:contain;}
 
 /* Toasts */
-.toast-stack{position:fixed; bottom:24px; right:24px; z-index:2000; display:flex; flex-direction:column; gap:8px;}
-.toast{background:var(--navy); color:#fff; padding:12px 20px; border-radius:8px; font-size:14px; box-shadow:var(--shadow-lg); animation:slideIn .3s ease-out;}
-.toast.error{background:var(--error);}
-@keyframes slideIn{from{transform:translateX(100%); opacity:0;} to{transform:translateX(0); opacity:1;}}
+.toast-stack{position:fixed; bottom:80px; right:24px; z-index:2000; display:flex; flex-direction:column; gap:8px;}
+.toast{background:var(--surface); color:var(--text); padding:12px 20px; border-radius:8px; font-size:14px; box-shadow:var(--shadow-lg); border-left: 4px solid var(--blue);}
+.toast.error{border-left-color: var(--error);}
 
 @media(max-width:900px){
   .sidebar{transform:translateX(-100%);}
   .sidebar.open{transform:translateX(0);}
-  .header{left:0;}
+  .header{left:0; padding: 0 12px;}
   .main{margin-left:0;}
   .files-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
   .file-actions{opacity:1;}
+  .mobile-nav { display: flex; }
+  .search-box { max-width: 100%; }
+  .new-btn { display: none; }
 }
 </style>
 </head>
@@ -149,17 +165,16 @@ a{color:var(--blue); text-decoration:none;}
       <img id="org-logo-display" src="https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png" alt="Logo">
       <div>
         <h2 id="org-name-display">MART Drive</h2>
-        <span>Click to switch Workspace</span>
+        <span>Switch Workspace</span>
       </div>
     </div>
     <button class="new-btn" onclick="document.getElementById('file-input').click()">
       <span class="material-symbols-outlined">add</span> Upload File
     </button>
     <ul class="nav-list">
-      <li class="nav-section">Main</li>
       <li><div class="nav-item active" onclick="setView('drive')"><span class="material-symbols-outlined">folder</span> My Files</div></li>
       <li><div class="nav-item" onclick="setView('recent')"><span class="material-symbols-outlined">schedule</span> Recent</div></li>
-      
+      <li><div class="nav-item" onclick="toggleDarkMode()"><span class="material-symbols-outlined">dark_mode</span> Toggle Theme</div></li>
       <li class="nav-section">Organizations</li>
       <div id="org-list-container"></div>
     </ul>
@@ -168,7 +183,7 @@ a{color:var(--blue); text-decoration:none;}
   <header class="header">
     <div class="search-box">
       <span class="material-symbols-outlined" style="color:var(--muted)">search</span>
-      <input type="search" id="search-input" placeholder="Search files..." oninput="handleSearch(this.value)">
+      <input type="search" id="search-input" placeholder="Search in Drive" oninput="handleSearch(this.value)">
     </div>
     <div style="flex:1"></div>
     <button class="user-btn" onclick="logout()">
@@ -193,11 +208,9 @@ a{color:var(--blue); text-decoration:none;}
 
       <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
         <h3>Drag & Drop or Click to Upload</h3>
-        <p style="color:var(--muted); font-size:13px;">Files will be stored in Google Drive and linked to <span id="upload-context">My Files</span></p>
         <input type="file" id="file-input" hidden multiple onchange="handleFiles(this.files)">
       </div>
 
-      <!-- Upload Progress Bar -->
       <div id="upload-progress-container">
         <div class="progress-text">
           <span id="progress-filename">Uploading...</span>
@@ -206,12 +219,36 @@ a{color:var(--blue); text-decoration:none;}
         <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
       </div>
 
-      <!-- Breadcrumbs for folders -->
       <div id="breadcrumbs" style="margin-bottom:16px; font-size:14px; display:flex; gap:8px; align-items:center;"></div>
-
       <div class="files-grid" id="files-grid"></div>
     </div>
   </main>
+
+  <!-- Mobile Bottom Nav -->
+  <div class="mobile-nav">
+    <div class="mobile-nav-item active" onclick="setView('drive')">
+      <span class="material-symbols-outlined">home</span> Home
+    </div>
+    <div class="mobile-nav-item" onclick="setView('recent')">
+      <span class="material-symbols-outlined">schedule</span> Recent
+    </div>
+    <div class="mobile-nav-item" onclick="document.getElementById('file-input').click()">
+      <span class="material-symbols-outlined">add_circle</span> New
+    </div>
+  </div>
+</div>
+
+<!-- Context Menu (Google Drive Style) -->
+<div class="context-menu" id="context-menu">
+  <div class="ctx-item" onclick="ctxAction('open')"><span class="material-symbols-outlined">open_in_new</span> Open</div>
+  <div class="ctx-item" onclick="ctxAction('share')"><span class="material-symbols-outlined">share</span> Share / Copy Link</div>
+  <div class="ctx-divider"></div>
+  <div class="ctx-item" onclick="ctxAction('download')"><span class="material-symbols-outlined">download</span> Download</div>
+  <div class="ctx-item" onclick="ctxAction('rename')"><span class="material-symbols-outlined">edit</span> Rename</div>
+  <div class="ctx-item" onclick="ctxAction('copy')"><span class="material-symbols-outlined">content_copy</span> Make a copy</div>
+  <div class="ctx-item" onclick="ctxAction('info')"><span class="material-symbols-outlined">info</span> View information</div>
+  <div class="ctx-divider"></div>
+  <div class="ctx-item" onclick="ctxAction('delete')" style="color:var(--error)"><span class="material-symbols-outlined" style="color:var(--error)">delete</span> Move to trash</div>
 </div>
 
 <!-- Universal Modal -->
@@ -231,7 +268,7 @@ a{color:var(--blue); text-decoration:none;}
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore, collection, doc, addDoc, deleteDoc, onSnapshot, query, where, serverTimestamp, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot, query, where, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDUcT6hVqLHy3pYzwg1oktI7amTpF9Qj4c",
@@ -249,19 +286,22 @@ const db = getFirestore(app);
 
 let currentUser = null;
 let accessToken = null;
-
-// App State
-let allFiles = [];
-let allFolders = [];
-let organizations = [];
-let currentOrgId = null; // null = personal drive
-let currentFolderId = null;
-let currentView = 'drive';
-let searchTerm = '';
-let unsubFiles = null;
-let unsubFolders = null;
-let unsubOrgs = null;
+let allFiles = [], allFolders = [], organizations = [];
+let currentOrgId = null, currentFolderId = null, currentView = 'drive', searchTerm = '';
+let unsubFiles = null, unsubFolders = null, unsubOrgs = null;
 let hasTriedSilentLogin = false;
+let ctxTargetItem = null; // Currently right-clicked item
+
+// ----------------------------------------------------
+// THEME & INIT
+// ----------------------------------------------------
+if (localStorage.getItem('theme') === 'dark') {
+  document.body.classList.add('dark-mode');
+}
+window.toggleDarkMode = () => {
+  document.body.classList.toggle('dark-mode');
+  localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+};
 
 // ----------------------------------------------------
 // AUTHENTICATION
@@ -276,23 +316,17 @@ window.signIn = async () => {
   } catch (err) { toast(err.message, 'error'); }
 };
 
-window.logout = async () => {
-  await signOut(auth);
-  window.location.reload();
-};
+window.logout = async () => { await signOut(auth); window.location.reload(); };
 
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app').classList.add('ready');
-    
     if (user.photoURL) {
       const av = document.getElementById('user-avatar');
-      av.src = user.photoURL;
-      av.style.display = 'block';
+      av.src = user.photoURL; av.style.display = 'block';
     }
-
     if (!accessToken && !hasTriedSilentLogin) {
       hasTriedSilentLogin = true;
       try {
@@ -301,21 +335,14 @@ onAuthStateChanged(auth, async (user) => {
         provider.setCustomParameters({ prompt: '' }); 
         const result = await signInWithPopup(auth, provider);
         accessToken = GoogleAuthProvider.credentialFromResult(result).accessToken;
-      } catch (err) {
-        console.warn("Silent login failed.");
-      }
+      } catch (err) { console.warn("Silent login failed."); }
     }
-
     setupListeners();
   } else {
-    currentUser = null;
-    accessToken = null;
-    hasTriedSilentLogin = false;
+    currentUser = null; accessToken = null; hasTriedSilentLogin = false;
     document.getElementById('app').classList.remove('ready');
     document.getElementById('auth-screen').style.display = 'flex';
-    if (unsubFiles) unsubFiles();
-    if (unsubFolders) unsubFolders();
-    if (unsubOrgs) unsubOrgs();
+    if (unsubFiles) unsubFiles(); if (unsubFolders) unsubFolders(); if (unsubOrgs) unsubOrgs();
   }
 });
 
@@ -324,279 +351,143 @@ onAuthStateChanged(auth, async (user) => {
 // ----------------------------------------------------
 function setupListeners() {
   const uid = currentUser.uid;
-  const email = currentUser.email;
-
   if (unsubOrgs) unsubOrgs();
-  const qOrgs1 = query(collection(db, 'organizations'), where('owner', '==', uid));
-  
-  unsubOrgs = onSnapshot(qOrgs1, (snap1) => {
-    const orgs1 = snap1.docs.map(d => ({ id: d.id, ...d.data() }));
-    organizations = orgs1;
+  unsubOrgs = onSnapshot(query(collection(db, 'organizations'), where('owner', '==', uid)), (snap) => {
+    organizations = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderOrgSidebar();
-    loadFilesAndFolders(); // Reload files when org list changes
   });
-
   loadFilesAndFolders();
 }
 
 function loadFilesAndFolders() {
   const uid = currentUser.uid;
-  if (unsubFolders) unsubFolders();
-  if (unsubFiles) unsubFiles();
-
-  let fQuery, fiQuery;
-  
-  // FIXED: Firestore null query issue avoided by using "== false" or checking data later
-  // Here we will fetch all user's files and filter locally to prevent Index errors.
-  fQuery = query(collection(db, 'folders'), where('uid', '==', uid));
-  fiQuery = query(collection(db, 'files'), where('uid', '==', uid));
-
-  unsubFolders = onSnapshot(fQuery, (snap) => {
-    allFolders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    render();
+  if (unsubFolders) unsubFolders(); if (unsubFiles) unsubFiles();
+  unsubFolders = onSnapshot(query(collection(db, 'folders'), where('uid', '==', uid)), (snap) => {
+    allFolders = snap.docs.map(d => ({ id: d.id, ...d.data() })); render();
   });
-  unsubFiles = onSnapshot(fiQuery, (snap) => {
-    allFiles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    render();
+  unsubFiles = onSnapshot(query(collection(db, 'files'), where('uid', '==', uid)), (snap) => {
+    allFiles = snap.docs.map(d => ({ id: d.id, ...d.data() })); render();
   });
 }
 
 // ----------------------------------------------------
-// ORGANIZATION LOGIC
+// ORGANIZATION & FOLDER LOGIC
 // ----------------------------------------------------
-function switchOrg(orgId) {
-  currentOrgId = orgId;
-  currentFolderId = null;
-  
-  if (orgId) {
-    const org = organizations.find(o => o.id === orgId);
-    document.getElementById('org-name-display').textContent = org.name;
-    document.getElementById('org-logo-display').src = org.logoUrl || "https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png";
-  } else {
-    document.getElementById('org-name-display').textContent = "Personal Drive";
-    document.getElementById('org-logo-display').src = "https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png";
-  }
-  
-  renderOrgSidebar();
-  setView('drive');
-}
+window.switchOrg = (orgId) => {
+  currentOrgId = orgId; currentFolderId = null;
+  const org = organizations.find(o => o.id === orgId);
+  document.getElementById('org-name-display').textContent = orgId ? org.name : "Personal Drive";
+  document.getElementById('org-logo-display').src = orgId ? (org.logoUrl || "https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png") : "https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png";
+  renderOrgSidebar(); setView('drive');
+};
 
 function renderOrgSidebar() {
   const container = document.getElementById('org-list-container');
   container.innerHTML = '';
-  
-  const personalDiv = document.createElement('div');
-  personalDiv.className = 'nav-item' + (!currentOrgId ? ' active' : '');
-  personalDiv.innerHTML = `<span class="material-symbols-outlined">person</span> Personal Drive`;
-  personalDiv.onclick = () => switchOrg(null);
-  container.appendChild(personalDiv);
-
+  container.innerHTML += `<div class="nav-item ${!currentOrgId ? 'active' : ''}" onclick="switchOrg(null)"><span class="material-symbols-outlined">person</span> Personal Drive</div>`;
   organizations.forEach(org => {
-    const div = document.createElement('div');
-    div.className = 'nav-item' + (currentOrgId === org.id ? ' active' : '');
-    div.innerHTML = `<img src="${org.logoUrl || 'https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png'}" style="width:20px;height:20px;border-radius:4px;"> ${org.name}`;
-    div.onclick = () => switchOrg(org.id);
-    container.appendChild(div);
+    container.innerHTML += `<div class="nav-item ${currentOrgId === org.id ? 'active' : ''}" onclick="switchOrg('${org.id}')"><img src="${org.logoUrl || 'https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png'}" style="width:20px;height:20px;border-radius:4px;"> ${org.name}</div>`;
   });
-
-  const btnDiv = document.createElement('div');
-  btnDiv.className = 'nav-item';
-  btnDiv.style.color = 'var(--blue)';
-  btnDiv.innerHTML = `<span class="material-symbols-outlined">add_circle</span> Create Organization`;
-  btnDiv.onclick = openOrgModal;
-  container.appendChild(btnDiv);
+  container.innerHTML += `<div class="nav-item" style="color:var(--blue)" onclick="openOrgModal()"><span class="material-symbols-outlined">add_circle</span> Create Org</div>`;
 }
 
 window.openOrgModal = () => {
-  const body = `
-    <div class="field" style="margin-bottom:12px">
-      <label>Organization Name</label>
-      <input type="text" id="org-name-input" placeholder="e.g. Bangladesh Scouts Rover Region">
-    </div>
-    <div class="field">
-      <label>Logo Image URL (Optional)</label>
-      <input type="text" id="org-logo-input" placeholder="https://example.com/logo.png">
-    </div>
-  `;
   document.getElementById('modal-title').textContent = 'Create Organization';
-  document.getElementById('modal-body').innerHTML = body;
-  document.getElementById('modal-foot').innerHTML = `
-    <button class="btn" onclick="closeModal()">Cancel</button>
-    <button class="btn btn-primary" onclick="createOrg()">Create</button>
-  `;
-  document.getElementById('modal-box').classList.remove('wide');
-  document.getElementById('modal-backdrop').classList.add('open');
+  document.getElementById('modal-body').innerHTML = `
+    <div class="field" style="margin-bottom:12px"><label>Organization Name</label><input type="text" id="org-name-input" placeholder="e.g. Bangladesh Scouts"></div>
+    <div class="field"><label>Logo Image URL (Optional)</label><input type="text" id="org-logo-input" placeholder="https://example.com/logo.png"></div>`;
+  document.getElementById('modal-foot').innerHTML = `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="createOrg()">Create</button>`;
+  document.getElementById('modal-box').classList.remove('wide'); document.getElementById('modal-backdrop').classList.add('open');
 };
 
 window.createOrg = async () => {
   const name = document.getElementById('org-name-input').value.trim();
-  const logoUrl = document.getElementById('org-logo-input').value.trim();
   if (!name) return toast('Name required', 'error');
-  
-  try {
-    await addDoc(collection(db, 'organizations'), {
-      name,
-      logoUrl: logoUrl || null,
-      owner: currentUser.uid,
-      members: [currentUser.email.toLowerCase()],
-      createdAt: serverTimestamp()
-    });
-    toast('Organization created!', 'success');
-    closeModal();
-  } catch (err) { toast(err.message, 'error'); }
+  await addDoc(collection(db, 'organizations'), { name, logoUrl: document.getElementById('org-logo-input').value.trim() || null, owner: currentUser.uid, members: [currentUser.email.toLowerCase()], createdAt: serverTimestamp() });
+  toast('Organization created!', 'success'); closeModal();
 };
 
-// ----------------------------------------------------
-// FOLDERS & FILES
-// ----------------------------------------------------
 window.openNewFolderModal = () => {
-  const body = `<div class="field"><label>Folder Name</label><input type="text" id="folder-name" placeholder="Untitled Folder"></div>`;
   document.getElementById('modal-title').textContent = 'Create Folder';
-  document.getElementById('modal-body').innerHTML = body;
-  document.getElementById('modal-foot').innerHTML = `
-    <button class="btn" onclick="closeModal()">Cancel</button>
-    <button class="btn btn-primary" onclick="createFolder()">Create</button>
-  `;
+  document.getElementById('modal-body').innerHTML = `<div class="field"><label>Folder Name</label><input type="text" id="folder-name" placeholder="Untitled Folder"></div>`;
+  document.getElementById('modal-foot').innerHTML = `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="createFolder()">Create</button>`;
   document.getElementById('modal-backdrop').classList.add('open');
 };
 
 window.createFolder = async () => {
-  const name = document.getElementById('folder-name').value.trim();
-  if (!name) return;
-  
-  const data = {
-    name,
-    parentId: currentFolderId,
-    orgId: currentOrgId || null, // null for personal
-    uid: currentUser.uid,
-    createdAt: serverTimestamp(),
-  };
-
-  try {
-    await addDoc(collection(db, 'folders'), data);
-    toast('Folder created', 'success');
-    closeModal();
-  } catch (err) { toast(err.message, 'error'); }
+  const name = document.getElementById('folder-name').value.trim(); if (!name) return;
+  await addDoc(collection(db, 'folders'), { name, parentId: currentFolderId, orgId: currentOrgId || null, uid: currentUser.uid, createdAt: serverTimestamp() });
+  toast('Folder created', 'success'); closeModal();
 };
 
-window.openFolder = (folderId) => {
-  currentFolderId = folderId;
-  render();
-};
+window.openFolder = (folderId) => { currentFolderId = folderId; render(); };
 
 function renderBreadcrumbs() {
-  const bc = document.getElementById('breadcrumbs');
-  bc.innerHTML = '';
-  
-  const root = document.createElement('span');
-  root.style.cursor = 'pointer';
-  root.style.color = 'var(--blue)';
-  root.textContent = currentOrgId ? 'Root' : 'My Drive';
-  root.onclick = () => { currentFolderId = null; render(); };
-  bc.appendChild(root);
-
+  const bc = document.getElementById('breadcrumbs'); bc.innerHTML = '';
+  bc.innerHTML += `<span style="cursor:pointer;color:var(--blue)" onclick="currentFolderId=null;render()">${currentOrgId ? 'Root' : 'My Drive'}</span>`;
   if (currentFolderId) {
-    let path = [];
-    let cur = allFolders.find(f => f.id === currentFolderId);
-    while (cur) {
-      path.unshift(cur);
-      cur = allFolders.find(f => f.id === cur.parentId);
-    }
-    path.forEach(f => {
-      const sep = document.createElement('span');
-      sep.textContent = '/';
-      sep.style.color = 'var(--muted)';
-      bc.appendChild(sep);
-      
-      const el = document.createElement('span');
-      el.textContent = f.name;
-      el.style.cursor = 'pointer';
-      el.style.color = 'var(--blue)';
-      el.onclick = () => { currentFolderId = f.id; render(); };
-      bc.appendChild(el);
-    });
+    let path = [], cur = allFolders.find(f => f.id === currentFolderId);
+    while (cur) { path.unshift(cur); cur = allFolders.find(f => f.id === cur.parentId); }
+    path.forEach(f => { bc.innerHTML += `<span style="color:var(--muted)">/</span><span style="cursor:pointer;color:var(--blue)" onclick="currentFolderId='${f.id}';render()">${f.name}</span>`; });
   }
 }
 
 // ----------------------------------------------------
-// RENDER LOGIC
+// RENDER
 // ----------------------------------------------------
-window.setView = (view) => {
-  currentView = view;
-  currentFolderId = null;
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  render();
-};
-
-window.handleSearch = (val) => {
-  searchTerm = val.toLowerCase();
-  render();
-};
+window.setView = (view) => { currentView = view; currentFolderId = null; render(); };
+window.handleSearch = (val) => { searchTerm = val.toLowerCase(); render(); };
 
 function render() {
   renderBreadcrumbs();
-  
   let displayItems = [];
-  
-  // Filter files by currentOrgId and currentFolderId locally
   let filteredFiles = allFiles.filter(f => (f.orgId || null) === currentOrgId);
   let filteredFolders = allFolders.filter(f => (f.orgId || null) === currentOrgId);
 
   if (currentView === 'drive') {
     filteredFolders = filteredFolders.filter(f => (f.parentId || null) === currentFolderId);
     filteredFiles = filteredFiles.filter(f => (f.folderId || null) === currentFolderId);
-    
     filteredFolders.forEach(f => displayItems.push({ type: 'folder', ...f }));
     filteredFiles.forEach(f => displayItems.push({ type: 'file', ...f }));
   } else if (currentView === 'recent') {
     const sorted = [...filteredFiles].sort((a,b) => (b.createdAt?.toMillis()||0) - (a.createdAt?.toMillis()||0));
     sorted.slice(0, 50).forEach(f => displayItems.push({ type: 'file', ...f }));
   }
-
-  if (searchTerm) {
-    displayItems = displayItems.filter(item => item.name.toLowerCase().includes(searchTerm));
-  }
+  if (searchTerm) displayItems = displayItems.filter(item => item.name.toLowerCase().includes(searchTerm));
 
   document.getElementById('page-meta').textContent = `${displayItems.length} items`;
   document.getElementById('page-title').textContent = currentView === 'drive' ? 'My Files' : 'Recent';
   document.getElementById('dropzone').style.display = currentView === 'drive' ? 'block' : 'none';
-  document.getElementById('upload-context').textContent = currentOrgId ? 'Organization Drive' : 'My Files';
 
-  const grid = document.getElementById('files-grid');
-  grid.innerHTML = '';
-
-  if (displayItems.length === 0) {
-    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--muted)">No files or folders here.</div>';
-    return;
-  }
+  const grid = document.getElementById('files-grid'); grid.innerHTML = '';
+  if (displayItems.length === 0) { grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--muted)">No files here.</div>'; return; }
 
   displayItems.forEach(item => {
-    const card = document.createElement('div');
-    card.className = 'file-card';
+    const card = document.createElement('div'); card.className = 'file-card';
     
+    // Right click context menu event
+    card.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      openContextMenu(e, item);
+    });
+
     if (item.type === 'folder') {
-      card.innerHTML = `
-        <div class="file-icon-wrap"><span class="material-symbols-outlined" style="color:#F59E0B">folder</span></div>
-        <div class="file-name">${item.name}</div>
-        <div class="file-meta">Folder</div>
-      `;
+      card.innerHTML = `<div class="file-icon-wrap"><span class="material-symbols-outlined" style="color:#F59E0B">folder</span></div><div class="file-name">${item.name}</div><div class="file-meta">Folder</div>`;
       card.onclick = () => openFolder(item.id);
     } else {
       const isImg = item.mimeType?.includes('image');
       let icon = `<span class="material-symbols-outlined">description</span>`;
       if (isImg) icon = `<img src="https://drive.google.com/thumbnail?id=${item.driveFileId}&sz=w200&authuser=0">`;
-      else if (item.mimeType?.includes('video')) icon = `<span class="material-symbols-outlined">movie</span>`;
-      else if (item.mimeType?.includes('pdf')) icon = `<span class="material-symbols-outlined">picture_as_pdf</span>`;
+      else if (item.mimeType?.includes('video')) icon = `<span class="material-symbols-outlined" style="color:#EA4335">movie</span>`;
+      else if (item.mimeType?.includes('pdf')) icon = `<span class="material-symbols-outlined" style="color:#D93025">picture_as_pdf</span>`;
 
       card.innerHTML = `
         <div class="file-icon-wrap">${icon}</div>
         <div class="file-name" title="${item.name}">${item.name}</div>
         <div class="file-meta">${fmtSize(item.size)}</div>
         <div class="file-actions">
-          <button class="icon-btn" onclick="event.stopPropagation(); previewFile('${item.driveFileId}', '${item.mimeType}', '${item.name}')"><span class="material-symbols-outlined">visibility</span></button>
-          <button class="icon-btn" onclick="event.stopPropagation(); deleteFile('${item.id}', '${item.driveFileId}')"><span class="material-symbols-outlined">delete</span></button>
-        </div>
-      `;
+          <button class="icon-btn" onclick="event.stopPropagation(); openContextMenu(event, ${JSON.stringify(item).replace(/"/g, '&quot;')})"><span class="material-symbols-outlined">more_vert</span></button>
+        </div>`;
       card.onclick = () => previewFile(item.driveFileId, item.mimeType, item.name);
     }
     grid.appendChild(card);
@@ -604,129 +495,180 @@ function render() {
 }
 
 // ----------------------------------------------------
-// UPLOAD WITH PROGRESS BAR
+// CONTEXT MENU (Right Click & 3-Dot)
+// ----------------------------------------------------
+window.openContextMenu = (e, item) => {
+  e.preventDefault();
+  ctxTargetItem = item;
+  const menu = document.getElementById('context-menu');
+  menu.style.left = Math.min(e.pageX, window.innerWidth - 220) + 'px';
+  menu.style.top = Math.min(e.pageY, window.innerHeight - 300) + 'px';
+  
+  // Hide unsupported options for folders
+  if (item.type === 'folder') {
+    menu.querySelector('[onclick="ctxAction(\'download\')"]').style.display = 'none';
+    menu.querySelector('[onclick="ctxAction(\'copy\')"]').style.display = 'none';
+    menu.querySelector('[onclick="ctxAction(\'open\')"]').style.display = 'none';
+  } else {
+    menu.querySelector('[onclick="ctxAction(\'download\')"]').style.display = 'flex';
+    menu.querySelector('[onclick="ctxAction(\'copy\')"]').style.display = 'flex';
+    menu.querySelector('[onclick="ctxAction(\'open\')"]').style.display = 'flex';
+  }
+
+  menu.classList.add('open');
+};
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#context-menu') && !e.target.closest('.file-card')) {
+    document.getElementById('context-menu').classList.remove('open');
+  }
+});
+
+window.ctxAction = async (action) => {
+  document.getElementById('context-menu').classList.remove('open');
+  if (!ctxTargetItem) return;
+  const item = ctxTargetItem;
+
+  if (action === 'open') {
+    if (item.type === 'folder') openFolder(item.id);
+    else previewFile(item.driveFileId, item.mimeType, item.name);
+  } 
+  else if (action === 'share') {
+    const link = `https://drive.google.com/file/d/${item.driveFileId}/view`;
+    await navigator.clipboard.writeText(link);
+    toast('Share link copied to clipboard!', 'success');
+  }
+  else if (action === 'download') {
+    window.open(`https://drive.google.com/uc?export=download&id=${item.driveFileId}`, '_blank');
+  }
+  else if (action === 'rename') {
+    document.getElementById('modal-title').textContent = 'Rename';
+    document.getElementById('modal-body').innerHTML = `<div class="field"><label>New Name</label><input type="text" id="rename-input" value="${item.name}"></div>`;
+    document.getElementById('modal-foot').innerHTML = `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="renameItem('${item.id}', '${item.type}')">Save</button>`;
+    document.getElementById('modal-backdrop').classList.add('open');
+  }
+  else if (action === 'copy') {
+    try {
+      toast('Creating copy...', 'success');
+      const res = await fetch(`https://www.googleapis.com/drive/v3/files/${item.driveFileId}/copy`, {
+        method: 'POST', headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Copy of ' + item.name })
+      });
+      const newFile = await res.json();
+      await addDoc(collection(db, 'files'), {
+        ...item, id: undefined, driveFileId: newFile.id, name: newFile.name, createdAt: serverTimestamp()
+      });
+      toast('Copy created!', 'success');
+    } catch (err) { toast('Copy failed', 'error'); }
+  }
+  else if (action === 'info') {
+    document.getElementById('modal-title').textContent = 'File Information';
+    document.getElementById('modal-body').innerHTML = `
+      <div style="padding:10px; background:var(--bg); border-radius:8px; margin-bottom:15px;">
+        <p style="margin-bottom:8px;"><strong>Name:</strong> ${item.name}</p>
+        <p style="margin-bottom:8px;"><strong>Type:</strong> ${item.mimeType || 'Folder'}</p>
+        <p style="margin-bottom:8px;"><strong>Size:</strong> ${fmtSize(item.size)}</p>
+        <p><strong>ID:</strong> ${item.driveFileId || 'Local Folder'}</p>
+      </div>`;
+    document.getElementById('modal-foot').innerHTML = `<button class="btn btn-primary" onclick="closeModal()">Close</button>`;
+    document.getElementById('modal-backdrop').classList.add('open');
+  }
+  else if (action === 'delete') {
+    if (!confirm('Move to trash?')) return;
+    try {
+      if (item.type === 'file') {
+        await fetch(`https://www.googleapis.com/drive/v3/files/${item.driveFileId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${accessToken}` } });
+        await deleteDoc(doc(db, 'files', item.id));
+      } else {
+        await deleteDoc(doc(db, 'folders', item.id));
+      }
+      toast('Deleted', 'success');
+    } catch (err) { toast('Delete failed', 'error'); }
+  }
+};
+
+window.renameItem = async (id, type) => {
+  const newName = document.getElementById('rename-input').value.trim();
+  if (!newName) return;
+  try {
+    if (type === 'file') {
+      await fetch(`https://www.googleapis.com/drive/v3/files/${ctxTargetItem.driveFileId}`, {
+        method: 'PATCH', headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName })
+      });
+      await updateDoc(doc(db, 'files', id), { name: newName });
+    } else {
+      await updateDoc(doc(db, 'folders', id), { name: newName });
+    }
+    toast('Renamed', 'success'); closeModal();
+  } catch (err) { toast('Rename failed', 'error'); }
+};
+
+// ----------------------------------------------------
+// UPLOAD & PREVIEW
 // ----------------------------------------------------
 window.handleFiles = async (files) => {
-  if (!accessToken) return toast('Please sign in again to upload.', 'error');
-  
-  const progressContainer = document.getElementById('upload-progress-container');
-  const progressFill = document.getElementById('progress-fill');
-  const progressPercent = document.getElementById('progress-percent');
-  const progressFilename = document.getElementById('progress-filename');
-  
-  progressContainer.style.display = 'block';
+  if (!accessToken) return toast('Please sign in again.', 'error');
+  const pContainer = document.getElementById('upload-progress-container');
+  const pFill = document.getElementById('progress-fill');
+  const pPct = document.getElementById('progress-percent');
+  const pName = document.getElementById('progress-filename');
+  pContainer.style.display = 'block';
 
   for (const file of files) {
-    progressFilename.textContent = `Uploading: ${file.name}`;
-    progressFill.style.width = '0%';
-    progressPercent.textContent = '0%';
-
+    pName.textContent = `Uploading: ${file.name}`; pFill.style.width = '0%'; pPct.textContent = '0%';
     try {
       const metadata = { name: file.name, mimeType: file.type || 'application/octet-stream' };
       const form = new FormData();
       form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
       form.append('file', file);
       
-      // Using XHR to get upload progress
       const driveFile = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open('POST', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,size');
         xhr.setRequestHeader('Authorization', `Bearer ${accessToken}`);
-        
         xhr.upload.onprogress = (e) => {
           if (e.lengthComputable) {
             const pct = Math.round((e.loaded / e.total) * 100);
-            progressFill.style.width = pct + '%';
-            progressPercent.textContent = pct + '%';
+            pFill.style.width = pct + '%'; pPct.textContent = pct + '%';
           }
         };
-
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve(JSON.parse(xhr.responseText));
-          } else {
-            reject(new Error('Upload failed with status ' + xhr.status));
-          }
-        };
-        xhr.onerror = () => reject(new Error('Network error'));
-        xhr.send(form);
+        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve(JSON.parse(xhr.responseText)) : reject(new Error('Upload failed'));
+        xhr.onerror = () => reject(new Error('Network error')); xhr.send(form);
       });
 
-      // Make public for preview
       await fetch(`https://www.googleapis.com/drive/v3/files/${driveFile.id}/permissions`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        method: 'POST', headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: 'reader', type: 'anyone' })
       }).catch(() => {});
 
-      const fileData = {
-        driveFileId: driveFile.id,
-        name: driveFile.name,
-        mimeType: driveFile.mimeType,
-        size: driveFile.size || file.size,
-        folderId: currentFolderId,
-        orgId: currentOrgId || null,
-        uid: currentUser.uid,
-        createdAt: serverTimestamp()
-      };
-
-      await addDoc(collection(db, 'files'), fileData);
-    } catch (err) {
-      toast(`Error uploading ${file.name}: ` + err.message, 'error');
-    }
+      await addDoc(collection(db, 'files'), {
+        driveFileId: driveFile.id, name: driveFile.name, mimeType: driveFile.mimeType,
+        size: driveFile.size || file.size, folderId: currentFolderId, orgId: currentOrgId || null, uid: currentUser.uid, createdAt: serverTimestamp()
+      });
+    } catch (err) { toast(`Error: ${file.name}`, 'error'); }
   }
-  
-  // Reset Progress Bar
-  setTimeout(() => {
-    progressContainer.style.display = 'none';
-    progressFill.style.width = '0%';
-    progressPercent.textContent = '0%';
-  }, 1000);
-  
-  toast('All uploads complete!', 'success');
+  setTimeout(() => { pContainer.style.display = 'none'; }, 1000);
+  toast('Upload complete!', 'success');
 };
 
-// ----------------------------------------------------
-// PREVIEW
-// ----------------------------------------------------
 window.previewFile = (driveId, mimeType, name) => {
   const body = document.getElementById('modal-body');
-  document.getElementById('modal-title').textContent = name || 'File Preview';
-  
-  let html = `<div class="preview-box">Preview not available for this file type.</div>`;
-  
-  if (mimeType?.includes('image')) {
-    // Using Google Drive thumbnail API (Works if file is public or user has access)
-    html = `<div class="preview-box"><img src="https://drive.google.com/thumbnail?id=${driveId}&sz=w1000&authuser=0"></div>`;
-  } else if (mimeType?.includes('video') || mimeType?.includes('pdf')) {
-    // Embed preview for video and pdf
-    html = `<div class="preview-box" style="background:#fff"><iframe src="https://drive.google.com/file/d/${driveId}/preview" width="100%" height="500px" allow="autoplay"></iframe></div>`;
-  }
+  document.getElementById('modal-title').textContent = name || 'Preview';
+  let html = `<div class="preview-box">Preview not available</div>`;
+  if (mimeType?.includes('image')) html = `<div class="preview-box"><img src="https://drive.google.com/thumbnail?id=${driveId}&sz=w1000&authuser=0"></div>`;
+  else if (mimeType?.includes('video') || mimeType?.includes('pdf')) html = `<div class="preview-box" style="background:#fff"><iframe src="https://drive.google.com/file/d/${driveId}/preview" width="100%" height="500px" allow="autoplay"></iframe></div>`;
   
   body.innerHTML = html;
-  document.getElementById('modal-foot').innerHTML = `
-    <button class="btn" onclick="window.open('https://drive.google.com/file/d/${driveId}/view', '_blank')">Open in Drive</button>
-    <button class="btn btn-primary" onclick="closeModal()">Close</button>
-  `;
-  document.getElementById('modal-box').classList.add('wide');
-  document.getElementById('modal-backdrop').classList.add('open');
-};
-
-window.deleteFile = async (firestoreId, driveId) => {
-  if (!confirm('Delete permanently?')) return;
-  try {
-    await fetch(`https://www.googleapis.com/drive/v3/files/${driveId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${accessToken}` } });
-    await deleteDoc(doc(db, 'files', firestoreId));
-    toast('Deleted', 'success');
-  } catch (err) { toast('Delete failed', 'error'); }
+  document.getElementById('modal-foot').innerHTML = `<button class="btn btn-primary" onclick="closeModal()">Close</button>`;
+  document.getElementById('modal-box').classList.add('wide'); document.getElementById('modal-backdrop').classList.add('open');
 };
 
 // Utils
 window.closeModal = () => document.getElementById('modal-backdrop').classList.remove('open');
 function toast(msg, type="") {
   const t = document.createElement('div'); t.className = 'toast ' + type; t.textContent = msg;
-  document.getElementById('toast-stack').appendChild(t);
-  setTimeout(() => { t.remove(); }, 3000);
+  document.getElementById('toast-stack').appendChild(t); setTimeout(() => { t.remove(); }, 3000);
 }
 function fmtSize(b) {
   if (!b) return '0 B'; if (b < 1024) return b + ' B';
@@ -734,14 +676,10 @@ function fmtSize(b) {
   return (b/1048576).toFixed(1) + ' MB';
 }
 
-// Dropzone init
 const dz = document.getElementById('dropzone');
 dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-dz.addEventListener('drop', (e) => {
-  e.preventDefault(); dz.classList.remove('dragover');
-  if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
-});
+dz.addEventListener('drop', (e) => { e.preventDefault(); dz.classList.remove('dragover'); if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files); });
 </script>
 </body>
 </html>
