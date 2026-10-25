@@ -1,274 +1,104 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#163A5F" />
-<title>MART Drive - Enterprise</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101827">
+<title>MART Drive — Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
 <style>
-:root{
-  --navy:#163A5F; --blue:#245B88; --bg:#F5F7FA; --surface:#FFFFFF;
-  --text:#1F2937; --muted:#64748B; --border:#E2E8F0;
-  --success:#15803D; --error:#B91C1C;
-  --radius:10px; --radius-lg:14px;
-  --shadow-sm:0 1px 2px rgba(15,23,42,.06);
-  --shadow-md:0 4px 12px rgba(15,23,42,.08);
-  --shadow-lg:0 12px 32px rgba(15,23,42,.16);
-  --sidebar-w:260px; --header-h:64px;
-  --transition:200ms cubic-bezier(.4,0,.2,1);
-}
-/* Dark Mode Variables */
-body.dark-mode {
-  --navy: #A8C7FA; --blue: #8AB4F8; --bg: #131314; --surface: #1E1F20;
-  --text: #E3E3E3; --muted: #A1A1A1; --border: #444746;
-}
-*{box-sizing:border-box; margin:0; padding:0;}
-body{background:var(--bg); color:var(--text); font-family:Inter,sans-serif; font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; transition: background 0.3s;}
-button{font:inherit; cursor:pointer; border:none; background:none; color:var(--text);}
-:focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
-
-/* Auth Screen */
-#auth-screen{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#163A5F 0%,#245B88 100%); padding:20px; z-index:100;}
-.auth-card{background:var(--surface); border-radius:var(--radius-lg); padding:40px 32px; width:100%; max-width:420px; box-shadow:0 20px 50px rgba(0,0,0,.25); text-align:center;}
-.auth-card img{width:80px; margin-bottom:20px;}
-.auth-card h1{font-size:24px; color:var(--text); margin-bottom:8px;}
-.auth-card p{color:var(--muted); font-size:14px; margin-bottom:30px;}
-.google-btn{display:flex; align-items:center; justify-content:center; gap:12px; width:100%; padding:12px; background:#fff; border:1px solid var(--border); border-radius:8px; font-weight:600; font-size:14px; transition:all .2s; color:#000;}
-.google-btn:hover{background:#f8f9fa; box-shadow:var(--shadow-md);}
-
-/* Layout */
-#app{display:none; min-height:100vh;}
-#app.ready{display:block;}
-.sidebar{position:fixed; top:0; left:0; bottom:0; width:var(--sidebar-w); background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; z-index:40;}
-.sidebar-brand{display:flex; align-items:center; gap:12px; padding:20px; border-bottom:1px solid var(--border); cursor:pointer;}
-.sidebar-brand img{width:36px; height:36px; border-radius:6px; object-fit:cover;}
-.sidebar-brand h2{font-size:16px; color:var(--text); font-weight:700; line-height:1.2;}
-.sidebar-brand span{font-size:11px; color:var(--muted);}
-.new-btn{margin:16px; padding:12px 20px; background:var(--navy); color:var(--surface); border-radius:30px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; transition:background .2s; box-shadow:var(--shadow-md);}
-.new-btn:hover{opacity:0.9;}
-.nav-list{list-style:none; padding:0 12px; flex:1; overflow-y:auto;}
-.nav-section{padding:12px 16px 4px; font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px;}
-.nav-item{display:flex; align-items:center; gap:14px; padding:10px 16px; border-radius:24px; color:var(--text); font-weight:500; cursor:pointer; transition:background .2s; margin-bottom:4px; font-size:13px;}
-.nav-item:hover{background:var(--bg);}
-.nav-item.active{background:#E8F0F7; color:var(--blue); font-weight:600;}
-body.dark-mode .nav-item.active{background:#2D3133;}
-.nav-item .material-symbols-outlined{font-size:20px;}
-
-/* Header */
-.header{position:fixed; top:0; left:var(--sidebar-w); right:0; height:var(--header-h); background:var(--surface); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px; padding:0 24px; z-index:30;}
-.search-box{display:flex; align-items:center; gap:10px; background:var(--bg); border-radius:24px; padding:0 16px; height:44px; width:100%; max-width:600px; transition:box-shadow .2s;}
-.search-box:focus-within{background:var(--surface); box-shadow:var(--shadow-md); border:1px solid var(--border);}
-.search-box input{border:none; background:transparent; flex:1; font-size:15px; outline:none; color:var(--text);}
-.user-btn{display:flex; align-items:center; gap:10px; padding:4px 12px 4px 4px; border:1px solid var(--border); border-radius:24px; background:var(--surface); transition:background .2s;}
-.user-avatar{width:32px; height:32px; border-radius:50%;}
-.icon-btn{padding:8px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background .2s;}
-.icon-btn:hover{background:var(--bg);}
-
-/* Main */
-.main{margin-left:var(--sidebar-w); padding-top:var(--header-h); padding-bottom: 60px;}
-.content{padding:24px; max-width:1400px; margin:0 auto;}
-.page-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;}
-.page-title{font-size:24px; font-weight:700; color:var(--text);}
-.toolbar{display:flex; gap:8px; align-items:center;}
-.btn{padding:8px 16px; border-radius:8px; font-weight:500; border:1px solid var(--border); background:var(--surface); color:var(--text); transition:all .2s; display:flex; align-items:center; gap:6px;}
-.btn-primary{background:var(--blue); color:#fff; border-color:var(--blue);}
-
-/* Dropzone & Progress */
-.dropzone{border:2px dashed var(--border); border-radius:var(--radius-lg); padding:30px 20px; text-align:center; margin-bottom:24px; background:var(--surface); transition:all .2s; cursor:pointer;}
-.dropzone:hover,.dropzone.dragover{border-color:var(--blue); background:var(--bg);}
-#upload-progress-container { display: none; margin-bottom: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
-.progress-bar-wrap { width: 100%; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; margin-top: 8px; }
-.progress-bar-fill { height: 100%; background: var(--blue); width: 0%; transition: width 0.2s; }
-.progress-text { font-size: 13px; display: flex; justify-content: space-between; margin-bottom: 4px; }
-
-/* Files Grid */
-.files-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px;}
-.file-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; cursor:pointer; transition:all .2s; position:relative; display:flex; flex-direction:column;}
-.file-card:hover{box-shadow:var(--shadow-md); border-color:var(--muted);}
-.file-icon-wrap{width:48px; height:48px; border-radius:8px; background:var(--bg); color:var(--text); display:flex; align-items:center; justify-content:center; margin-bottom:12px; font-size:24px;}
-.file-icon-wrap img{width:100%; height:100%; object-fit:cover; border-radius:8px;}
-.file-name{font-weight:600; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-bottom:4px;}
-.file-meta{font-size:12px; color:var(--muted); margin-bottom:12px;}
-.file-actions{display:flex; gap:4px; margin-top:auto; opacity:0; transition:opacity .2s; justify-content:flex-end;}
-.file-card:hover .file-actions{opacity:1;}
-
-/* Modals & Context Menu */
-.modal-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:1000; display:none; align-items:center; justify-content:center; padding:20px;}
-.modal-backdrop.open{display:flex;}
-.modal{background:var(--surface); border-radius:var(--radius-lg); width:100%; max-width:500px; max-height:90vh; display:flex; flex-direction:column; box-shadow:var(--shadow-lg);}
-.modal.wide{max-width:800px;}
-.modal-head{padding:20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;}
-.modal-body{padding:20px; overflow-y:auto;}
-.modal-foot{padding:16px 20px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px;}
-.field label{display:block; font-size:13px; font-weight:500; margin-bottom:8px;}
-.field input{width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); outline:none;}
-
-/* Context Menu */
-.context-menu {
-  position: fixed; background: var(--surface); border: 1px solid var(--border);
-  border-radius: 8px; box-shadow: var(--shadow-lg); padding: 6px; z-index: 2000;
-  display: none; flex-direction: column; min-width: 200px;
-}
-.context-menu.open { display: flex; }
-.ctx-item { padding: 10px 16px; display: flex; align-items: center; gap: 12px; font-size: 14px; border-radius: 6px; cursor: pointer; color: var(--text); }
-.ctx-item:hover { background: var(--bg); }
-.ctx-item .material-symbols-outlined { font-size: 20px; color: var(--muted); }
-.ctx-divider { height: 1px; background: var(--border); margin: 6px 0; }
-
-/* Mobile Nav */
-.mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--surface); border-top: 1px solid var(--border); z-index: 50; justify-content: space-around; align-items: center; }
-.mobile-nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--muted); gap: 4px; cursor: pointer; }
-.mobile-nav-item.active { color: var(--blue); }
-
-/* Preview */
-.preview-box{background:#000; border-radius:10px; min-height:200px; max-height:500px; display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:20px;}
-.preview-box img, .preview-box video{max-width:100%; max-height:480px; object-fit:contain;}
-
-/* Toasts */
-.toast-stack{position:fixed; bottom:80px; right:24px; z-index:2000; display:flex; flex-direction:column; gap:8px;}
-.toast{background:var(--surface); color:var(--text); padding:12px 20px; border-radius:8px; font-size:14px; box-shadow:var(--shadow-lg); border-left: 4px solid var(--blue);}
-.toast.error{border-left-color: var(--error);}
-
-@media(max-width:900px){
-  .sidebar{transform:translateX(-100%);}
-  .sidebar.open{transform:translateX(0);}
-  .header{left:0; padding: 0 12px;}
-  .main{margin-left:0;}
-  .files-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
-  .file-actions{opacity:1;}
-  .mobile-nav { display: flex; }
-  .search-box { max-width: 100%; }
-  .new-btn { display: none; }
-}
+:root{color-scheme:light;--bg:#f4f7fb;--panel:#fff;--panel2:#f8fafc;--text:#152238;--muted:#718096;--line:#e5eaf2;--brand:#4567f5;--brand2:#6d5dfc;--brand-soft:#edf0ff;--green:#15966b;--red:#d94c5c;--amber:#e5a12a;--shadow:0 12px 35px rgba(24,39,75,.08);--radius:18px;--sidebar:258px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px "DM Sans",sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}body.dark{color-scheme:dark;--bg:#0d1220;--panel:#151c2c;--panel2:#1a2335;--text:#e9eefb;--muted:#9ba8c1;--line:#2b354a;--brand:#8b9cff;--brand2:#a69aff;--brand-soft:#252b4a;--shadow:0 12px 35px rgba(0,0,0,.22)}
+button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #9aa9ff;outline-offset:2px}button:disabled{opacity:.5;cursor:not-allowed}
+#auth-screen{min-height:100dvh;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 20% 20%,#6e68ff 0,transparent 36%),radial-gradient(ellipse at 90% 85%,#2ec8bd 0,transparent 35%),linear-gradient(135deg,#101827,#172a50)}
+.auth-card{width:min(430px,100%);background:#fff;color:#16233b;padding:38px;border-radius:28px;box-shadow:0 30px 90px #050b1880}.brand-mark{width:54px;height:54px;display:grid;place-items:center;color:white;border-radius:17px;background:linear-gradient(135deg,#536dfe,#8d5cf6);box-shadow:0 8px 20px #536dfe55}.brand-mark .material-symbols-rounded{font-size:30px}.auth-card h1{font:800 28px Manrope;margin:20px 0 7px}.auth-card p{color:#718096;margin:0 0 25px}.google-btn{width:100%;padding:13px 16px;border:1px solid #dfe5ef;border-radius:13px;background:#fff;color:#17233b;display:flex;justify-content:center;align-items:center;gap:10px;font-weight:700}.google-btn:hover{background:#f7f9fc}.auth-note{font-size:12px;color:#7c879a;margin-top:18px}
+#app{display:none}#app.ready{display:block}.sidebar{position:fixed;inset:0 auto 0 0;width:var(--sidebar);background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:20px 14px;z-index:30;transition:transform .25s}.brand{display:flex;align-items:center;gap:12px;padding:3px 9px 24px}.brand .brand-mark{width:42px;height:42px;border-radius:14px}.brand-title{font:800 17px Manrope;letter-spacing:-.4px}.brand-sub{font-size:11px;color:var(--muted)}.create-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;border:0;border-radius:14px;padding:13px 15px;background:linear-gradient(110deg,var(--brand),var(--brand2));color:white;font-weight:700;box-shadow:0 9px 20px #5e68f52b;margin:0 0 22px}.nav-label{font-size:10px;text-transform:uppercase;letter-spacing:1.3px;color:var(--muted);font-weight:800;padding:13px 13px 7px}.nav{display:flex;flex-direction:column;gap:4px}.nav-item{border:0;background:transparent;color:var(--muted);padding:11px 13px;border-radius:12px;display:flex;align-items:center;gap:13px;text-align:left;width:100%;font-weight:600}.nav-item .material-symbols-rounded{font-size:21px}.nav-item:hover{background:var(--panel2);color:var(--text)}.nav-item.active{background:var(--brand-soft);color:var(--brand)}.org-list{overflow:auto;max-height:35vh}.org-row{display:flex;align-items:center;gap:9px}.org-row .nav-item{min-width:0;flex:1}.org-row .org-more{border:0;background:transparent;color:var(--muted);border-radius:9px;padding:7px}.org-avatar{width:23px;height:23px;display:grid;place-items:center;flex-shrink:0;border-radius:7px;background:var(--brand-soft);color:var(--brand);font-size:12px;font-weight:800}.sidebar-bottom{margin-top:auto;padding-top:15px;border-top:1px solid var(--line)}.user-mini{display:flex;align-items:center;gap:10px;padding:10px}.user-mini img{width:36px;height:36px;border-radius:50%;object-fit:cover}.user-name{font-weight:700;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.user-email{font-size:11px;color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.header{position:fixed;top:0;left:var(--sidebar);right:0;height:78px;z-index:20;display:flex;align-items:center;gap:16px;padding:0 30px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}.mobile-menu{display:none}.search{height:45px;max-width:620px;width:min(56vw,620px);display:flex;align-items:center;gap:10px;padding:0 15px;border:1px solid var(--line);background:var(--panel);border-radius:14px}.search .material-symbols-rounded{color:var(--muted)}.search input{border:0;outline:0;background:transparent;color:var(--text);width:100%;min-width:0}.header-spacer{flex:1}.icon-button{width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--line);border-radius:13px;background:var(--panel);color:var(--muted)}.icon-button:hover{color:var(--brand);border-color:var(--brand)}.main{margin-left:var(--sidebar);padding:108px 30px 60px;max-width:1800px}.welcome{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:26px}.eyebrow{color:var(--brand);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.6px}.page-title{font:800 clamp(25px,3vw,34px) Manrope;letter-spacing:-1px;margin:4px 0}.page-subtitle{color:var(--muted);margin:0}.toolbar{display:flex;gap:9px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border:1px solid var(--line);border-radius:11px;background:var(--panel);color:var(--text);font-weight:700}.btn:hover{border-color:var(--brand);color:var(--brand)}.btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}.btn.danger{color:var(--red)}.hero{position:relative;overflow:hidden;background:linear-gradient(115deg,#263c8c,#6757df 60%,#9475f4);color:white;border-radius:22px;padding:24px 28px;margin-bottom:26px;display:flex;align-items:center;justify-content:space-between;gap:18px;box-shadow:0 15px 35px #554edb26}.hero:after{content:"";position:absolute;width:240px;height:240px;border:1px solid #ffffff25;border-radius:50%;right:8%;top:-120px;box-shadow:0 0 0 28px #ffffff09,0 0 0 58px #ffffff07}.hero h2{font:800 20px Manrope;margin:0 0 5px}.hero p{margin:0;color:#e0e4ff;max-width:600px}.hero .btn{position:relative;z-index:1;background:white;color:#3b4cba;border:0;white-space:nowrap}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:28px}.stat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:17px 18px;display:flex;align-items:center;gap:13px}.stat-icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand)}.stat strong{display:block;font:800 22px Manrope}.stat span:last-child{font-size:12px;color:var(--muted)}.section-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:26px 0 13px}.section-head h2{font:800 17px Manrope;margin:0}.section-head p{margin:2px 0 0;color:var(--muted);font-size:12px}.view-tools{display:flex;align-items:center;gap:8px}.select{padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text)}.files-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:14px}.file-card{position:relative;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s;animation:rise .25s ease both}.file-card:hover{transform:translateY(-3px);border-color:#b9c3ff;box-shadow:var(--shadow)}@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}.file-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.file-icon{width:47px;height:47px;display:grid;place-items:center;border-radius:14px;background:var(--panel2);color:var(--brand);margin-bottom:15px}.file-icon .material-symbols-rounded{font-size:27px}.file-icon.folder{color:#e7a32b;background:#fff5df}.dark .file-icon.folder{background:#382d1b}.file-icon img{width:100%;height:100%;object-fit:cover;border-radius:14px}.file-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:4px}.file-meta{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:7px}.file-menu{border:0;color:var(--muted);background:transparent;border-radius:9px;padding:5px}.file-menu:hover{background:var(--panel2);color:var(--text)}.file-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:15px;padding-top:12px;border-top:1px solid var(--line)}.pill{font-size:10px;font-weight:800;padding:4px 7px;border-radius:7px;background:var(--panel2);color:var(--muted)}.empty{grid-column:1/-1;padding:50px 20px;text-align:center;background:var(--panel);border:1px dashed var(--line);border-radius:18px;color:var(--muted)}.empty .material-symbols-rounded{font-size:42px;color:var(--brand);display:block;margin-bottom:10px}.empty strong{display:block;color:var(--text);font-size:16px;margin-bottom:4px}.breadcrumbs{display:flex;align-items:center;flex-wrap:wrap;gap:7px;color:var(--muted);font-size:12px;margin:0 0 18px}.breadcrumbs button{border:0;background:transparent;color:var(--brand);font-weight:700;padding:0}.dropzone{display:flex;align-items:center;gap:14px;padding:14px 17px;border:1px dashed #b7c3e8;background:var(--panel);border-radius:15px;margin-bottom:18px;cursor:pointer}.dropzone.dragover{border-color:var(--brand);background:var(--brand-soft)}.drop-icon{width:43px;height:43px;border-radius:12px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand)}.dropzone strong{display:block}.dropzone span{font-size:12px;color:var(--muted)}.progress-wrap{display:none;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:18px}.progress-top{display:flex;justify-content:space-between;gap:10px;font-size:12px;margin-bottom:8px}.progress-track{height:6px;background:var(--panel2);border-radius:10px;overflow:hidden}.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--brand2));transition:width .2s}
+.backdrop{display:none;position:fixed;inset:0;z-index:100;background:#09112488;backdrop-filter:blur(5px);align-items:center;justify-content:center;padding:18px}.backdrop.open{display:flex}.modal{width:min(540px,100%);max-height:min(90dvh,820px);display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:0 25px 80px #0003;overflow:hidden;animation:modalIn .18s ease}@keyframes modalIn{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}.modal.wide{width:min(850px,100%)}.modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:19px 22px;border-bottom:1px solid var(--line)}.modal-head h3{font:800 18px Manrope;margin:0}.modal-body{padding:22px;overflow:auto}.modal-foot{padding:15px 22px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:9px}.field{margin-bottom:16px}.field label{display:block;font-size:12px;font-weight:800;margin-bottom:7px}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px;background:var(--panel2);color:var(--text)}.field small{display:block;color:var(--muted);margin-top:6px;font-size:11px}.help{background:var(--brand-soft);border-radius:12px;padding:12px;color:var(--text);font-size:12px;margin-bottom:16px}.permission-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.permission-row:last-child{border-bottom:0}.person-avatar{width:36px;height:36px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand);border-radius:50%;font-weight:800}.person-info{flex:1;min-width:0}.person-info strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.person-info span{display:block;font-size:11px;color:var(--muted);overflow-wrap:anywhere}.permission-row select{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:8px;border-radius:9px}.context-menu{display:none;position:fixed;z-index:120;background:var(--panel);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);padding:6px;min-width:190px}.context-menu.open{display:block}.ctx-item{width:100%;border:0;background:transparent;color:var(--text);padding:10px 11px;border-radius:8px;text-align:left;display:flex;align-items:center;gap:10px;font-weight:600;font-size:12px}.ctx-item:hover{background:var(--panel2)}.ctx-item .material-symbols-rounded{font-size:18px;color:var(--muted)}.ctx-divider{height:1px;background:var(--line);margin:5px}.toast-stack{position:fixed;right:22px;bottom:22px;z-index:200;display:flex;flex-direction:column;gap:8px}.toast{padding:12px 16px;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--green);border-radius:12px;box-shadow:var(--shadow);max-width:min(360px,90vw);animation:rise .2s}.toast.error{border-left-color:var(--red)}.toast.info{border-left-color:var(--brand)}.mobile-nav{display:none}
+@media(max-width:1050px){:root{--sidebar:230px}.main{padding-left:22px;padding-right:22px}.header{padding:0 22px}.files-grid{grid-template-columns:repeat(auto-fill,minmax(175px,1fr))}}
+@media(max-width:760px){.sidebar{transform:translateX(-105%);box-shadow:var(--shadow)}.sidebar.open{transform:translateX(0)}.header{left:0;height:68px;padding:0 14px;gap:9px}.mobile-menu{display:grid}.search{width:auto;flex:1;min-width:0}.header .desktop-only{display:none}.main{margin-left:0;padding:91px 14px 85px}.welcome{display:block}.welcome .toolbar{margin-top:16px}.hero{padding:20px;align-items:flex-start;flex-direction:column}.hero .btn{white-space:normal}.stats{gap:8px}.stat{padding:12px;gap:8px}.stat-icon{width:34px;height:34px}.stat strong{font-size:18px}.stat span:last-child{font-size:10px}.files-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.file-card{padding:12px}.section-head{align-items:flex-start}.dropzone{padding:12px}.mobile-nav{position:fixed;bottom:0;left:0;right:0;height:64px;display:flex;justify-content:space-around;align-items:center;background:var(--panel);border-top:1px solid var(--line);z-index:25}.mobile-nav button{border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px}.mobile-nav button .material-symbols-rounded{font-size:22px}.mobile-nav button.active{color:var(--brand)}.toast-stack{right:12px;bottom:75px}.modal-body{padding:17px}.modal-head,.modal-foot{padding:15px 17px}}
+@media(max-width:390px){.stats{grid-template-columns:1fr}.stat{padding:12px 15px}.files-grid{grid-template-columns:1fr}.search{height:41px}.icon-button{width:38px;height:38px}}
 </style>
 </head>
 <body>
-
-<!-- Auth Screen -->
 <div id="auth-screen">
   <div class="auth-card">
-    <img src="https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png" alt="MART Drive">
+    <div class="brand-mark"><span class="material-symbols-rounded">cloud_done</span></div>
     <h1>MART Drive</h1>
-    <p>Enterprise Workspace & Cloud Storage</p>
-    <button class="google-btn" onclick="signIn()">
-      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-      Sign in with Google
-    </button>
+    <p>Your files. Your team. One beautiful workspace.</p>
+    <button class="google-btn" id="sign-in-btn"><svg width="19" height="19" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Continue with Google</button>
+    <div class="auth-note">Secure sign-in powered by Firebase Authentication.</div>
   </div>
 </div>
 
-<!-- Main App -->
 <div id="app">
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand" onclick="openOrgModal()">
-      <img id="org-logo-display" src="https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png" alt="Logo">
-      <div>
-        <h2 id="org-name-display">MART Drive</h2>
-        <span>Switch Workspace</span>
-      </div>
+    <div class="brand"><div class="brand-mark"><span class="material-symbols-rounded">cloud_done</span></div><div><div class="brand-title">MART Drive</div><div class="brand-sub">Workspace cloud</div></div></div>
+    <button class="create-btn" id="upload-trigger"><span class="material-symbols-rounded">add</span> Upload files</button>
+    <div class="nav-label">Workspace</div>
+    <nav class="nav">
+      <button class="nav-item active" data-view="drive"><span class="material-symbols-rounded">folder_open</span> My Drive</button>
+      <button class="nav-item" data-view="recent"><span class="material-symbols-rounded">schedule</span> Recent</button>
+      <button class="nav-item" data-view="shared"><span class="material-symbols-rounded">group</span> Shared with me</button>
+      <button class="nav-item" data-view="starred"><span class="material-symbols-rounded">star</span> Starred</button>
+      <button class="nav-item" data-view="trash"><span class="material-symbols-rounded">delete</span> Trash</button>
+    </nav>
+    <div class="nav-label">Organizations</div>
+    <div class="org-list" id="org-list"></div>
+    <button class="nav-item" id="create-org"><span class="material-symbols-rounded">add_circle</span> Create organization</button>
+    <div class="sidebar-bottom">
+      <button class="nav-item" id="theme-toggle"><span class="material-symbols-rounded">dark_mode</span> Toggle appearance</button>
+      <button class="nav-item" id="settings-btn"><span class="material-symbols-rounded">settings</span> Workspace settings</button>
+      <div class="user-mini"><img id="user-avatar" alt="" src=""><div><div class="user-name" id="user-name">Signed in</div><div class="user-email" id="user-email"></div></div></div>
     </div>
-    <button class="new-btn" onclick="document.getElementById('file-input').click()">
-      <span class="material-symbols-outlined">add</span> Upload File
-    </button>
-    <ul class="nav-list">
-      <li><div class="nav-item active" onclick="setView('drive')"><span class="material-symbols-outlined">folder</span> My Files</div></li>
-      <li><div class="nav-item" onclick="setView('recent')"><span class="material-symbols-outlined">schedule</span> Recent</div></li>
-      <li><div class="nav-item" onclick="toggleDarkMode()"><span class="material-symbols-outlined">dark_mode</span> Toggle Theme</div></li>
-      <li class="nav-section">Organizations</li>
-      <div id="org-list-container"></div>
-    </ul>
   </aside>
-
   <header class="header">
-    <div class="search-box">
-      <span class="material-symbols-outlined" style="color:var(--muted)">search</span>
-      <input type="search" id="search-input" placeholder="Search in Drive" oninput="handleSearch(this.value)">
-    </div>
-    <div style="flex:1"></div>
-    <button class="user-btn" onclick="logout()">
-      <img id="user-avatar" class="user-avatar" src="" style="display:none">
-      <span style="font-weight:500; font-size:13px">Sign Out</span>
-    </button>
+    <button class="icon-button mobile-menu" id="mobile-menu" aria-label="Open menu"><span class="material-symbols-rounded">menu</span></button>
+    <label class="search"><span class="material-symbols-rounded">search</span><input id="search-input" type="search" placeholder="Search files and folders…" autocomplete="off"><kbd style="font-size:10px;color:var(--muted);white-space:nowrap">⌕</kbd></label>
+    <div class="header-spacer"></div>
+    <button class="icon-button desktop-only" id="header-theme" aria-label="Toggle theme"><span class="material-symbols-rounded">contrast</span></button>
+    <button class="icon-button" id="sign-out" title="Sign out" aria-label="Sign out"><span class="material-symbols-rounded">logout</span></button>
   </header>
-
   <main class="main">
-    <div class="content">
-      <div class="page-head">
-        <div>
-          <h1 class="page-title" id="page-title">My Files</h1>
-          <div style="font-size:13px; color:var(--muted)" id="page-meta">0 items</div>
-        </div>
-        <div class="toolbar">
-          <button class="btn btn-primary" onclick="openNewFolderModal()">
-            <span class="material-symbols-outlined">create_new_folder</span> New Folder
-          </button>
-        </div>
-      </div>
-
-      <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
-        <h3>Drag & Drop or Click to Upload</h3>
-        <input type="file" id="file-input" hidden multiple onchange="handleFiles(this.files)">
-      </div>
-
-      <div id="upload-progress-container">
-        <div class="progress-text">
-          <span id="progress-filename">Uploading...</span>
-          <span id="progress-percent">0%</span>
-        </div>
-        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
-      </div>
-
-      <div id="breadcrumbs" style="margin-bottom:16px; font-size:14px; display:flex; gap:8px; align-items:center;"></div>
-      <div class="files-grid" id="files-grid"></div>
-    </div>
+    <section class="welcome">
+      <div><div class="eyebrow" id="eyebrow">YOUR WORKSPACE</div><h1 class="page-title" id="page-title">Good to see you</h1><p class="page-subtitle" id="page-subtitle">Everything you need, organized in one place.</p></div>
+      <div class="toolbar"><button class="btn" id="new-folder"><span class="material-symbols-rounded">create_new_folder</span> New folder</button><button class="btn primary" id="share-workspace"><span class="material-symbols-rounded">person_add</span> Share</button></div>
+    </section>
+    <section class="hero"><div><h2>A calmer way to work together.</h2><p>Keep projects organized, share the right things with the right people, and find your files in seconds.</p></div><button class="btn" id="hero-upload"><span class="material-symbols-rounded">cloud_upload</span> Upload something</button></section>
+    <section class="stats">
+      <div class="stat"><div class="stat-icon"><span class="material-symbols-rounded">folder</span></div><div><strong id="stat-folders">0</strong><span>Folders in this view</span></div></div>
+      <div class="stat"><div class="stat-icon"><span class="material-symbols-rounded">description</span></div><div><strong id="stat-files">0</strong><span>Files in this view</span></div></div>
+      <div class="stat"><div class="stat-icon"><span class="material-symbols-rounded">database</span></div><div><strong id="stat-storage">0 B</strong><span>Visible file size</span></div></div>
+    </section>
+    <div id="breadcrumbs" class="breadcrumbs"></div>
+    <div class="dropzone" id="dropzone"><div class="drop-icon"><span class="material-symbols-rounded">cloud_upload</span></div><div><strong>Drop files here to upload</strong><span>or click to browse your device · files are stored in your Google Drive</span></div><button class="btn" style="margin-left:auto" id="browse-files">Browse files</button><input type="file" id="file-input" hidden multiple></div>
+    <div class="progress-wrap" id="progress-wrap"><div class="progress-top"><span id="progress-name">Uploading…</span><span id="progress-percent">0%</span></div><div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div></div>
+    <div class="section-head"><div><h2 id="items-heading">Your files</h2><p id="items-subheading">Organized, searchable, always yours.</p></div><div class="view-tools"><select class="select" id="sort-select" aria-label="Sort files"><option value="name">Name A–Z</option><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="size">Largest first</option></select><button class="icon-button" id="refresh-btn" title="Refresh"><span class="material-symbols-rounded">refresh</span></button></div></div>
+    <div class="files-grid" id="files-grid"></div>
   </main>
-
-  <!-- Mobile Bottom Nav -->
-  <div class="mobile-nav">
-    <div class="mobile-nav-item active" onclick="setView('drive')">
-      <span class="material-symbols-outlined">home</span> Home
-    </div>
-    <div class="mobile-nav-item" onclick="setView('recent')">
-      <span class="material-symbols-outlined">schedule</span> Recent
-    </div>
-    <div class="mobile-nav-item" onclick="document.getElementById('file-input').click()">
-      <span class="material-symbols-outlined">add_circle</span> New
-    </div>
-  </div>
+  <nav class="mobile-nav"><button class="active" data-view="drive"><span class="material-symbols-rounded">home</span>Home</button><button data-view="recent"><span class="material-symbols-rounded">schedule</span>Recent</button><button id="mobile-upload"><span class="material-symbols-rounded">add_circle</span>Upload</button><button data-view="shared"><span class="material-symbols-rounded">group</span>Shared</button></nav>
 </div>
-
-<!-- Context Menu (Google Drive Style) -->
+<div class="backdrop" id="modal-backdrop"><section class="modal" id="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title"><header class="modal-head"><h3 id="modal-title">Dialog</h3><button class="icon-button" id="modal-close" aria-label="Close"><span class="material-symbols-rounded">close</span></button></header><div class="modal-body" id="modal-body"></div><footer class="modal-foot" id="modal-foot"></footer></section></div>
 <div class="context-menu" id="context-menu">
-  <div class="ctx-item" onclick="ctxAction('open')"><span class="material-symbols-outlined">open_in_new</span> Open</div>
-  <div class="ctx-item" onclick="ctxAction('share')"><span class="material-symbols-outlined">share</span> Share / Copy Link</div>
+  <button class="ctx-item" data-action="open"><span class="material-symbols-rounded">open_in_new</span> Open</button>
+  <button class="ctx-item" data-action="share"><span class="material-symbols-rounded">share</span> Share / manage access</button>
+  <button class="ctx-item" data-action="star"><span class="material-symbols-rounded">star</span> Add to starred</button>
   <div class="ctx-divider"></div>
-  <div class="ctx-item" onclick="ctxAction('download')"><span class="material-symbols-outlined">download</span> Download</div>
-  <div class="ctx-item" onclick="ctxAction('rename')"><span class="material-symbols-outlined">edit</span> Rename</div>
-  <div class="ctx-item" onclick="ctxAction('copy')"><span class="material-symbols-outlined">content_copy</span> Make a copy</div>
-  <div class="ctx-item" onclick="ctxAction('info')"><span class="material-symbols-outlined">info</span> View information</div>
+  <button class="ctx-item" data-action="download"><span class="material-symbols-rounded">download</span> Download</button>
+  <button class="ctx-item" data-action="rename"><span class="material-symbols-rounded">edit</span> Rename</button>
+  <button class="ctx-item" data-action="move"><span class="material-symbols-rounded">drive_file_move</span> Move to folder</button>
+  <button class="ctx-item" data-action="copy"><span class="material-symbols-rounded">content_copy</span> Make a copy</button>
+  <button class="ctx-item" data-action="info"><span class="material-symbols-rounded">info</span> Details</button>
   <div class="ctx-divider"></div>
-  <div class="ctx-item" onclick="ctxAction('delete')" style="color:var(--error)"><span class="material-symbols-outlined" style="color:var(--error)">delete</span> Move to trash</div>
+  <button class="ctx-item" data-action="delete" style="color:var(--red)"><span class="material-symbols-rounded">delete</span> Move to trash</button>
 </div>
-
-<!-- Universal Modal -->
-<div class="modal-backdrop" id="modal-backdrop">
-  <div class="modal" id="modal-box">
-    <div class="modal-head">
-      <h3 id="modal-title">Modal</h3>
-      <button class="icon-btn" onclick="closeModal()"><span class="material-symbols-outlined">close</span></button>
-    </div>
-    <div class="modal-body" id="modal-body"></div>
-    <div class="modal-foot" id="modal-foot"></div>
-  </div>
-</div>
-
-<div class="toast-stack" id="toast-stack"></div>
+<div class="toast-stack" id="toast-stack" aria-live="polite"></div>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot, query, where, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, getDoc, getDocs, onSnapshot, query, where, serverTimestamp, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDUcT6hVqLHy3pYzwg1oktI7amTpF9Qj4c",
@@ -279,407 +109,91 @@ const firebaseConfig = {
   appId: "1:829348083361:web:d6e91ccec70c2b9d53e2e0",
   measurementId: "G-J2ERB07TW0"
 };
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-let currentUser = null;
-let accessToken = null;
-let allFiles = [], allFolders = [], organizations = [];
-let currentOrgId = null, currentFolderId = null, currentView = 'drive', searchTerm = '';
-let unsubFiles = null, unsubFolders = null, unsubOrgs = null;
-let hasTriedSilentLogin = false;
-let ctxTargetItem = null; // Currently right-clicked item
-
-// ----------------------------------------------------
-// THEME & INIT
-// ----------------------------------------------------
-if (localStorage.getItem('theme') === 'dark') {
-  document.body.classList.add('dark-mode');
+const firebaseApp = initializeApp(firebaseConfig), auth = getAuth(firebaseApp), db = getFirestore(firebaseApp);
+const $ = id => document.getElementById(id);
+const state = {user:null, token:null, files:[], folders:[], orgs:[], shares:[], orgId:null, folderId:null, view:'drive', search:'', sort:'name', target:null, unsub:[], busy:false};
+const FALLBACK_LOGO = '';
+const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const normEmail = value => String(value||'').trim().toLowerCase();
+const timeValue = value => value?.toMillis?.() || (value instanceof Date ? value.getTime() : 0);
+const icon = name => `<span class="material-symbols-rounded">${name}</span>`;
+function toast(message,type=''){const node=document.createElement('div');node.className=`toast ${type}`;node.textContent=message;$('toast-stack').append(node);setTimeout(()=>node.remove(),3800)}
+function formatSize(bytes){const n=Number(bytes)||0;if(n<1024)return `${n} B`;if(n<1048576)return `${(n/1024).toFixed(1)} KB`;if(n<1073741824)return `${(n/1048576).toFixed(1)} MB`;return `${(n/1073741824).toFixed(2)} GB`}
+function showModal(title,body,buttons=[],wide=false){$('modal-title').textContent=title;$('modal-body').innerHTML=body;$('modal-foot').innerHTML='';buttons.forEach(b=>{const el=document.createElement('button');el.className=`btn ${b.primary?'primary':''} ${b.danger?'danger':''}`;el.textContent=b.label;el.onclick=b.onClick;$('modal-foot').append(el)});$('modal-box').classList.toggle('wide',wide);$('modal-backdrop').classList.add('open')}
+function closeModal(){$('modal-backdrop').classList.remove('open')}
+$('modal-close').onclick=closeModal;$('modal-backdrop').addEventListener('click',e=>{if(e.target===$('modal-backdrop'))closeModal()});
+function stopListeners(){state.unsub.forEach(fn=>{try{fn()}catch{}});state.unsub=[]}
+function getCurrentOrg(){return state.orgs.find(o=>o.id===state.orgId)||null}
+function isOrgOwner(org=getCurrentOrg()){return !!org&&org.owner===state.user?.uid}
+function currentScope(){return state.orgId||null}
+function setTokenFromCredential(result){state.token=GoogleAuthProvider.credentialFromResult(result)?.accessToken||null}
+async function login(){try{const provider=new GoogleAuthProvider();provider.addScope('https://www.googleapis.com/auth/drive.file');provider.setCustomParameters({prompt:'select_account'});const result=await signInWithPopup(auth,provider);setTokenFromCredential(result)}catch(e){toast(e.message||'Sign-in failed','error')}}
+$('sign-in-btn').onclick=login;
+$('sign-out').onclick=async()=>{await signOut(auth);location.reload()};
+onAuthStateChanged(auth,async user=>{if(!user){state.user=null;stopListeners();$('app').classList.remove('ready');$('auth-screen').style.display='grid';return}
+ state.user=user;$('auth-screen').style.display='none';$('app').classList.add('ready');$('user-name').textContent=user.displayName||'MART Drive user';$('user-email').textContent=user.email||'';$('user-avatar').src=user.photoURL||'https://www.gravatar.com/avatar/?d=mp';if(!state.token){try{const p=new GoogleAuthProvider();p.addScope('https://www.googleapis.com/auth/drive.file');const r=await signInWithPopup(auth,p);setTokenFromCredential(r)}catch{toast('Google Drive access was not granted. You can sign in again to upload or manage Drive files.','info')}}setupListeners()});
+function setupListeners(){stopListeners();const uid=state.user.uid;
+ // Own organizations plus organizations explicitly shared with this user are merged client-side.
+ state.unsub.push(onSnapshot(query(collection(db,'organizations'),where('owner','==',uid)),snap=>{const own=snap.docs.map(d=>({id:d.id,...d.data()}));state.orgs=own;renderOrgList();render()} ,err=>toast(`Organizations: ${err.message}`,'error')));
+ state.unsub.push(onSnapshot(query(collection(db,'folders'),where('uid','==',uid)),snap=>{state.folders=snap.docs.map(d=>({id:d.id,...d.data()}));render()},err=>toast(`Folders: ${err.message}`,'error')));
+ state.unsub.push(onSnapshot(query(collection(db,'files'),where('uid','==',uid)),snap=>{state.files=snap.docs.map(d=>({id:d.id,...d.data(),type:'file'}));render()},err=>toast(`Files: ${err.message}`,'error')));
+ state.unsub.push(onSnapshot(query(collection(db,'shares'),where('email','==',normEmail(state.user.email))),snap=>{state.shares=snap.docs.map(d=>({id:d.id,...d.data()}));render()},err=>console.warn('Share listener:',err.message)));
 }
-window.toggleDarkMode = () => {
-  document.body.classList.toggle('dark-mode');
-  localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-};
-
-// ----------------------------------------------------
-// AUTHENTICATION
-// ----------------------------------------------------
-window.signIn = async () => {
-  const provider = new GoogleAuthProvider();
-  provider.addScope('https://www.googleapis.com/auth/drive.file');
-  provider.setCustomParameters({ prompt: 'consent' });
-  try {
-    const result = await signInWithPopup(auth, provider);
-    accessToken = GoogleAuthProvider.credentialFromResult(result).accessToken;
-  } catch (err) { toast(err.message, 'error'); }
-};
-
-window.logout = async () => { await signOut(auth); window.location.reload(); };
-
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    currentUser = user;
-    document.getElementById('auth-screen').style.display = 'none';
-    document.getElementById('app').classList.add('ready');
-    if (user.photoURL) {
-      const av = document.getElementById('user-avatar');
-      av.src = user.photoURL; av.style.display = 'block';
-    }
-    if (!accessToken && !hasTriedSilentLogin) {
-      hasTriedSilentLogin = true;
-      try {
-        const provider = new GoogleAuthProvider();
-        provider.addScope('https://www.googleapis.com/auth/drive.file');
-        provider.setCustomParameters({ prompt: '' }); 
-        const result = await signInWithPopup(auth, provider);
-        accessToken = GoogleAuthProvider.credentialFromResult(result).accessToken;
-      } catch (err) { console.warn("Silent login failed."); }
-    }
-    setupListeners();
-  } else {
-    currentUser = null; accessToken = null; hasTriedSilentLogin = false;
-    document.getElementById('app').classList.remove('ready');
-    document.getElementById('auth-screen').style.display = 'flex';
-    if (unsubFiles) unsubFiles(); if (unsubFolders) unsubFolders(); if (unsubOrgs) unsubOrgs();
-  }
-});
-
-// ----------------------------------------------------
-// DATA LISTENERS
-// ----------------------------------------------------
-function setupListeners() {
-  const uid = currentUser.uid;
-  if (unsubOrgs) unsubOrgs();
-  unsubOrgs = onSnapshot(query(collection(db, 'organizations'), where('owner', '==', uid)), (snap) => {
-    organizations = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderOrgSidebar();
-  });
-  loadFilesAndFolders();
-}
-
-function loadFilesAndFolders() {
-  const uid = currentUser.uid;
-  if (unsubFolders) unsubFolders(); if (unsubFiles) unsubFiles();
-  unsubFolders = onSnapshot(query(collection(db, 'folders'), where('uid', '==', uid)), (snap) => {
-    allFolders = snap.docs.map(d => ({ id: d.id, ...d.data() })); render();
-  });
-  unsubFiles = onSnapshot(query(collection(db, 'files'), where('uid', '==', uid)), (snap) => {
-    allFiles = snap.docs.map(d => ({ id: d.id, ...d.data() })); render();
-  });
-}
-
-// ----------------------------------------------------
-// ORGANIZATION & FOLDER LOGIC
-// ----------------------------------------------------
-window.switchOrg = (orgId) => {
-  currentOrgId = orgId; currentFolderId = null;
-  const org = organizations.find(o => o.id === orgId);
-  document.getElementById('org-name-display').textContent = orgId ? org.name : "Personal Drive";
-  document.getElementById('org-logo-display').src = orgId ? (org.logoUrl || "https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png") : "https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png";
-  renderOrgSidebar(); setView('drive');
-};
-
-function renderOrgSidebar() {
-  const container = document.getElementById('org-list-container');
-  container.innerHTML = '';
-  container.innerHTML += `<div class="nav-item ${!currentOrgId ? 'active' : ''}" onclick="switchOrg(null)"><span class="material-symbols-outlined">person</span> Personal Drive</div>`;
-  organizations.forEach(org => {
-    container.innerHTML += `<div class="nav-item ${currentOrgId === org.id ? 'active' : ''}" onclick="switchOrg('${org.id}')"><img src="${org.logoUrl || 'https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png'}" style="width:20px;height:20px;border-radius:4px;"> ${org.name}</div>`;
-  });
-  container.innerHTML += `<div class="nav-item" style="color:var(--blue)" onclick="openOrgModal()"><span class="material-symbols-outlined">add_circle</span> Create Org</div>`;
-}
-
-window.openOrgModal = () => {
-  document.getElementById('modal-title').textContent = 'Create Organization';
-  document.getElementById('modal-body').innerHTML = `
-    <div class="field" style="margin-bottom:12px"><label>Organization Name</label><input type="text" id="org-name-input" placeholder="e.g. Bangladesh Scouts"></div>
-    <div class="field"><label>Logo Image URL (Optional)</label><input type="text" id="org-logo-input" placeholder="https://example.com/logo.png"></div>`;
-  document.getElementById('modal-foot').innerHTML = `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="createOrg()">Create</button>`;
-  document.getElementById('modal-box').classList.remove('wide'); document.getElementById('modal-backdrop').classList.add('open');
-};
-
-window.createOrg = async () => {
-  const name = document.getElementById('org-name-input').value.trim();
-  if (!name) return toast('Name required', 'error');
-  await addDoc(collection(db, 'organizations'), { name, logoUrl: document.getElementById('org-logo-input').value.trim() || null, owner: currentUser.uid, members: [currentUser.email.toLowerCase()], createdAt: serverTimestamp() });
-  toast('Organization created!', 'success'); closeModal();
-};
-
-window.openNewFolderModal = () => {
-  document.getElementById('modal-title').textContent = 'Create Folder';
-  document.getElementById('modal-body').innerHTML = `<div class="field"><label>Folder Name</label><input type="text" id="folder-name" placeholder="Untitled Folder"></div>`;
-  document.getElementById('modal-foot').innerHTML = `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="createFolder()">Create</button>`;
-  document.getElementById('modal-backdrop').classList.add('open');
-};
-
-window.createFolder = async () => {
-  const name = document.getElementById('folder-name').value.trim(); if (!name) return;
-  await addDoc(collection(db, 'folders'), { name, parentId: currentFolderId, orgId: currentOrgId || null, uid: currentUser.uid, createdAt: serverTimestamp() });
-  toast('Folder created', 'success'); closeModal();
-};
-
-window.openFolder = (folderId) => { currentFolderId = folderId; render(); };
-
-function renderBreadcrumbs() {
-  const bc = document.getElementById('breadcrumbs'); bc.innerHTML = '';
-  bc.innerHTML += `<span style="cursor:pointer;color:var(--blue)" onclick="currentFolderId=null;render()">${currentOrgId ? 'Root' : 'My Drive'}</span>`;
-  if (currentFolderId) {
-    let path = [], cur = allFolders.find(f => f.id === currentFolderId);
-    while (cur) { path.unshift(cur); cur = allFolders.find(f => f.id === cur.parentId); }
-    path.forEach(f => { bc.innerHTML += `<span style="color:var(--muted)">/</span><span style="cursor:pointer;color:var(--blue)" onclick="currentFolderId='${f.id}';render()">${f.name}</span>`; });
-  }
-}
-
-// ----------------------------------------------------
-// RENDER
-// ----------------------------------------------------
-window.setView = (view) => { currentView = view; currentFolderId = null; render(); };
-window.handleSearch = (val) => { searchTerm = val.toLowerCase(); render(); };
-
-function render() {
-  renderBreadcrumbs();
-  let displayItems = [];
-  let filteredFiles = allFiles.filter(f => (f.orgId || null) === currentOrgId);
-  let filteredFolders = allFolders.filter(f => (f.orgId || null) === currentOrgId);
-
-  if (currentView === 'drive') {
-    filteredFolders = filteredFolders.filter(f => (f.parentId || null) === currentFolderId);
-    filteredFiles = filteredFiles.filter(f => (f.folderId || null) === currentFolderId);
-    filteredFolders.forEach(f => displayItems.push({ type: 'folder', ...f }));
-    filteredFiles.forEach(f => displayItems.push({ type: 'file', ...f }));
-  } else if (currentView === 'recent') {
-    const sorted = [...filteredFiles].sort((a,b) => (b.createdAt?.toMillis()||0) - (a.createdAt?.toMillis()||0));
-    sorted.slice(0, 50).forEach(f => displayItems.push({ type: 'file', ...f }));
-  }
-  if (searchTerm) displayItems = displayItems.filter(item => item.name.toLowerCase().includes(searchTerm));
-
-  document.getElementById('page-meta').textContent = `${displayItems.length} items`;
-  document.getElementById('page-title').textContent = currentView === 'drive' ? 'My Files' : 'Recent';
-  document.getElementById('dropzone').style.display = currentView === 'drive' ? 'block' : 'none';
-
-  const grid = document.getElementById('files-grid'); grid.innerHTML = '';
-  if (displayItems.length === 0) { grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--muted)">No files here.</div>'; return; }
-
-  displayItems.forEach(item => {
-    const card = document.createElement('div'); card.className = 'file-card';
-    
-    // Right click context menu event
-    card.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      openContextMenu(e, item);
-    });
-
-    if (item.type === 'folder') {
-      card.innerHTML = `<div class="file-icon-wrap"><span class="material-symbols-outlined" style="color:#F59E0B">folder</span></div><div class="file-name">${item.name}</div><div class="file-meta">Folder</div>`;
-      card.onclick = () => openFolder(item.id);
-    } else {
-      const isImg = item.mimeType?.includes('image');
-      let icon = `<span class="material-symbols-outlined">description</span>`;
-      if (isImg) icon = `<img src="https://drive.google.com/thumbnail?id=${item.driveFileId}&sz=w200&authuser=0">`;
-      else if (item.mimeType?.includes('video')) icon = `<span class="material-symbols-outlined" style="color:#EA4335">movie</span>`;
-      else if (item.mimeType?.includes('pdf')) icon = `<span class="material-symbols-outlined" style="color:#D93025">picture_as_pdf</span>`;
-
-      card.innerHTML = `
-        <div class="file-icon-wrap">${icon}</div>
-        <div class="file-name" title="${item.name}">${item.name}</div>
-        <div class="file-meta">${fmtSize(item.size)}</div>
-        <div class="file-actions">
-          <button class="icon-btn" onclick="event.stopPropagation(); openContextMenu(event, ${JSON.stringify(item).replace(/"/g, '&quot;')})"><span class="material-symbols-outlined">more_vert</span></button>
-        </div>`;
-      card.onclick = () => previewFile(item.driveFileId, item.mimeType, item.name);
-    }
-    grid.appendChild(card);
-  });
-}
-
-// ----------------------------------------------------
-// CONTEXT MENU (Right Click & 3-Dot)
-// ----------------------------------------------------
-window.openContextMenu = (e, item) => {
-  e.preventDefault();
-  ctxTargetItem = item;
-  const menu = document.getElementById('context-menu');
-  menu.style.left = Math.min(e.pageX, window.innerWidth - 220) + 'px';
-  menu.style.top = Math.min(e.pageY, window.innerHeight - 300) + 'px';
-  
-  // Hide unsupported options for folders
-  if (item.type === 'folder') {
-    menu.querySelector('[onclick="ctxAction(\'download\')"]').style.display = 'none';
-    menu.querySelector('[onclick="ctxAction(\'copy\')"]').style.display = 'none';
-    menu.querySelector('[onclick="ctxAction(\'open\')"]').style.display = 'none';
-  } else {
-    menu.querySelector('[onclick="ctxAction(\'download\')"]').style.display = 'flex';
-    menu.querySelector('[onclick="ctxAction(\'copy\')"]').style.display = 'flex';
-    menu.querySelector('[onclick="ctxAction(\'open\')"]').style.display = 'flex';
-  }
-
-  menu.classList.add('open');
-};
-
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('#context-menu') && !e.target.closest('.file-card')) {
-    document.getElementById('context-menu').classList.remove('open');
-  }
-});
-
-window.ctxAction = async (action) => {
-  document.getElementById('context-menu').classList.remove('open');
-  if (!ctxTargetItem) return;
-  const item = ctxTargetItem;
-
-  if (action === 'open') {
-    if (item.type === 'folder') openFolder(item.id);
-    else previewFile(item.driveFileId, item.mimeType, item.name);
-  } 
-  else if (action === 'share') {
-    const link = `https://drive.google.com/file/d/${item.driveFileId}/view`;
-    await navigator.clipboard.writeText(link);
-    toast('Share link copied to clipboard!', 'success');
-  }
-  else if (action === 'download') {
-    window.open(`https://drive.google.com/uc?export=download&id=${item.driveFileId}`, '_blank');
-  }
-  else if (action === 'rename') {
-    document.getElementById('modal-title').textContent = 'Rename';
-    document.getElementById('modal-body').innerHTML = `<div class="field"><label>New Name</label><input type="text" id="rename-input" value="${item.name}"></div>`;
-    document.getElementById('modal-foot').innerHTML = `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="renameItem('${item.id}', '${item.type}')">Save</button>`;
-    document.getElementById('modal-backdrop').classList.add('open');
-  }
-  else if (action === 'copy') {
-    try {
-      toast('Creating copy...', 'success');
-      const res = await fetch(`https://www.googleapis.com/drive/v3/files/${item.driveFileId}/copy`, {
-        method: 'POST', headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'Copy of ' + item.name })
-      });
-      const newFile = await res.json();
-      await addDoc(collection(db, 'files'), {
-        ...item, id: undefined, driveFileId: newFile.id, name: newFile.name, createdAt: serverTimestamp()
-      });
-      toast('Copy created!', 'success');
-    } catch (err) { toast('Copy failed', 'error'); }
-  }
-  else if (action === 'info') {
-    document.getElementById('modal-title').textContent = 'File Information';
-    document.getElementById('modal-body').innerHTML = `
-      <div style="padding:10px; background:var(--bg); border-radius:8px; margin-bottom:15px;">
-        <p style="margin-bottom:8px;"><strong>Name:</strong> ${item.name}</p>
-        <p style="margin-bottom:8px;"><strong>Type:</strong> ${item.mimeType || 'Folder'}</p>
-        <p style="margin-bottom:8px;"><strong>Size:</strong> ${fmtSize(item.size)}</p>
-        <p><strong>ID:</strong> ${item.driveFileId || 'Local Folder'}</p>
-      </div>`;
-    document.getElementById('modal-foot').innerHTML = `<button class="btn btn-primary" onclick="closeModal()">Close</button>`;
-    document.getElementById('modal-backdrop').classList.add('open');
-  }
-  else if (action === 'delete') {
-    if (!confirm('Move to trash?')) return;
-    try {
-      if (item.type === 'file') {
-        await fetch(`https://www.googleapis.com/drive/v3/files/${item.driveFileId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${accessToken}` } });
-        await deleteDoc(doc(db, 'files', item.id));
-      } else {
-        await deleteDoc(doc(db, 'folders', item.id));
-      }
-      toast('Deleted', 'success');
-    } catch (err) { toast('Delete failed', 'error'); }
-  }
-};
-
-window.renameItem = async (id, type) => {
-  const newName = document.getElementById('rename-input').value.trim();
-  if (!newName) return;
-  try {
-    if (type === 'file') {
-      await fetch(`https://www.googleapis.com/drive/v3/files/${ctxTargetItem.driveFileId}`, {
-        method: 'PATCH', headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newName })
-      });
-      await updateDoc(doc(db, 'files', id), { name: newName });
-    } else {
-      await updateDoc(doc(db, 'folders', id), { name: newName });
-    }
-    toast('Renamed', 'success'); closeModal();
-  } catch (err) { toast('Rename failed', 'error'); }
-};
-
-// ----------------------------------------------------
-// UPLOAD & PREVIEW
-// ----------------------------------------------------
-window.handleFiles = async (files) => {
-  if (!accessToken) return toast('Please sign in again.', 'error');
-  const pContainer = document.getElementById('upload-progress-container');
-  const pFill = document.getElementById('progress-fill');
-  const pPct = document.getElementById('progress-percent');
-  const pName = document.getElementById('progress-filename');
-  pContainer.style.display = 'block';
-
-  for (const file of files) {
-    pName.textContent = `Uploading: ${file.name}`; pFill.style.width = '0%'; pPct.textContent = '0%';
-    try {
-      const metadata = { name: file.name, mimeType: file.type || 'application/octet-stream' };
-      const form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-      form.append('file', file);
-      
-      const driveFile = await new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,size');
-        xhr.setRequestHeader('Authorization', `Bearer ${accessToken}`);
-        xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) {
-            const pct = Math.round((e.loaded / e.total) * 100);
-            pFill.style.width = pct + '%'; pPct.textContent = pct + '%';
-          }
-        };
-        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve(JSON.parse(xhr.responseText)) : reject(new Error('Upload failed'));
-        xhr.onerror = () => reject(new Error('Network error')); xhr.send(form);
-      });
-
-      await fetch(`https://www.googleapis.com/drive/v3/files/${driveFile.id}/permissions`, {
-        method: 'POST', headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: 'reader', type: 'anyone' })
-      }).catch(() => {});
-
-      await addDoc(collection(db, 'files'), {
-        driveFileId: driveFile.id, name: driveFile.name, mimeType: driveFile.mimeType,
-        size: driveFile.size || file.size, folderId: currentFolderId, orgId: currentOrgId || null, uid: currentUser.uid, createdAt: serverTimestamp()
-      });
-    } catch (err) { toast(`Error: ${file.name}`, 'error'); }
-  }
-  setTimeout(() => { pContainer.style.display = 'none'; }, 1000);
-  toast('Upload complete!', 'success');
-};
-
-window.previewFile = (driveId, mimeType, name) => {
-  const body = document.getElementById('modal-body');
-  document.getElementById('modal-title').textContent = name || 'Preview';
-  let html = `<div class="preview-box">Preview not available</div>`;
-  if (mimeType?.includes('image')) html = `<div class="preview-box"><img src="https://drive.google.com/thumbnail?id=${driveId}&sz=w1000&authuser=0"></div>`;
-  else if (mimeType?.includes('video') || mimeType?.includes('pdf')) html = `<div class="preview-box" style="background:#fff"><iframe src="https://drive.google.com/file/d/${driveId}/preview" width="100%" height="500px" allow="autoplay"></iframe></div>`;
-  
-  body.innerHTML = html;
-  document.getElementById('modal-foot').innerHTML = `<button class="btn btn-primary" onclick="closeModal()">Close</button>`;
-  document.getElementById('modal-box').classList.add('wide'); document.getElementById('modal-backdrop').classList.add('open');
-};
-
-// Utils
-window.closeModal = () => document.getElementById('modal-backdrop').classList.remove('open');
-function toast(msg, type="") {
-  const t = document.createElement('div'); t.className = 'toast ' + type; t.textContent = msg;
-  document.getElementById('toast-stack').appendChild(t); setTimeout(() => { t.remove(); }, 3000);
-}
-function fmtSize(b) {
-  if (!b) return '0 B'; if (b < 1024) return b + ' B';
-  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
-  return (b/1048576).toFixed(1) + ' MB';
-}
-
-const dz = document.getElementById('dropzone');
-dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
-dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-dz.addEventListener('drop', (e) => { e.preventDefault(); dz.classList.remove('dragover'); if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files); });
+function renderOrgList(){const host=$('org-list');host.innerHTML=`<button class="nav-item ${!state.orgId?'active':''}" data-org="personal">${icon('person')} Personal Drive</button>`;state.orgs.forEach(org=>{const row=document.createElement('div');row.className='org-row';row.innerHTML=`<button class="nav-item ${state.orgId===org.id?'active':''}" data-org="${escapeHTML(org.id)}"><span class="org-avatar">${escapeHTML((org.name||'O').slice(0,1).toUpperCase())}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHTML(org.name||'Untitled organization')}</span></button><button class="org-more" title="Organization options" data-org-menu="${escapeHTML(org.id)}">${icon('more_horiz')}</button>`;host.append(row)});host.querySelectorAll('[data-org]').forEach(b=>b.onclick=()=>switchOrg(b.dataset.org==='personal'?null:b.dataset.org));host.querySelectorAll('[data-org-menu]').forEach(b=>b.onclick=e=>{e.stopPropagation();const org=state.orgs.find(o=>o.id===b.dataset.orgMenu);if(org)openOrgOptions(org)});}
+function switchOrg(id){state.orgId=id;state.folderId=null;state.view='drive';document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view==='drive'));renderOrgList();render();$('sidebar').classList.remove('open')}
+function openOrgOptions(org){const owner=org.owner===state.user.uid;const body=`<div class="help">${owner?'You created this organization. You can rename or delete it.':'Organization settings are restricted to the owner.'}</div><div class="field"><label>Organization name</label><input id="org-edit-name" value="${escapeHTML(org.name||'')}" ${owner?'':'disabled'}></div><div class="field"><label>Logo URL (optional)</label><input id="org-edit-logo" value="${escapeHTML(org.logoUrl||'')}" placeholder="https://…" ${owner?'':'disabled'}></div>`;const buttons=[{label:'Close',onClick:closeModal}];if(owner){buttons.unshift({label:'Delete organization',danger:true,onClick:()=>deleteOrganization(org)});buttons.push({label:'Save changes',primary:true,onClick:()=>saveOrganization(org)})}showModal('Organization settings',body,buttons)}
+async function saveOrganization(org){const name=$('org-edit-name').value.trim(),logoUrl=$('org-edit-logo').value.trim();if(!name)return toast('Organization name is required','error');try{await updateDoc(doc(db,'organizations',org.id),{name,logoUrl:logoUrl||null,updatedAt:serverTimestamp()});toast('Organization updated');closeModal()}catch(e){toast(e.message,'error')}}
+async function deleteOrganization(org){if(org.owner!==state.user.uid)return toast('Only the creator can delete this organization.','error');if(!confirm(`Delete organization "${org.name}"? This removes the organization record only; files and folders are not automatically deleted.`))return;try{await deleteDoc(doc(db,'organizations',org.id));if(state.orgId===org.id)state.orgId=null;toast('Organization deleted');closeModal();renderOrgList();render()}catch(e){toast(e.message,'error')}}
+function createOrg(){showModal('Create an organization',`<div class="field"><label>Organization name</label><input id="org-name" placeholder="e.g. Product Team" maxlength="90"></div><div class="field"><label>Logo URL (optional)</label><input id="org-logo" placeholder="https://example.com/logo.png"></div><div class="help">You will be the owner. Only the owner can rename or delete this organization.</div>`,[{label:'Cancel',onClick:closeModal},{label:'Create organization',primary:true,onClick:async()=>{const name=$('org-name').value.trim();if(!name)return toast('Enter a name','error');try{const ref=await addDoc(collection(db,'organizations'),{name,logoUrl:$('org-logo').value.trim()||null,owner:state.user.uid,ownerEmail:normEmail(state.user.email),members:[normEmail(state.user.email)],createdAt:serverTimestamp()});state.orgId=ref.id;state.folderId=null;toast('Organization created');closeModal();renderOrgList();render()}catch(e){toast(e.message,'error')}}}])}
+$('create-org').onclick=createOrg;
+function createFolder(){showModal('Create folder',`<div class="field"><label>Folder name</label><input id="folder-name" placeholder="Untitled folder" maxlength="120"></div><div class="help">Folder created in ${escapeHTML(getCurrentOrg()?.name||'Personal Drive')}.</div>`,[{label:'Cancel',onClick:closeModal},{label:'Create folder',primary:true,onClick:async()=>{const name=$('folder-name').value.trim();if(!name)return toast('Enter a folder name','error');try{await addDoc(collection(db,'folders'),{name,parentId:state.folderId,orgId:currentScope(),uid:state.user.uid,starred:false,trashed:false,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});toast('Folder created');closeModal()}catch(e){toast(e.message,'error')}}}])}
+$('new-folder').onclick=createFolder;
+function breadcrumbs(){const host=$('breadcrumbs');host.innerHTML='';if(state.view!=='drive')return;const root=document.createElement('button');root.textContent=state.orgId?(getCurrentOrg()?.name||'Organization'):'My Drive';root.onclick=()=>{state.folderId=null;render()};host.append(root);let path=[],cur=state.folders.find(f=>f.id===state.folderId),guard=0;while(cur&&guard++<30){path.unshift(cur);cur=state.folders.find(f=>f.id===cur.parentId)}path.forEach(f=>{const sep=document.createElement('span');sep.textContent='/';host.append(sep);const b=document.createElement('button');b.textContent=f.name;b.onclick=()=>{state.folderId=f.id;render()};host.append(b)})}
+function allVisibleItems(){let files=state.files.filter(f=>(f.orgId||null)===currentScope()&&!f.trashed),folders=state.folders.filter(f=>(f.orgId||null)===currentScope()&&!f.trashed);
+ if(state.view==='drive'){folders=folders.filter(f=>(f.parentId||null)===state.folderId);files=files.filter(f=>(f.folderId||null)===state.folderId)}
+ else if(state.view==='recent'){files.sort((a,b)=>timeValue(b.createdAt)-timeValue(a.createdAt));files=files.slice(0,60);folders=[]}
+ else if(state.view==='starred'){files=files.filter(f=>f.starred);folders=folders.filter(f=>f.starred)}
+ else if(state.view==='trash'){files=state.files.filter(f=>(f.orgId||null)===currentScope()&&f.trashed);folders=state.folders.filter(f=>(f.orgId||null)===currentScope()&&f.trashed)}
+ else if(state.view==='shared'){const sharedIds=new Set(state.shares.map(s=>s.itemId));files=state.files.filter(f=>sharedIds.has(f.id));folders=state.folders.filter(f=>sharedIds.has(f.id))}
+ if(state.search){const term=state.search.toLowerCase();files=files.filter(f=>(f.name||'').toLowerCase().includes(term));folders=folders.filter(f=>(f.name||'').toLowerCase().includes(term))}
+ const cmp={name:(a,b)=>(a.name||'').localeCompare(b.name||''),newest:(a,b)=>timeValue(b.createdAt)-timeValue(a.createdAt),oldest:(a,b)=>timeValue(a.createdAt)-timeValue(b.createdAt),size:(a,b)=>(Number(b.size)||0)-(Number(a.size)||0)}[state.sort]||(()=>0);files.sort(cmp);folders.sort(cmp);return [...folders.map(f=>({...f,type:'folder'})),...files.map(f=>({...f,type:'file'}))}
+function render(){if(!state.user)return;breadcrumbs();const items=allVisibleItems();$('stat-folders').textContent=items.filter(i=>i.type==='folder').length;$('stat-files').textContent=items.filter(i=>i.type==='file').length;$('stat-storage').textContent=formatSize(items.filter(i=>i.type==='file').reduce((n,f)=>n+(Number(f.size)||0),0));const titles={drive:state.folderId?(state.folders.find(f=>f.id===state.folderId)?.name||'Folder'):getCurrentOrg()?.name||'My Drive',recent:'Recent',shared:'Shared with me',starred:'Starred',trash:'Trash'};$('page-title').textContent=titles[state.view]||'My Drive';$('eyebrow').textContent=state.orgId?'ORGANIZATION WORKSPACE':'YOUR WORKSPACE';$('page-subtitle').textContent=state.view==='shared'?'Items shared with your account.':'Everything you need, organized in one place.';$('items-heading').textContent=state.search?`Search results (${items.length})`:({drive:'Your files',recent:'Recently added',shared:'Shared items',starred:'Starred items',trash:'Trash'}[state.view]||'Your files');$('items-subheading').textContent=`${items.length} item${items.length===1?'':'s'} · ${state.view==='drive'?'Current folder':'Current view'}`;$('dropzone').style.display=state.view==='drive'?'flex':'none';$('new-folder').style.display=state.view==='drive'?'inline-flex':'none';$('share-workspace').style.display=state.view==='drive'?'inline-flex':'none';$('files-grid').innerHTML='';if(!items.length){$('files-grid').innerHTML=`<div class="empty">${icon(state.search?'search_off':state.view==='trash'?'delete_outline':'cloud_off')}<strong>${state.search?'No matching items':state.view==='trash'?'Trash is empty':'Nothing here yet'}</strong><span>${state.search?'Try a different search term.':'Create a folder or upload files to get started.'}</span></div>`;return}
+ items.forEach((item,index)=>{const card=document.createElement('article');card.className='file-card';card.style.animationDelay=`${Math.min(index,12)*20}ms`;const isFolder=item.type==='folder',isImage=item.mimeType?.startsWith('image/');let iconName=isFolder?'folder':item.mimeType?.includes('pdf')?'picture_as_pdf':item.mimeType?.startsWith('video/')?'movie':item.mimeType?.startsWith('audio/')?'audio_file':item.mimeType?.includes('spreadsheet')?'table_chart':item.mimeType?.includes('document')?'article':'draft';let iconHTML=isImage&&item.driveFileId?`<img alt="" src="https://drive.google.com/thumbnail?id=${encodeURIComponent(item.driveFileId)}&sz=w160">`:icon(iconName);card.innerHTML=`<div class="file-top"><div class="file-icon ${isFolder?'folder':''}">${iconHTML}</div><button class="file-menu" aria-label="Item options">${icon('more_vert')}</button></div><div class="file-name" title="${escapeHTML(item.name)}">${escapeHTML(item.name||'Untitled')}</div><div class="file-meta"><span>${isFolder?'Folder':formatSize(item.size)}</span><span>·</span><span>${item.trashed?'In trash':item.starred?'Starred':'MART Drive'}</span></div><div class="file-bottom"><span class="pill">${isFolder?'FOLDER':(item.mimeType?.split('/').pop()||'FILE').toUpperCase().slice(0,12)}</span><span style="color:var(--muted)">${item.shared?'group':''}</span></div>`;card.querySelector('.file-menu').onclick=e=>{e.stopPropagation();openContextMenu(e,item)};card.addEventListener('contextmenu',e=>{e.preventDefault();openContextMenu(e,item)});card.onclick=()=>isFolder?openFolder(item.id):previewFile(item);$('files-grid').append(card)})}
+function openFolder(id){state.folderId=id;render()}
+function openContextMenu(event,item){state.target=item;const menu=$('context-menu');menu.querySelectorAll('[data-action]').forEach(b=>{const action=b.dataset.action;b.style.display='flex';if(item.type==='folder'&&['download','copy'].includes(action))b.style.display='none';if(state.view==='trash'&&['share','star','move','delete'].includes(action))b.style.display=action==='delete'?'flex':'none';if(action==='star')b.lastChild.textContent=item.starred?' Remove from starred':' Add to starred';if(action==='delete')b.lastChild.textContent=item.trashed?' Delete permanently':' Move to trash'});const x=Math.min(event.clientX,innerWidth-220),y=Math.min(event.clientY,innerHeight-400);menu.style.left=Math.max(8,x)+'px';menu.style.top=Math.max(8,y)+'px';menu.classList.add('open')}
+document.addEventListener('click',e=>{if(!e.target.closest('#context-menu')&&!e.target.closest('.file-menu'))$('context-menu').classList.remove('open')});
+$('context-menu').querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>runAction(b.dataset.action));
+async function runAction(action){$('context-menu').classList.remove('open');const item=state.target;if(!item)return;try{if(action==='open'){item.type==='folder'?openFolder(item.id):previewFile(item)}
+ else if(action==='share')openShareDialog(item)
+ else if(action==='star'){await updateDoc(doc(db,item.type==='folder'?'folders':'files',item.id),{starred:!item.starred,updatedAt:serverTimestamp()});toast(item.starred?'Removed from starred':'Added to starred')}
+ else if(action==='download'){if(!state.token)throw Error('Re-authorize Google Drive access first.');window.open(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(item.driveFileId)}?alt=media&access_token=${encodeURIComponent(state.token)}`,'_blank','noopener')}
+ else if(action==='rename')renameItem(item)
+ else if(action==='copy')copyFile(item)
+ else if(action==='move')moveItem(item)
+ else if(action==='info')showInfo(item)
+ else if(action==='delete')trashItem(item)
+ }catch(e){toast(e.message||'Action failed','error')}}
+function renameItem(item){showModal('Rename item',`<div class="field"><label>New name</label><input id="rename-value" maxlength="180" value="${escapeHTML(item.name||'')}"></div>`,[{label:'Cancel',onClick:closeModal},{label:'Save name',primary:true,onClick:async()=>{const name=$('rename-value').value.trim();if(!name)return toast('Name is required','error');try{if(item.type==='file'&&state.token){const r=await fetch(`https://www.googleapis.com/drive/v3/files/${item.driveFileId}`,{method:'PATCH',headers:{Authorization:`Bearer ${state.token}`,'Content-Type':'application/json'},body:JSON.stringify({name})});if(!r.ok)throw Error('Google Drive rename failed.');}await updateDoc(doc(db,item.type==='folder'?'folders':'files',item.id),{name,updatedAt:serverTimestamp()});toast('Renamed successfully');closeModal()}catch(e){toast(e.message,'error')}}}])}
+async function copyFile(item){if(!state.token)throw Error('Google Drive permission is required. Sign in again.');toast('Creating copy…','info');const r=await fetch(`https://www.googleapis.com/drive/v3/files/${item.driveFileId}/copy`,{method:'POST',headers:{Authorization:`Bearer ${state.token}`,'Content-Type':'application/json'},body:JSON.stringify({name:`Copy of ${item.name}`})});if(!r.ok)throw Error('Google Drive could not copy this file.');const copy=await r.json();await addDoc(collection(db,'files'),{driveFileId:copy.id,name:copy.name,mimeType:item.mimeType,size:item.size||0,folderId:state.folderId,orgId:currentScope(),uid:state.user.uid,starred:false,trashed:false,createdAt:serverTimestamp()});toast('Copy created')}
+function moveItem(item){const folders=state.folders.filter(f=>!f.trashed&&f.id!==item.id);const options=`<option value="">Root folder</option>`+folders.map(f=>`<option value="${escapeHTML(f.id)}">${escapeHTML(f.name)}</option>`).join('');showModal('Move to folder',`<div class="field"><label>Destination folder</label><select id="move-target">${options}</select></div>`,[{label:'Cancel',onClick:closeModal},{label:'Move item',primary:true,onClick:async()=>{const target=$('move-target').value||null;try{await updateDoc(doc(db,item.type==='folder'?'folders':'files',item.id),item.type==='folder'?{parentId:target,updatedAt:serverTimestamp()}:{folderId:target,updatedAt:serverTimestamp()});toast('Item moved');closeModal()}catch(e){toast(e.message,'error')}}}])}
+async function trashItem(item){if(item.trashed){if(!confirm(`Permanently delete "${item.name}" from MART Drive metadata? This cannot be undone.`))return;await deleteDoc(doc(db,item.type==='folder'?'folders':'files',item.id));toast('Removed from MART Drive metadata');return}if(!confirm(`Move "${item.name}" to trash?`))return;if(item.type==='file'&&state.token&&item.driveFileId){try{const r=await fetch(`https://www.googleapis.com/drive/v3/files/${item.driveFileId}`,{method:'PATCH',headers:{Authorization:`Bearer ${state.token}`,'Content-Type':'application/json'},body:JSON.stringify({trashed:true})});if(!r.ok)console.warn('Could not trash remote Drive file')}catch{}}await updateDoc(doc(db,item.type==='folder'?'folders':'files',item.id),{trashed:true,updatedAt:serverTimestamp()});toast('Moved to trash')}
+function showInfo(item){showModal('Item details',`<div class="help">Details saved in MART Drive.</div><div class="field"><label>Name</label><input readonly value="${escapeHTML(item.name||'')}"></div><div class="field"><label>Type</label><input readonly value="${escapeHTML(item.mimeType||'Folder')}"></div><div class="field"><label>Size</label><input readonly value="${escapeHTML(formatSize(item.size))}"></div><div class="field"><label>Created</label><input readonly value="${escapeHTML(item.createdAt?.toDate?.().toLocaleString?.()||'Unknown')}"></div><div class="field"><label>Drive file ID / MART Drive ID</label><input readonly value="${escapeHTML(item.driveFileId||item.id)}"></div>`,[{label:'Close',primary:true,onClick:closeModal}])}
+function previewFile(item){let content=`<div class="empty">${icon('preview')}<strong>Preview unavailable</strong><span>Open the file in Google Drive to view it.</span></div>`;if(item.mimeType?.startsWith('image/'))content=`<div style="text-align:center"><img alt="${escapeHTML(item.name)}" style="max-width:100%;max-height:60vh;border-radius:12px" src="https://drive.google.com/thumbnail?id=${encodeURIComponent(item.driveFileId)}&sz=w1200"></div>`;else if(item.mimeType?.includes('pdf')||item.mimeType?.startsWith('video/'))content=`<iframe title="File preview" src="https://drive.google.com/file/d/${encodeURIComponent(item.driveFileId)}/preview" style="width:100%;height:60vh;border:0;border-radius:12px;background:#fff"></iframe>`;showModal(item.name||'Preview',content,[{label:'Close',onClick:closeModal},{label:'Open in Drive',primary:true,onClick:()=>window.open(`https://drive.google.com/file/d/${encodeURIComponent(item.driveFileId)}/view`,'_blank','noopener')}],true)}
+function openShareDialog(item){const isFolder=item.type==='folder';showModal('Share & manage access',`<div class="help">Invite a person by email and choose a role. Viewer can view, Commenter can comment where supported, and Editor can make changes. For Google Drive files, access is also applied to the Drive file when possible.</div><div class="field"><label>Item</label><input readonly value="${escapeHTML(item.name||'')}"></div><div class="field"><label>Person's email address</label><input type="email" id="share-email" placeholder="name@example.com"></div><div class="field"><label>Permission level</label><select id="share-role"><option value="viewer">Viewer</option><option value="commenter">Commenter</option><option value="editor">Editor</option></select></div><div class="field"><label>Link access</label><select id="link-access"><option value="restricted">Restricted — invited people only</option><option value="anyone">Anyone with the link (less private)</option></select><small>Public link access may expose the item beyond your organization.</small></div><div id="share-list"><div class="help">Loading current access…</div></div>`,[{label:'Copy link',onClick:async()=>{const url=isFolder?`${location.origin}${location.pathname}#folder=${encodeURIComponent(item.id)}`:`https://drive.google.com/file/d/${encodeURIComponent(item.driveFileId)}/view`;try{await navigator.clipboard.writeText(url);toast('Link copied')}catch{showModal('Share link',`<div class="field"><input id="share-link-text" readonly value="${escapeHTML(url)}"></div>`,[{label:'Close',onClick:closeModal}])}}},{label:'Invite / save access',primary:true,onClick:()=>saveShare(item)}],true);loadSharesForItem(item)}
+async function loadSharesForItem(item){const host=$('share-list');if(!host)return;try{const snap=await getDocs(query(collection(db,'shares'),where('itemId','==',item.id)));if(!document.body.contains(host))return;const records=snap.docs.map(d=>({id:d.id,...d.data()}));host.innerHTML=`<div style="font-weight:800;margin:15px 0 4px">People with access (${records.length})</div>`+(records.length?records.map(s=>`<div class="permission-row"><div class="person-avatar">${escapeHTML((s.email||'?').slice(0,1).toUpperCase())}</div><div class="person-info"><strong>${escapeHTML(s.email||'Unknown')}</strong><span>${escapeHTML(s.role||'viewer')}</span></div><button class="btn" data-revoke="${escapeHTML(s.id)}">Remove</button></div>`).join(''):'<div style="font-size:12px;color:var(--muted);padding:10px 0">No individual shares recorded yet.</div>');host.querySelectorAll('[data-revoke]').forEach(b=>b.onclick=async()=>{try{await deleteDoc(doc(db,'shares',b.dataset.revoke));toast('Share removed');loadSharesForItem(item)}catch(e){toast(e.message,'error')}})}catch(e){host.innerHTML=`<div class="help">Could not load access list: ${escapeHTML(e.message)}</div>`}}
+async function saveShare(item){const email=normEmail($('share-email').value),role=$('share-role').value,linkAccess=$('link-access').value;if(!email.includes('@'))return toast('Enter a valid email address','error');try{await setDoc(doc(db,'shares',`${item.id}_${email.replace(/[^a-z0-9]/g,'_')}`),{itemId:item.id,itemType:item.type,email,role,ownerUid:state.user.uid,ownerEmail:normEmail(state.user.email),orgId:currentScope(),createdAt:serverTimestamp()});if(item.type==='file'&&item.driveFileId&&state.token){const driveRole=role==='viewer'?'reader':role==='commenter'?'commenter':'writer';const response=await fetch(`https://www.googleapis.com/drive/v3/files/${item.driveFileId}/permissions?sendNotificationEmail=true`,{method:'POST',headers:{Authorization:`Bearer ${state.token}`,'Content-Type':'application/json'},body:JSON.stringify({type:'user',role:driveRole,emailAddress:email})});if(!response.ok){const error=await response.json().catch(()=>({}));toast(`MART Drive share saved, but Google Drive permission failed: ${error.error?.message||response.status}`,'error')}else toast(`Shared with ${email}`)}else toast(`Access record saved for ${email}. Folder access must be enforced by your backend rules.`,'info');
+ if(linkAccess==='anyone'&&item.type==='file'&&item.driveFileId&&state.token){const response=await fetch(`https://www.googleapis.com/drive/v3/files/${item.driveFileId}/permissions`,{method:'POST',headers:{Authorization:`Bearer ${state.token}`,'Content-Type':'application/json'},body:JSON.stringify({type:'anyone',role:'reader'})});if(!response.ok)toast('Invite saved, but public link permission could not be changed','error')}
+ $('share-email').value='';loadSharesForItem(item)}catch(e){toast(e.message||'Could not share item','error')}}
+$('share-workspace').onclick=()=>{if(state.folderId){const f=state.folders.find(x=>x.id===state.folderId);if(f)openShareDialog({...f,type:'folder'})}else if(state.orgId){const org=getCurrentOrg();if(org)showModal('Share organization',`<div class="help">Invite a teammate to this organization. This saves a membership invitation record; production deployments should enforce organization membership with Firestore rules or a trusted backend.</div><div class="field"><label>Email address</label><input id="org-invite-email" type="email" placeholder="teammate@example.com"></div><div class="field"><label>Role</label><select id="org-invite-role"><option value="viewer">Viewer</option><option value="commenter">Commenter</option><option value="editor">Editor</option></select></div>`,[{label:'Cancel',onClick:closeModal},{label:'Invite',primary:true,onClick:async()=>{const email=normEmail($('org-invite-email').value),role=$('org-invite-role').value;if(!email.includes('@'))return toast('Enter a valid email','error');try{await setDoc(doc(db,'shares',`${org.id}_${email.replace(/[^a-z0-9]/g,'_')}`),{itemId:org.id,itemType:'organization',email,role,ownerUid:state.user.uid,ownerEmail:normEmail(state.user.email),orgId:org.id,createdAt:serverTimestamp()});toast('Invitation record created');closeModal()}catch(e){toast(e.message,'error')}}}]);}else toast('Open a folder or select an organization to share.','info')};
+async function uploadFiles(fileList){if(!fileList?.length)return;if(!state.token){toast('Google Drive access is required. Sign out and sign in again, accepting Drive access.','error');return}const files=Array.from(fileList);$('progress-wrap').style.display='block';for(const file of files){$('progress-name').textContent=`Uploading ${file.name}`;$('progress-fill').style.width='0%';$('progress-percent').textContent='0%';try{const metadata={name:file.name,mimeType:file.type||'application/octet-stream'};const form=new FormData();form.append('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}));form.append('file',file);const driveFile=await new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.open('POST','https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,size');xhr.setRequestHeader('Authorization',`Bearer ${state.token}`);xhr.upload.onprogress=e=>{if(e.lengthComputable){const pct=Math.round(e.loaded/e.total*100);$('progress-fill').style.width=pct+'%';$('progress-percent').textContent=pct+'%'}};xhr.onload=()=>xhr.status>=200&&xhr.status<300?resolve(JSON.parse(xhr.responseText)):reject(Error(`Upload failed (${xhr.status})`));xhr.onerror=()=>reject(Error('Network error'));xhr.send(form)});await addDoc(collection(db,'files'),{driveFileId:driveFile.id,name:driveFile.name,mimeType:driveFile.mimeType,size:Number(driveFile.size)||file.size,folderId:state.folderId,orgId:currentScope(),uid:state.user.uid,starred:false,trashed:false,createdAt:serverTimestamp(),updatedAt:serverTimestamp()})}catch(e){toast(`${file.name}: ${e.message}`,'error')}}setTimeout(()=>$('progress-wrap').style.display='none',900);toast('Upload queue finished')}
+$('file-input').onchange=e=>{uploadFiles(e.target.files);e.target.value=''};$('upload-trigger').onclick=$('hero-upload').onclick=$('browse-files').onclick=$('mobile-upload').onclick=()=>$('file-input').click();$('dropzone').addEventListener('click',e=>{if(e.target.closest('button'))return;$('file-input').click()});$('dropzone').addEventListener('dragover',e=>{e.preventDefault();$('dropzone').classList.add('dragover')});$('dropzone').addEventListener('dragleave',()=>$('dropzone').classList.remove('dragover'));$('dropzone').addEventListener('drop',e=>{e.preventDefault();$('dropzone').classList.remove('dragover');uploadFiles(e.dataTransfer.files)});
+$('search-input').oninput=e=>{state.search=e.target.value.trim();render()};$('sort-select').onchange=e=>{state.sort=e.target.value;render()};$('refresh-btn').onclick=()=>{renderOrgList();render();toast('View refreshed','info')};
+function toggleTheme(){document.body.classList.toggle('dark');localStorage.setItem('mart-drive-theme',document.body.classList.contains('dark')?'dark':'light')};if(localStorage.getItem('mart-drive-theme')==='dark')document.body.classList.add('dark');$('theme-toggle').onclick=toggleTheme;$('header-theme').onclick=toggleTheme;
+$('mobile-menu').onclick=()=>$('sidebar').classList.toggle('open');
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{state.view=b.dataset.view;state.folderId=null;document.querySelectorAll('[data-view]').forEach(n=>n.classList.toggle('active',n.dataset.view===state.view));render();$('sidebar').classList.remove('open')}));
+$('settings-btn').onclick=()=>showModal('Workspace settings',`<div class="help">MART Drive uses Firebase Authentication and Firestore for its metadata, plus the Google Drive API for file storage.</div><div class="field"><label>Signed-in account</label><input readonly value="${escapeHTML(state.user?.email||'')}"></div><div class="field"><label>Theme</label><select id="settings-theme"><option value="light">Light</option><option value="dark">Dark</option></select></div><div class="help">Security note: frontend visibility is not authorization. Configure the included Firestore rules and add trusted backend checks before production use.</div>`,[{label:'Close',onClick:closeModal},{label:'Save preference',primary:true,onClick:()=>{document.body.classList.toggle('dark',$('settings-theme').value==='dark');localStorage.setItem('mart-drive-theme',$('settings-theme').value);closeModal()}}]);
+window.addEventListener('hashchange',()=>{const match=location.hash.match(/folder=([^&]+)/);if(match){state.folderId=decodeURIComponent(match[1]);state.view='drive';render()}});
+if(location.hash.includes('folder=')){const match=location.hash.match(/folder=([^&]+)/);if(match)state.folderId=decodeURIComponent(match[1])}
 </script>
 </body>
 </html>
