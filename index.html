@@ -38,8 +38,8 @@
     }
 
     .nav-left { display: flex; align-items: center; gap: 16px; width: 250px; }
-    .logo { font-size: 22px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; font-weight: 500; }
-    .logo-icon { color: #fbbc04; font-size: 28px; }
+    .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 20px; color: var(--text-main); text-decoration: none; }
+    .logo img { height: 32px; width: auto; border-radius: 4px; }
 
     /* Search Bar */
     .nav-center { flex: 1; max-width: 720px; }
@@ -110,11 +110,11 @@
     .file-card:hover { background-color: #f8faff; box-shadow: var(--shadow-md); }
     
     .file-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .file-icon { font-size: 24px; }
+    .file-icon { font-size: 32px; }
     .file-name { font-size: 14px; font-weight: 500; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
     .file-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
     
-    .file-actions { display: flex; gap: 8px; margin-top: auto; opacity: 0; transition: opacity 0.2s; }
+    .file-actions { display: flex; gap: 4px; margin-top: auto; justify-content: flex-end; opacity: 0; transition: opacity 0.2s; }
     .file-card:hover .file-actions { opacity: 1; }
 
     /* Buttons */
@@ -124,7 +124,7 @@
     }
     .btn-primary { background-color: var(--primary); color: white; box-shadow: var(--shadow-sm); }
     .btn-primary:hover { background-color: #0b4b9e; }
-    .btn-icon { padding: 8px; border-radius: 50%; background: transparent; color: var(--text-muted); }
+    .btn-icon { padding: 8px; border-radius: 50%; background: transparent; color: var(--text-muted); cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; }
     .btn-icon:hover { background-color: var(--hover-bg); color: var(--text-main); }
     .btn-danger-icon:hover { background-color: #fce8e6; color: var(--danger); }
 
@@ -134,11 +134,34 @@
     .login-card h1 { font-size: 28px; font-weight: 400; margin-bottom: 12px; }
     .login-card p { color: var(--text-muted); margin-bottom: 32px; font-size: 15px; line-height: 1.5; }
 
+    /* Modals */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
+      z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .modal-overlay.show { opacity: 1; pointer-events: auto; }
+    .modal-content {
+      background: var(--bg-surface); padding: 24px; border-radius: 12px;
+      width: 90%; max-width: 500px; box-shadow: var(--shadow-md);
+      transform: translateY(20px); transition: transform 0.2s;
+    }
+    .modal-overlay.show .modal-content { transform: translateY(0); }
+    
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .modal-header h2 { font-size: 20px; font-weight: 500; }
+    .modal-body { margin-bottom: 24px; }
+    .modal-body input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; outline: none; }
+    .modal-body input:focus { border-color: var(--primary); }
+    
+    .preview-body { text-align: center; max-height: 60vh; overflow-y: auto; }
+    .preview-body img, .preview-body iframe { max-width: 100%; max-height: 50vh; border-radius: 8px; }
+
     /* Toast */
     .toast {
       position: fixed; bottom: 24px; left: 24px;
       background: #323232; color: white; padding: 12px 24px; border-radius: 4px;
-      font-size: 14px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000;
+      font-size: 14px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1001;
       box-shadow: var(--shadow-md);
     }
     .toast.show { opacity: 1; }
@@ -156,12 +179,9 @@
   <!-- Login Screen -->
   <div id="loginScreen" class="login-wrapper">
     <div class="login-card">
-      <div class="logo" style="justify-content: center; margin-bottom: 24px;">
-        <span class="logo-icon material-symbols-outlined">folder</span> 
-        <span style="color: var(--text-main); font-weight: 700;">MART Drive</span>
-      </div>
-      <h1>Welcome</h1>
-      <p>Store, share, and collaborate on files seamlessly with your Google Drive.</p>
+      <img src="https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png" alt="MART Drive" style="height: 64px; margin-bottom: 16px;">
+      <h1>Welcome to MART Drive</h1>
+      <p>Store, manage, and share your files seamlessly with your Google Drive.</p>
       <button class="btn btn-primary" style="width: 100%; padding: 12px;" onclick="signIn()">
         <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
         Sign in with Google
@@ -174,7 +194,10 @@
     
     <nav class="navbar">
       <div class="nav-left">
-        <div class="logo"><span class="logo-icon material-symbols-outlined">folder</span> MART Drive</div>
+        <div class="logo">
+          <img src="https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png" alt="MART Logo">
+          MART Drive
+        </div>
       </div>
       <div class="nav-center">
         <div class="search-box">
@@ -205,28 +228,58 @@
           <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
             <span class="material-symbols-outlined" style="font-size: 20px;">add</span> New Upload
           </button>
-          <input type="file" id="fileInput" multiple style="display:none" onchange="handleFiles(this.files)">
+          <input type="file" id="fileInput" multiple style="display:none" onchange="promptRename(this.files)">
         </div>
 
-        <div class="files-header">Recent Files</div>
+        <div class="files-header">My Files</div>
         
         <div id="loadingSkeleton" class="files-grid">
-          <!-- Skeletons for loading state -->
           <div class="file-card" style="height: 140px; opacity: 0.5;"></div>
           <div class="file-card" style="height: 140px; opacity: 0.5;"></div>
           <div class="file-card" style="height: 140px; opacity: 0.5;"></div>
         </div>
 
-        <div id="filesList" class="files-grid hidden">
-          <!-- Files will be populated here -->
-        </div>
+        <div id="filesList" class="files-grid hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rename Modal -->
+  <div id="renameModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Upload File</h2>
+        <button class="btn-icon material-symbols-outlined" onclick="closeModal('renameModal')">close</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">Enter a name for your file:</p>
+        <input type="text" id="renameInput" placeholder="File name">
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button class="btn" style="background: transparent; color: var(--text-muted);" onclick="closeModal('renameModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmUpload()">Upload</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview Modal -->
+  <div id="previewModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 800px; width: 95%;">
+      <div class="modal-header">
+        <h2 id="previewTitle">Preview</h2>
+        <button class="btn-icon material-symbols-outlined" onclick="closeModal('previewModal')">close</button>
+      </div>
+      <div class="modal-body preview-body" id="previewContent">
+        <!-- Dynamic Content -->
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+         <button class="btn btn-primary" id="downloadBtn">Download</button>
       </div>
     </div>
   </div>
 
   <div id="toast" class="toast">Status message</div>
 
-  <!-- Firebase Modules -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
@@ -248,9 +301,9 @@
 
     let currentUser = null;
     let accessToken = null;
-    let allFiles = []; // Store files for local search filtering
+    let allFiles = [];
+    let pendingUploadFiles = null; // Store files temporarily before renaming
 
-    // UI Helper: Toast
     window.showToast = (msg) => {
       const toast = document.getElementById('toast');
       toast.textContent = msg;
@@ -262,11 +315,9 @@
       const provider = new GoogleAuthProvider();
       provider.addScope('https://www.googleapis.com/auth/drive.file');
       provider.setCustomParameters({ prompt: 'consent' });
-
       try {
         const result = await signInWithPopup(auth, provider);
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        accessToken = credential.accessToken;
+        accessToken = GoogleAuthProvider.credentialFromResult(result).accessToken;
       } catch (err) {
         showToast('Sign in error: ' + err.message);
       }
@@ -274,61 +325,73 @@
 
     window.logout = async () => {
       await signOut(auth);
-      accessToken = null;
-      currentUser = null;
-      window.location.reload(); // Quick reset
+      window.location.reload();
     };
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUser = user;
-        
         if (!accessToken) {
           try {
             const provider = new GoogleAuthProvider();
             provider.addScope('https://www.googleapis.com/auth/drive.file');
             const result = await signInWithPopup(auth, provider);
             accessToken = GoogleAuthProvider.credentialFromResult(result).accessToken;
-          } catch (e) { 
-            showToast('Please re-authenticate to access Drive.'); 
-          }
+          } catch (e) { }
         }
-
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('appScreen').classList.remove('hidden');
-        
         if (user.photoURL) {
-          const avatar = document.getElementById('userAvatar');
-          avatar.src = user.photoURL;
-          avatar.style.display = 'block';
+          document.getElementById('userAvatar').src = user.photoURL;
+          document.getElementById('userAvatar').style.display = 'block';
         }
-
         loadFiles();
       }
     });
 
-    window.handleFiles = async (files) => {
-      if (!accessToken) {
-        showToast('Authentication expired. Please sign out and sign in again.');
-        return;
-      }
+    // Rename Logic before upload
+    window.promptRename = (files) => {
+      if (!files.length) return;
+      pendingUploadFiles = files;
+      document.getElementById('renameInput').value = files[0].name; // Set default name
+      document.getElementById('renameModal').classList.add('show');
+      document.getElementById('renameInput').focus();
+    };
+
+    window.closeModal = (id) => document.getElementById(id).classList.remove('show');
+
+    window.confirmUpload = () => {
+      const newName = document.getElementById('renameInput').value.trim();
+      if (!newName) return showToast('Name cannot be empty');
+      closeModal('renameModal');
+      handleUpload(pendingUploadFiles, newName);
+    };
+
+    async function handleUpload(files, customName) {
+      if (!accessToken) return showToast('Authentication expired.');
 
       for (const file of files) {
-        showToast(`Uploading: ${file.name}`);
-
+        showToast(`Uploading: ${customName}`);
         try {
-          const metadata = { name: file.name, mimeType: file.type || 'application/octet-stream' };
+          const metadata = { name: customName, mimeType: file.type || 'application/octet-stream' };
           const form = new FormData();
           form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
           form.append('file', file);
 
           const res = await fetch(
-            'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,size,webViewLink,createdTime',
+            'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,size,webViewLink,webContentLink,createdTime',
             { method: 'POST', headers: { Authorization: `Bearer ${accessToken}` }, body: form }
           );
 
           if (!res.ok) throw new Error('Upload failed');
           const driveFile = await res.json();
+
+          // Make file publicly readable for sharing (optional step if you want direct link sharing)
+          await fetch(`https://www.googleapis.com/drive/v3/files/${driveFile.id}/permissions`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role: 'reader', type: 'anyone' })
+          });
 
           await addDoc(collection(db, 'files'), {
             uid: currentUser.uid,
@@ -337,42 +400,29 @@
             mimeType: driveFile.mimeType,
             size: driveFile.size || file.size,
             webViewLink: driveFile.webViewLink,
+            webContentLink: driveFile.webContentLink,
             createdAt: serverTimestamp()
           });
-
         } catch (err) {
-          showToast(`Error uploading ${file.name}`);
-          console.error(err);
+          showToast(`Error: ${err.message}`);
         }
       }
-      
       showToast('Upload complete.');
       loadFiles();
-    };
+    }
 
     window.loadFiles = async () => {
       if (!currentUser) return;
-      
       document.getElementById('loadingSkeleton').classList.remove('hidden');
       document.getElementById('filesList').classList.add('hidden');
-      
       try {
         const q = query(collection(db, 'files'), where('uid', '==', currentUser.uid));
         const snap = await getDocs(q);
         allFiles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        
-        // Sort locally to avoid Firestore index error
-        allFiles.sort((a, b) => {
-          const timeA = a.createdAt?.toMillis() || 0;
-          const timeB = b.createdAt?.toMillis() || 0;
-          return timeB - timeA;
-        });
-
+        allFiles.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
         renderFiles(allFiles);
       } catch (err) {
-        console.error("Firestore Error: ", err);
-        document.getElementById('filesList').innerHTML = '<p style="color: red; grid-column: 1/-1;">Could not load files. Check Firestore Rules & Database creation.</p>';
-        document.getElementById('filesList').classList.remove('hidden');
+        showToast("Could not load files.");
       } finally {
         document.getElementById('loadingSkeleton').classList.add('hidden');
       }
@@ -380,14 +430,12 @@
 
     window.filterFiles = () => {
       const term = document.getElementById('searchInput').value.toLowerCase();
-      const filtered = allFiles.filter(f => f.name.toLowerCase().includes(term));
-      renderFiles(filtered);
+      renderFiles(allFiles.filter(f => f.name.toLowerCase().includes(term)));
     };
 
     window.renderFiles = (filesArray) => {
       const listEl = document.getElementById('filesList');
       listEl.classList.remove('hidden');
-      
       if (filesArray.length === 0) {
         listEl.innerHTML = '<p style="grid-column: 1/-1; color: var(--text-muted); padding: 24px 0;">No files found.</p>';
         return;
@@ -395,10 +443,11 @@
 
       listEl.innerHTML = filesArray.map(f => {
         let icon = 'draft'; let color = '#4285f4';
-        if (f.mimeType?.includes('image')) { icon = 'image'; color = '#ea4335'; }
-        if (f.mimeType?.includes('video')) { icon = 'movie'; color = '#fbbc04'; }
-        if (f.mimeType?.includes('pdf')) { icon = 'picture_as_pdf'; color = '#d93025'; }
-        if (f.mimeType?.includes('zip')) { icon = 'folder_zip'; color = '#a142f4'; }
+        let isPreviewable = false;
+        
+        if (f.mimeType?.includes('image')) { icon = 'image'; color = '#ea4335'; isPreviewable = true; }
+        if (f.mimeType?.includes('video')) { icon = 'movie'; color = '#fbbc04'; isPreviewable = true; }
+        if (f.mimeType?.includes('pdf')) { icon = 'picture_as_pdf'; color = '#d93025'; isPreviewable = true; }
 
         const sizeStr = f.size ? (f.size / 1024 / 1024).toFixed(2) + ' MB' : 'Unknown';
 
@@ -406,13 +455,12 @@
           <div class="file-card">
             <div class="file-card-header">
               <span class="material-symbols-outlined file-icon" style="color: ${color};">${icon}</span>
-              <div>
-                 <button class="btn btn-icon material-symbols-outlined" onclick="window.open('${f.webViewLink}', '_blank')" title="Open">open_in_new</button>
-              </div>
+              <button class="btn-icon material-symbols-outlined" onclick="shareFile('${f.webViewLink}')" title="Share Link">share</button>
             </div>
             <div class="file-name" title="${f.name}">${f.name}</div>
             <div class="file-meta">${sizeStr}</div>
             <div class="file-actions">
+              ${isPreviewable ? `<button class="btn btn-icon material-symbols-outlined" onclick="previewFile('${f.name}', '${f.mimeType}', '${f.webViewLink}', '${f.webContentLink}')" title="Preview">visibility</button>` : ''}
               <button class="btn btn-icon btn-danger-icon material-symbols-outlined" onclick="deleteFile('${f.id}', '${f.driveFileId}')" title="Delete">delete</button>
             </div>
           </div>
@@ -420,16 +468,44 @@
       }).join('');
     };
 
+    // Share Feature
+    window.shareFile = (link) => {
+      navigator.clipboard.writeText(link).then(() => {
+        showToast('Share link copied to clipboard!');
+      }).catch(() => {
+        prompt("Copy this link:", link);
+      });
+    };
+
+    // Preview Feature
+    window.previewFile = (name, mimeType, viewLink, downloadLink) => {
+      document.getElementById('previewTitle').textContent = name;
+      const content = document.getElementById('previewContent');
+      const downloadBtn = document.getElementById('downloadBtn');
+      
+      downloadBtn.onclick = () => window.open(downloadLink || viewLink, '_blank');
+
+      if (mimeType.includes('image')) {
+        // Using thumbnail trick for Google Drive images
+        const fileId = viewLink.split('/d/')[1]?.split('/')[0];
+        content.innerHTML = `<img src="https://drive.google.com/thumbnail?id=${fileId}&sz=w1000" alt="${name}">`;
+      } else if (mimeType.includes('pdf') || mimeType.includes('video')) {
+        content.innerHTML = `<iframe src="${viewLink}/preview" width="100%" height="500px" allow="autoplay"></iframe>`;
+      } else {
+        content.innerHTML = `<p>Preview not available for this file type.</p>`;
+      }
+      
+      document.getElementById('previewModal').classList.add('show');
+    };
+
     window.deleteFile = async (firestoreId, driveFileId) => {
       if (!confirm('Delete this file permanently from your Drive?')) return;
       showToast('Deleting...');
-      
       try {
         const res = await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}`, {
           method: 'DELETE', headers: { Authorization: `Bearer ${accessToken}` }
         });
         if (!res.ok && res.status !== 404) throw new Error('Drive deletion failed');
-
         await deleteDoc(doc(db, 'files', firestoreId));
         showToast('File deleted.');
         loadFiles();
@@ -438,14 +514,13 @@
       }
     };
 
-    // Drag and Drop
     const dz = document.getElementById('dropZone');
     dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
     dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
     dz.addEventListener('drop', e => {
       e.preventDefault();
       dz.classList.remove('dragover');
-      if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+      if (e.dataTransfer.files.length) promptRename(e.dataTransfer.files);
     });
   </script>
 </body>
