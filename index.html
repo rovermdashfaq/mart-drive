@@ -1,527 +1,627 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MART Drive</title>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-  <style>
-    :root {
-      --bg-main: #f8f9fa;
-      --bg-surface: #ffffff;
-      --text-main: #202124;
-      --text-muted: #5f6368;
-      --primary: #0b57d0;
-      --primary-light: #e8f0fe;
-      --border: #e0e0e0;
-      --danger: #d93025;
-      --hover-bg: #f1f3f4;
-      --shadow-sm: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#163A5F" />
+<title>MART Drive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+:root{
+  --navy:#163A5F; --blue:#245B88; --bg:#F5F7FA; --surface:#FFFFFF;
+  --text:#1F2937; --muted:#64748B; --border:#E2E8F0;
+  --success:#15803D; --error:#B91C1C;
+  --radius:10px; --radius-lg:14px;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.06);
+  --shadow-md:0 4px 12px rgba(15,23,42,.08);
+  --shadow-lg:0 12px 32px rgba(15,23,42,.16);
+  --sidebar-w:260px; --header-h:64px;
+  --transition:200ms cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{background:var(--bg); color:var(--text); font-family:Inter,sans-serif; font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;}
+button{font:inherit; cursor:pointer; border:none; background:none;}
+a{color:var(--blue); text-decoration:none;}
+:focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Google Sans', 'Roboto', sans-serif; }
+/* Auth Screen */
+#auth-screen{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#163A5F 0%,#245B88 100%); padding:20px; z-index:100;}
+.auth-card{background:var(--surface); border-radius:var(--radius-lg); padding:40px 32px; width:100%; max-width:420px; box-shadow:0 20px 50px rgba(0,0,0,.25); text-align:center;}
+.auth-card img{width:80px; margin-bottom:20px;}
+.auth-card h1{font-size:24px; color:var(--navy); margin-bottom:8px;}
+.auth-card p{color:var(--muted); font-size:14px; margin-bottom:30px;}
+.google-btn{display:flex; align-items:center; justify-content:center; gap:12px; width:100%; padding:12px; background:#fff; border:1px solid var(--border); border-radius:8px; font-weight:600; font-size:14px; transition:all .2s; box-shadow:var(--shadow-sm); color:var(--text);}
+.google-btn:hover{background:#f8f9fa; box-shadow:var(--shadow-md);}
 
-    body { background-color: var(--bg-main); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+/* Layout */
+#app{display:none; min-height:100vh;}
+#app.ready{display:block;}
+.sidebar{position:fixed; top:0; left:0; bottom:0; width:var(--sidebar-w); background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; z-index:40; transition:transform var(--transition);}
+.sidebar-brand{display:flex; align-items:center; gap:12px; padding:20px; border-bottom:1px solid var(--border);}
+.sidebar-brand img{width:32px; height:32px; border-radius:6px;}
+.sidebar-brand h2{font-size:18px; color:var(--navy); font-weight:700;}
+.new-btn{margin:20px; padding:12px 20px; background:var(--navy); color:#fff; border-radius:30px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; transition:background .2s; box-shadow:var(--shadow-md);}
+.new-btn:hover{background:var(--blue);}
+.nav-list{list-style:none; padding:0 12px; flex:1; overflow-y:auto;}
+.nav-item{display:flex; align-items:center; gap:14px; padding:12px 16px; border-radius:24px; color:var(--text); font-weight:500; cursor:pointer; transition:background .2s; margin-bottom:4px;}
+.nav-item:hover{background:var(--bg);}
+.nav-item.active{background:#E8F0F7; color:var(--navy); font-weight:600;}
+.nav-item .material-symbols-outlined{font-size:20px;}
 
-    /* Navbar */
-    .navbar {
-      background-color: var(--bg-surface);
-      border-bottom: 1px solid var(--border);
-      padding: 8px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 64px;
-      z-index: 100;
-    }
+/* Header */
+.header{position:fixed; top:0; left:var(--sidebar-w); right:0; height:var(--header-h); background:var(--surface); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px; padding:0 24px; z-index:30;}
+.search-box{display:flex; align-items:center; gap:10px; background:var(--bg); border-radius:24px; padding:0 16px; height:44px; width:100%; max-width:600px; transition:box-shadow .2s;}
+.search-box:focus-within{background:var(--surface); box-shadow:var(--shadow-md); border:1px solid var(--border);}
+.search-box input{border:none; background:transparent; flex:1; font-size:15px; outline:none;}
+.user-btn{display:flex; align-items:center; gap:10px; padding:4px 12px 4px 4px; border:1px solid var(--border); border-radius:24px; background:var(--surface); transition:background .2s;}
+.user-btn:hover{background:var(--bg);}
+.user-avatar{width:32px; height:32px; border-radius:50%;}
 
-    .nav-left { display: flex; align-items: center; gap: 16px; width: 250px; }
-    .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 20px; color: var(--text-main); text-decoration: none; }
-    .logo img { height: 32px; width: auto; border-radius: 4px; }
+/* Main */
+.main{margin-left:var(--sidebar-w); padding-top:var(--header-h);}
+.content{padding:24px; max-width:1400px; margin:0 auto;}
+.page-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;}
+.page-title{font-size:24px; font-weight:700; color:var(--navy);}
+.toolbar{display:flex; gap:8px; align-items:center;}
+.btn{padding:8px 16px; border-radius:8px; font-weight:500; border:1px solid var(--border); background:var(--surface); color:var(--text); transition:all .2s;}
+.btn:hover{border-color:var(--blue);}
+.btn-primary{background:var(--navy); color:#fff; border-color:var(--navy);}
+.btn-primary:hover{background:var(--blue);}
+.view-toggle{display:flex; background:var(--bg); border-radius:8px; padding:4px;}
+.view-toggle button{padding:6px 10px; border-radius:6px; color:var(--muted);}
+.view-toggle button.active{background:var(--surface); color:var(--navy); box-shadow:var(--shadow-sm);}
 
-    /* Search Bar */
-    .nav-center { flex: 1; max-width: 720px; }
-    .search-box {
-      background-color: var(--bg-main);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      padding: 0 16px;
-      height: 48px;
-      transition: background-color 0.2s, box-shadow 0.2s;
-    }
-    .search-box:focus-within { background-color: var(--bg-surface); box-shadow: var(--shadow-md); }
-    .search-box input {
-      border: none; background: transparent; outline: none;
-      width: 100%; font-size: 16px; padding: 0 16px; color: var(--text-main);
-    }
+/* Dropzone */
+.dropzone{border:2px dashed var(--border); border-radius:var(--radius-lg); padding:40px 20px; text-align:center; margin-bottom:24px; background:var(--surface); transition:all .2s; cursor:pointer;}
+.dropzone:hover,.dropzone.dragover{border-color:var(--blue); background:#F0F6FB;}
+.dropzone h3{color:var(--navy); font-size:16px; margin-bottom:8px;}
 
-    .nav-right { display: flex; align-items: center; gap: 12px; padding-left: 16px; }
-    .user-avatar { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); }
+/* Files Grid */
+.files-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px;}
+.file-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; cursor:pointer; transition:all .2s; position:relative; display:flex; flex-direction:column;}
+.file-card:hover{box-shadow:var(--shadow-md); border-color:#CBD5E1;}
+.file-card.selected{border-color:var(--blue); background:#EFF6FC; box-shadow:0 0 0 2px rgba(36,91,136,.15);}
+.file-icon-wrap{width:48px; height:48px; border-radius:8px; background:#E8F0F7; color:var(--navy); display:flex; align-items:center; justify-content:center; margin-bottom:12px; font-size:24px;}
+.file-icon-wrap img{width:100%; height:100%; object-fit:cover; border-radius:8px;}
+.file-name{font-weight:600; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-bottom:4px;}
+.file-meta{font-size:12px; color:var(--muted); margin-bottom:12px;}
+.file-actions{display:flex; gap:4px; margin-top:auto; opacity:0; transition:opacity .2s;}
+.file-card:hover .file-actions{opacity:1;}
+.icon-btn{padding:6px; border-radius:6px; color:var(--muted); display:flex; align-items:center; justify-content:center; transition:background .2s;}
+.icon-btn:hover{background:var(--bg); color:var(--navy);}
+.icon-btn .material-symbols-outlined{font-size:18px;}
 
-    /* Layout */
-    .app-body { display: flex; flex: 1; overflow: hidden; }
+/* Modals */
+.modal-backdrop{position:fixed; inset:0; background:rgba(15,23,42,.5); z-index:1000; display:none; align-items:center; justify-content:center; padding:20px; opacity:0; transition:opacity .2s;}
+.modal-backdrop.open{display:flex; opacity:1;}
+.modal{background:var(--surface); border-radius:var(--radius-lg); width:100%; max-width:500px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 20px 50px rgba(0,0,0,.3); transform:translateY(20px); transition:transform .2s;}
+.modal-backdrop.open .modal{transform:translateY(0);}
+.modal.wide{max-width:800px;}
+.modal-head{padding:20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;}
+.modal-head h3{font-size:18px; color:var(--navy);}
+.modal-body{padding:20px; overflow-y:auto;}
+.modal-foot{padding:16px 20px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px;}
+.field label{display:block; font-size:13px; font-weight:500; margin-bottom:8px;}
+.field input{width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; outline:none; font-size:14px;}
+.field input:focus{border-color:var(--blue); box-shadow:0 0 0 3px rgba(36,91,136,.1);}
 
-    /* Sidebar */
-    .sidebar { width: 250px; padding: 16px 12px; background-color: var(--bg-surface); overflow-y: auto; }
-    .sidebar-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 16px; border-radius: 20px;
-      cursor: pointer; font-size: 14px; font-weight: 500;
-      color: var(--text-main); margin-bottom: 4px;
-      transition: background-color 0.2s;
-    }
-    .sidebar-item:hover { background-color: var(--hover-bg); }
-    .sidebar-item.active { background-color: var(--primary-light); color: var(--primary); }
+/* Preview */
+.preview-box{background:#0f172a; border-radius:10px; min-height:200px; max-height:500px; display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:20px;}
+.preview-box img, .preview-box video{max-width:100%; max-height:480px; object-fit:contain;}
 
-    /* Main Content */
-    .main-content { flex: 1; display: flex; flex-direction: column; padding: 16px 24px; overflow-y: auto; }
-    
-    /* Upload Area */
-    .upload-area {
-      border: 2px dashed var(--border);
-      border-radius: 12px;
-      padding: 24px;
-      text-align: center;
-      margin-bottom: 24px;
-      background-color: var(--bg-surface);
-      transition: all 0.2s;
-      box-shadow: var(--shadow-sm);
-    }
-    .upload-area.dragover { border-color: var(--primary); background-color: var(--primary-light); }
-    .upload-area p { color: var(--text-muted); font-size: 14px; margin-bottom: 12px; }
+/* Toasts */
+.toast-stack{position:fixed; bottom:24px; right:24px; z-index:2000; display:flex; flex-direction:column; gap:8px;}
+.toast{background:var(--navy); color:#fff; padding:12px 20px; border-radius:8px; font-size:14px; box-shadow:var(--shadow-lg); animation:slideIn .3s ease-out;}
+.toast.error{background:var(--error);}
+@keyframes slideIn{from{transform:translateX(100%); opacity:0;} to{transform:translateX(0); opacity:1;}}
+.hidden{display:none !important;}
 
-    /* File Grid */
-    .files-header { margin-bottom: 16px; font-size: 16px; font-weight: 500; color: var(--text-main); }
-    .files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; padding-bottom: 24px; }
-    
-    .file-card {
-      background-color: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      transition: background-color 0.2s, box-shadow 0.2s;
-      position: relative;
-    }
-    .file-card:hover { background-color: #f8faff; box-shadow: var(--shadow-md); }
-    
-    .file-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .file-icon { font-size: 32px; }
-    .file-name { font-size: 14px; font-weight: 500; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
-    .file-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
-    
-    .file-actions { display: flex; gap: 4px; margin-top: auto; justify-content: flex-end; opacity: 0; transition: opacity 0.2s; }
-    .file-card:hover .file-actions { opacity: 1; }
+/* Selection Bar */
+.selection-bar{display:none; background:var(--navy); color:#fff; border-radius:10px; padding:12px 20px; margin-bottom:16px; align-items:center; gap:16px;}
+.selection-bar.active{display:flex;}
+.selection-bar button{background:rgba(255,255,255,.15); color:#fff; padding:8px 16px; border-radius:6px; font-weight:500;}
+.selection-bar button:hover{background:rgba(255,255,255,.25);}
 
-    /* Buttons */
-    .btn {
-      padding: 8px 24px; border-radius: 4px; font-size: 14px; font-weight: 500;
-      cursor: pointer; border: none; transition: background-color 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .btn-primary { background-color: var(--primary); color: white; box-shadow: var(--shadow-sm); }
-    .btn-primary:hover { background-color: #0b4b9e; }
-    .btn-icon { padding: 8px; border-radius: 50%; background: transparent; color: var(--text-muted); cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; }
-    .btn-icon:hover { background-color: var(--hover-bg); color: var(--text-main); }
-    .btn-danger-icon:hover { background-color: #fce8e6; color: var(--danger); }
-
-    /* Login Screen */
-    .login-wrapper { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: var(--bg-main); }
-    .login-card { background: var(--bg-surface); padding: 48px 40px; border-radius: 28px; text-align: center; max-width: 450px; width: 100%; box-shadow: var(--shadow-md); }
-    .login-card h1 { font-size: 28px; font-weight: 400; margin-bottom: 12px; }
-    .login-card p { color: var(--text-muted); margin-bottom: 32px; font-size: 15px; line-height: 1.5; }
-
-    /* Modals */
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
-      z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.2s;
-    }
-    .modal-overlay.show { opacity: 1; pointer-events: auto; }
-    .modal-content {
-      background: var(--bg-surface); padding: 24px; border-radius: 12px;
-      width: 90%; max-width: 500px; box-shadow: var(--shadow-md);
-      transform: translateY(20px); transition: transform 0.2s;
-    }
-    .modal-overlay.show .modal-content { transform: translateY(0); }
-    
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .modal-header h2 { font-size: 20px; font-weight: 500; }
-    .modal-body { margin-bottom: 24px; }
-    .modal-body input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; outline: none; }
-    .modal-body input:focus { border-color: var(--primary); }
-    
-    .preview-body { text-align: center; max-height: 60vh; overflow-y: auto; }
-    .preview-body img, .preview-body iframe { max-width: 100%; max-height: 50vh; border-radius: 8px; }
-
-    /* Toast */
-    .toast {
-      position: fixed; bottom: 24px; left: 24px;
-      background: #323232; color: white; padding: 12px 24px; border-radius: 4px;
-      font-size: 14px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1001;
-      box-shadow: var(--shadow-md);
-    }
-    .toast.show { opacity: 1; }
-
-    .hidden { display: none !important; }
-
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .nav-left { width: auto; }
-    }
-  </style>
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%); width:280px;}
+  .sidebar.open{transform:translateX(0);}
+  .header{left:0;}
+  .main{margin-left:0;}
+  .files-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
+  .file-actions{opacity:1;}
+}
+</style>
 </head>
 <body>
 
-  <!-- Login Screen -->
-  <div id="loginScreen" class="login-wrapper">
-    <div class="login-card">
-      <img src="https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png" alt="MART Drive" style="height: 64px; margin-bottom: 16px;">
-      <h1>Welcome to MART Drive</h1>
-      <p>Store, manage, and share your files seamlessly with your Google Drive.</p>
-      <button class="btn btn-primary" style="width: 100%; padding: 12px;" onclick="signIn()">
-        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-        Sign in with Google
-      </button>
-    </div>
+<!-- Auth Screen -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <img src="https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png" alt="MART Drive">
+    <h1>Welcome to MART Drive</h1>
+    <p>A clean, organized way to manage your Google Drive files.</p>
+    <button class="google-btn" onclick="signIn()">
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
   </div>
+</div>
 
-  <!-- Main App -->
-  <div id="appScreen" class="hidden" style="height: 100vh; display: flex; flex-direction: column;">
-    
-    <nav class="navbar">
-      <div class="nav-left">
-        <div class="logo">
-          <img src="https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png" alt="MART Logo">
-          MART Drive
-        </div>
-      </div>
-      <div class="nav-center">
-        <div class="search-box">
-          <span class="material-symbols-outlined" style="color: var(--text-muted);">search</span>
-          <input type="text" id="searchInput" placeholder="Search in MART Drive" onkeyup="filterFiles()">
-        </div>
-      </div>
-      <div class="nav-right">
-        <img id="userAvatar" class="user-avatar" src="" alt="User" style="display:none;">
-        <button class="btn btn-icon material-symbols-outlined" onclick="logout()" title="Sign out">logout</button>
-      </div>
-    </nav>
-
-    <div class="app-body">
-      <!-- Sidebar -->
-      <div class="sidebar">
-        <div class="sidebar-item active">
-          <span class="material-symbols-outlined">folder</span> My Drive
-        </div>
-      </div>
-
-      <!-- Main Content -->
-      <div class="main-content">
-        
-        <!-- Upload Area -->
-        <div class="upload-area" id="dropZone">
-          <p>Drag and drop files here to upload</p>
-          <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
-            <span class="material-symbols-outlined" style="font-size: 20px;">add</span> New Upload
-          </button>
-          <input type="file" id="fileInput" multiple style="display:none" onchange="promptRename(this.files)">
-        </div>
-
-        <div class="files-header">My Files</div>
-        
-        <div id="loadingSkeleton" class="files-grid">
-          <div class="file-card" style="height: 140px; opacity: 0.5;"></div>
-          <div class="file-card" style="height: 140px; opacity: 0.5;"></div>
-          <div class="file-card" style="height: 140px; opacity: 0.5;"></div>
-        </div>
-
-        <div id="filesList" class="files-grid hidden"></div>
-      </div>
+<!-- Main App -->
+<div id="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <img src="https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png" alt="Logo">
+      <h2>MART Drive</h2>
     </div>
-  </div>
+    <button class="new-btn" onclick="document.getElementById('file-input').click()">
+      <span class="material-symbols-outlined">add</span> Upload File
+    </button>
+    <ul class="nav-list">
+      <li><div class="nav-item active" onclick="setView('drive')">
+        <span class="material-symbols-outlined">folder</span> My Drive
+      </div></li>
+      <li><div class="nav-item" onclick="setView('recent')">
+        <span class="material-symbols-outlined">schedule</span> Recent
+      </div></li>
+      <li><div class="nav-item" onclick="setView('starred')">
+        <span class="material-symbols-outlined">star</span> Starred
+      </div></li>
+    </ul>
+  </aside>
 
-  <!-- Rename Modal -->
-  <div id="renameModal" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Upload File</h2>
-        <button class="btn-icon material-symbols-outlined" onclick="closeModal('renameModal')">close</button>
-      </div>
-      <div class="modal-body">
-        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">Enter a name for your file:</p>
-        <input type="text" id="renameInput" placeholder="File name">
-      </div>
-      <div style="display: flex; justify-content: flex-end; gap: 8px;">
-        <button class="btn" style="background: transparent; color: var(--text-muted);" onclick="closeModal('renameModal')">Cancel</button>
-        <button class="btn btn-primary" onclick="confirmUpload()">Upload</button>
-      </div>
+  <header class="header">
+    <div class="search-box">
+      <span class="material-symbols-outlined" style="color:var(--muted)">search</span>
+      <input type="search" id="search-input" placeholder="Search files..." oninput="handleSearch(this.value)">
     </div>
-  </div>
+    <div style="flex:1"></div>
+    <button class="user-btn" onclick="logout()">
+      <img id="user-avatar" class="user-avatar" src="" style="display:none">
+      <span style="font-weight:500; font-size:13px">Sign Out</span>
+    </button>
+  </header>
 
-  <!-- Preview Modal -->
-  <div id="previewModal" class="modal-overlay">
-    <div class="modal-content" style="max-width: 800px; width: 95%;">
-      <div class="modal-header">
-        <h2 id="previewTitle">Preview</h2>
-        <button class="btn-icon material-symbols-outlined" onclick="closeModal('previewModal')">close</button>
+  <main class="main">
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title" id="page-title">My Drive</h1>
+          <div style="font-size:13px; color:var(--muted)" id="page-meta">0 items</div>
+        </div>
+        <div class="toolbar">
+          <select id="sort-by" class="btn" onchange="render()">
+            <option value="createdAt_desc">Newest first</option>
+            <option value="name_asc">Name A-Z</option>
+            <option value="size_desc">Largest first</option>
+          </select>
+          <div class="view-toggle">
+            <button class="active" onclick="setViewMode('grid', this)">
+              <span class="material-symbols-outlined">grid_view</span>
+            </button>
+            <button onclick="setViewMode('list', this)">
+              <span class="material-symbols-outlined">view_list</span>
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="modal-body preview-body" id="previewContent">
-        <!-- Dynamic Content -->
+
+      <div class="selection-bar" id="selection-bar">
+        <span id="selection-count">0 selected</span>
+        <div style="flex:1"></div>
+        <button onclick="bulkDelete()">Delete</button>
+        <button onclick="clearSelection()">Cancel</button>
       </div>
-      <div style="display: flex; justify-content: flex-end; gap: 8px;">
-         <button class="btn btn-primary" id="downloadBtn">Download</button>
+
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
+        <h3>Drag & Drop or Click to Upload</h3>
+        <p style="color:var(--muted); font-size:13px;">Files will be stored in your Google Drive</p>
+        <input type="file" id="file-input" hidden multiple onchange="handleFiles(this.files)">
       </div>
+
+      <div class="files-grid" id="files-grid"></div>
     </div>
+  </main>
+</div>
+
+<!-- Modals -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal" id="modal-box">
+    <div class="modal-head">
+      <h3 id="modal-title">Modal</h3>
+      <button class="icon-btn" onclick="closeModal()"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot"></div>
   </div>
+</div>
 
-  <div id="toast" class="toast">Status message</div>
+<div class="toast-stack" id="toast-stack"></div>
 
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
-    import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot, query, where, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDUcT6hVqLHy3pYzwg1oktI7amTpF9Qj4c",
-      authDomain: "mart-drive.firebaseapp.com",
-      projectId: "mart-drive",
-      storageBucket: "mart-drive.firebasestorage.app",
-      messagingSenderId: "829348083361",
-      appId: "1:829348083361:web:d6e91ccec70c2b9d53e2e0",
-      measurementId: "G-J2ERB07TW0"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyDUcT6hVqLHy3pYzwg1oktI7amTpF9Qj4c",
+  authDomain: "mart-drive.firebaseapp.com",
+  projectId: "mart-drive",
+  storageBucket: "mart-drive.firebasestorage.app",
+  messagingSenderId: "829348083361",
+  appId: "1:829348083361:web:d6e91ccec70c2b9d53e2e0",
+  measurementId: "G-J2ERB07TW0"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-    let currentUser = null;
-    let accessToken = null;
-    let allFiles = [];
-    let pendingUploadFiles = null; // Store files temporarily before renaming
+let currentUser = null;
+let accessToken = null;
+let allFiles = [];
+let currentView = 'drive';
+let currentViewMode = 'grid';
+let searchTerm = '';
+let selectedIds = new Set();
+let unsubFiles = null;
 
-    window.showToast = (msg) => {
-      const toast = document.getElementById('toast');
-      toast.textContent = msg;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3500);
-    };
+// Expose to window for inline HTML handlers
+window.signIn = async () => {
+  const provider = new GoogleAuthProvider();
+  provider.addScope('https://www.googleapis.com/auth/drive.file');
+  provider.setCustomParameters({ prompt: 'consent' });
+  try {
+    const result = await signInWithPopup(auth, provider);
+    accessToken = GoogleAuthProvider.credentialFromResult(result).accessToken;
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+};
 
-    window.signIn = async () => {
-      const provider = new GoogleAuthProvider();
-      provider.addScope('https://www.googleapis.com/auth/drive.file');
-      provider.setCustomParameters({ prompt: 'consent' });
+window.logout = async () => {
+  await signOut(auth);
+  window.location.reload();
+};
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    if (!accessToken) {
       try {
+        const provider = new GoogleAuthProvider();
+        provider.addScope('https://www.googleapis.com/auth/drive.file');
         const result = await signInWithPopup(auth, provider);
         accessToken = GoogleAuthProvider.credentialFromResult(result).accessToken;
-      } catch (err) {
-        showToast('Sign in error: ' + err.message);
-      }
-    };
-
-    window.logout = async () => {
-      await signOut(auth);
-      window.location.reload();
-    };
-
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
-        if (!accessToken) {
-          try {
-            const provider = new GoogleAuthProvider();
-            provider.addScope('https://www.googleapis.com/auth/drive.file');
-            const result = await signInWithPopup(auth, provider);
-            accessToken = GoogleAuthProvider.credentialFromResult(result).accessToken;
-          } catch (e) { }
-        }
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('appScreen').classList.remove('hidden');
-        if (user.photoURL) {
-          document.getElementById('userAvatar').src = user.photoURL;
-          document.getElementById('userAvatar').style.display = 'block';
-        }
-        loadFiles();
-      }
-    });
-
-    // Rename Logic before upload
-    window.promptRename = (files) => {
-      if (!files.length) return;
-      pendingUploadFiles = files;
-      document.getElementById('renameInput').value = files[0].name; // Set default name
-      document.getElementById('renameModal').classList.add('show');
-      document.getElementById('renameInput').focus();
-    };
-
-    window.closeModal = (id) => document.getElementById(id).classList.remove('show');
-
-    window.confirmUpload = () => {
-      const newName = document.getElementById('renameInput').value.trim();
-      if (!newName) return showToast('Name cannot be empty');
-      closeModal('renameModal');
-      handleUpload(pendingUploadFiles, newName);
-    };
-
-    async function handleUpload(files, customName) {
-      if (!accessToken) return showToast('Authentication expired.');
-
-      for (const file of files) {
-        showToast(`Uploading: ${customName}`);
-        try {
-          const metadata = { name: customName, mimeType: file.type || 'application/octet-stream' };
-          const form = new FormData();
-          form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-          form.append('file', file);
-
-          const res = await fetch(
-            'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,size,webViewLink,webContentLink,createdTime',
-            { method: 'POST', headers: { Authorization: `Bearer ${accessToken}` }, body: form }
-          );
-
-          if (!res.ok) throw new Error('Upload failed');
-          const driveFile = await res.json();
-
-          // Make file publicly readable for sharing (optional step if you want direct link sharing)
-          await fetch(`https://www.googleapis.com/drive/v3/files/${driveFile.id}/permissions`, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ role: 'reader', type: 'anyone' })
-          });
-
-          await addDoc(collection(db, 'files'), {
-            uid: currentUser.uid,
-            driveFileId: driveFile.id,
-            name: driveFile.name,
-            mimeType: driveFile.mimeType,
-            size: driveFile.size || file.size,
-            webViewLink: driveFile.webViewLink,
-            webContentLink: driveFile.webContentLink,
-            createdAt: serverTimestamp()
-          });
-        } catch (err) {
-          showToast(`Error: ${err.message}`);
-        }
-      }
-      showToast('Upload complete.');
-      loadFiles();
+      } catch (e) { toast('Please re-authenticate to access Drive.', 'error'); }
     }
-
-    window.loadFiles = async () => {
-      if (!currentUser) return;
-      document.getElementById('loadingSkeleton').classList.remove('hidden');
-      document.getElementById('filesList').classList.add('hidden');
-      try {
-        const q = query(collection(db, 'files'), where('uid', '==', currentUser.uid));
-        const snap = await getDocs(q);
-        allFiles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        allFiles.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
-        renderFiles(allFiles);
-      } catch (err) {
-        showToast("Could not load files.");
-      } finally {
-        document.getElementById('loadingSkeleton').classList.add('hidden');
-      }
-    };
-
-    window.filterFiles = () => {
-      const term = document.getElementById('searchInput').value.toLowerCase();
-      renderFiles(allFiles.filter(f => f.name.toLowerCase().includes(term)));
-    };
-
-    window.renderFiles = (filesArray) => {
-      const listEl = document.getElementById('filesList');
-      listEl.classList.remove('hidden');
-      if (filesArray.length === 0) {
-        listEl.innerHTML = '<p style="grid-column: 1/-1; color: var(--text-muted); padding: 24px 0;">No files found.</p>';
-        return;
-      }
-
-      listEl.innerHTML = filesArray.map(f => {
-        let icon = 'draft'; let color = '#4285f4';
-        let isPreviewable = false;
-        
-        if (f.mimeType?.includes('image')) { icon = 'image'; color = '#ea4335'; isPreviewable = true; }
-        if (f.mimeType?.includes('video')) { icon = 'movie'; color = '#fbbc04'; isPreviewable = true; }
-        if (f.mimeType?.includes('pdf')) { icon = 'picture_as_pdf'; color = '#d93025'; isPreviewable = true; }
-
-        const sizeStr = f.size ? (f.size / 1024 / 1024).toFixed(2) + ' MB' : 'Unknown';
-
-        return `
-          <div class="file-card">
-            <div class="file-card-header">
-              <span class="material-symbols-outlined file-icon" style="color: ${color};">${icon}</span>
-              <button class="btn-icon material-symbols-outlined" onclick="shareFile('${f.webViewLink}')" title="Share Link">share</button>
-            </div>
-            <div class="file-name" title="${f.name}">${f.name}</div>
-            <div class="file-meta">${sizeStr}</div>
-            <div class="file-actions">
-              ${isPreviewable ? `<button class="btn btn-icon material-symbols-outlined" onclick="previewFile('${f.name}', '${f.mimeType}', '${f.webViewLink}', '${f.webContentLink}')" title="Preview">visibility</button>` : ''}
-              <button class="btn btn-icon btn-danger-icon material-symbols-outlined" onclick="deleteFile('${f.id}', '${f.driveFileId}')" title="Delete">delete</button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    };
-
-    // Share Feature
-    window.shareFile = (link) => {
-      navigator.clipboard.writeText(link).then(() => {
-        showToast('Share link copied to clipboard!');
-      }).catch(() => {
-        prompt("Copy this link:", link);
-      });
-    };
-
-    // Preview Feature
-    window.previewFile = (name, mimeType, viewLink, downloadLink) => {
-      document.getElementById('previewTitle').textContent = name;
-      const content = document.getElementById('previewContent');
-      const downloadBtn = document.getElementById('downloadBtn');
-      
-      downloadBtn.onclick = () => window.open(downloadLink || viewLink, '_blank');
-
-      if (mimeType.includes('image')) {
-        // Using thumbnail trick for Google Drive images
-        const fileId = viewLink.split('/d/')[1]?.split('/')[0];
-        content.innerHTML = `<img src="https://drive.google.com/thumbnail?id=${fileId}&sz=w1000" alt="${name}">`;
-      } else if (mimeType.includes('pdf') || mimeType.includes('video')) {
-        content.innerHTML = `<iframe src="${viewLink}/preview" width="100%" height="500px" allow="autoplay"></iframe>`;
-      } else {
-        content.innerHTML = `<p>Preview not available for this file type.</p>`;
-      }
-      
-      document.getElementById('previewModal').classList.add('show');
-    };
-
-    window.deleteFile = async (firestoreId, driveFileId) => {
-      if (!confirm('Delete this file permanently from your Drive?')) return;
-      showToast('Deleting...');
-      try {
-        const res = await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}`, {
-          method: 'DELETE', headers: { Authorization: `Bearer ${accessToken}` }
-        });
-        if (!res.ok && res.status !== 404) throw new Error('Drive deletion failed');
-        await deleteDoc(doc(db, 'files', firestoreId));
-        showToast('File deleted.');
-        loadFiles();
-      } catch (err) {
-        showToast('Error: ' + err.message);
-      }
-    };
-
-    const dz = document.getElementById('dropZone');
-    dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
-    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-    dz.addEventListener('drop', e => {
-      e.preventDefault();
-      dz.classList.remove('dragover');
-      if (e.dataTransfer.files.length) promptRename(e.dataTransfer.files);
+    
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('app').classList.add('ready');
+    if (user.photoURL) {
+      const av = document.getElementById('user-avatar');
+      av.src = user.photoURL;
+      av.style.display = 'block';
+    }
+    
+    if (unsubFiles) unsubFiles();
+    const q = query(collection(db, 'files'), where('uid', '==', user.uid));
+    unsubFiles = onSnapshot(q, (snap) => {
+      allFiles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      render();
     });
-  </script>
+  } else {
+    currentUser = null;
+    accessToken = null;
+    allFiles = [];
+    document.getElementById('app').classList.remove('ready');
+    document.getElementById('auth-screen').style.display = 'flex';
+    if (unsubFiles) unsubFiles();
+  }
+});
+
+// Utils
+function toast(msg, type="") {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  document.getElementById('toast-stack').appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+function fmtSize(b) {
+  if (!b) return '0 B';
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  if (b < 1073741824) return (b/1048576).toFixed(1) + ' MB';
+  return (b/1073741824).toFixed(2) + ' GB';
+}
+
+function fmtDate(ts) {
+  if (!ts) return '—';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function classifyMime(mime) {
+  if (!mime) return 'other';
+  if (mime.includes('image')) return 'image';
+  if (mime.includes('video')) return 'video';
+  if (mime.includes('audio')) return 'audio';
+  if (mime.includes('pdf')) return 'pdf';
+  if (mime.includes('zip') || mime.includes('tar') || mime.includes('rar')) return 'archive';
+  if (mime.includes('text') || mime.includes('document') || mime.includes('sheet')) return 'document';
+  return 'other';
+}
+
+const ICONS = {
+  folder: 'folder', image: 'image', video: 'movie', audio: 'audiotrack',
+  pdf: 'picture_as_pdf', document: 'description', archive: 'folder_zip', other: 'draft'
+};
+
+// UI Functions
+window.setView = (view) => {
+  currentView = view;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelector(`.nav-item[onclick="setView('${view}')"]`)?.classList.add('active');
+  
+  const titles = { drive: 'My Drive', recent: 'Recent', starred: 'Starred' };
+  document.getElementById('page-title').textContent = titles[view] || 'My Drive';
+  document.getElementById('dropzone').style.display = view === 'drive' ? 'block' : 'none';
+  render();
+};
+
+window.setViewMode = (mode, btn) => {
+  currentViewMode = mode;
+  document.querySelectorAll('.view-toggle button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+};
+
+window.handleSearch = (val) => {
+  searchTerm = val.toLowerCase();
+  render();
+};
+
+window.clearSelection = () => {
+  selectedIds.clear();
+  render();
+};
+
+// Render
+function getFilteredFiles() {
+  let files = allFiles.filter(f => !f.isTrashed);
+  if (currentView === 'starred') files = files.filter(f => f.isStarred);
+  if (currentView === 'recent') {
+    files.sort((a,b) => (b.createdAt?.toMillis()||0) - (a.createdAt?.toMillis()||0));
+    files = files.slice(0, 50);
+  } else {
+    const sortVal = document.getElementById('sort-by').value;
+    if (sortVal === 'name_asc') files.sort((a,b) => a.name.localeCompare(b.name));
+    else if (sortVal === 'size_desc') files.sort((a,b) => (b.size||0) - (a.size||0));
+    else files.sort((a,b) => (b.createdAt?.toMillis()||0) - (a.createdAt?.toMillis()||0));
+  }
+  if (searchTerm) files = files.filter(f => f.name.toLowerCase().includes(searchTerm));
+  return files;
+}
+
+function render() {
+  const files = getFilteredFiles();
+  document.getElementById('page-meta').textContent = `${files.length} item${files.length===1?'':'s'}`;
+  
+  const selBar = document.getElementById('selection-bar');
+  if (selectedIds.size > 0) {
+    selBar.classList.add('active');
+    document.getElementById('selection-count').textContent = `${selectedIds.size} selected`;
+  } else {
+    selBar.classList.remove('active');
+  }
+
+  const grid = document.getElementById('files-grid');
+  grid.innerHTML = '';
+  
+  if (files.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:60px; color:var(--muted)">No files found.</div>';
+    return;
+  }
+
+  if (currentViewMode === 'grid') {
+    grid.style.display = 'grid';
+    files.forEach(file => grid.appendChild(createFileCard(file)));
+  } else {
+    grid.style.display = 'flex';
+    grid.style.flexDirection = 'column';
+    files.forEach(file => grid.appendChild(createFileList(file)));
+  }
+}
+
+function createFileCard(file) {
+  const cat = classifyMime(file.mimeType);
+  const isSelected = selectedIds.has(file.id);
+  
+  const card = document.createElement('div');
+  card.className = `file-card ${isSelected ? 'selected' : ''}`;
+  
+  let iconHtml = `<span class="material-symbols-outlined">${ICONS[cat]}</span>`;
+  if (cat === 'image' && file.driveFileId) {
+    iconHtml = `<img src="https://drive.google.com/thumbnail?id=${file.driveFileId}&sz=w200" alt="">`;
+  }
+
+  card.innerHTML = `
+    <div class="file-icon-wrap">${iconHtml}</div>
+    <div class="file-name" title="${file.name}">${file.name}</div>
+    <div class="file-meta">${fmtSize(file.size)} · ${fmtDate(file.createdAt)}</div>
+    <div class="file-actions">
+      <button class="icon-btn" title="Star" onclick="toggleStar(event, '${file.id}', ${file.isStarred})">
+        <span class="material-symbols-outlined" style="${file.isStarred?'color:#F59E0B;font-variation-settings:\'FILL\' 1':''}">star</span>
+      </button>
+      <button class="icon-btn" title="Preview" onclick="previewFile(event, '${file.driveFileId}', '${file.mimeType}', '${file.name}')">
+        <span class="material-symbols-outlined">visibility</span>
+      </button>
+      <button class="icon-btn" title="Share" onclick="shareFile(event, '${file.driveFileId}')">
+        <span class="material-symbols-outlined">share</span>
+      </button>
+      <button class="icon-btn" title="Delete" onclick="deleteFile(event, '${file.id}', '${file.driveFileId}')">
+        <span class="material-symbols-outlined">delete</span>
+      </button>
+    </div>
+  `;
+
+  card.onclick = (e) => {
+    if (e.target.closest('.icon-btn')) return;
+    if (e.ctrlKey || e.metaKey) {
+      if (selectedIds.has(file.id)) selectedIds.delete(file.id);
+      else selectedIds.add(file.id);
+      render();
+    } else {
+      selectedIds.clear();
+      selectedIds.add(file.id);
+      render();
+    }
+  };
+  return card;
+}
+
+function createFileList(file) {
+  const cat = classifyMime(file.mimeType);
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex; align-items:center; gap:16px; padding:12px; border-bottom:1px solid var(--border); cursor:pointer;';
+  row.innerHTML = `
+    <span class="material-symbols-outlined" style="color:var(--navy)">${ICONS[cat]}</span>
+    <div style="flex:1; font-weight:500">${file.name}</div>
+    <div style="width:100px; font-size:12px; color:var(--muted)">${fmtSize(file.size)}</div>
+    <div style="width:120px; font-size:12px; color:var(--muted)">${fmtDate(file.createdAt)}</div>
+  `;
+  row.onclick = () => previewFile(null, file.driveFileId, file.mimeType, file.name);
+  return row;
+}
+
+// File Actions
+window.toggleStar = async (e, id, isStarred) => {
+  e.stopPropagation();
+  await updateDoc(doc(db, 'files', id), { isStarred: !isStarred });
+};
+
+window.deleteFile = async (e, firestoreId, driveId) => {
+  e.stopPropagation();
+  if (!confirm('Delete this file permanently from Google Drive?')) return;
+  toast('Deleting...');
+  try {
+    await fetch(`https://www.googleapis.com/drive/v3/files/${driveId}`, {
+      method: 'DELETE', headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    await deleteDoc(doc(db, 'files', firestoreId));
+    toast('File deleted', 'success');
+  } catch (err) { toast('Delete failed', 'error'); }
+};
+
+window.shareFile = (e, driveId) => {
+  e.stopPropagation();
+  const link = `https://drive.google.com/file/d/${driveId}/view`;
+  navigator.clipboard.writeText(link).then(() => toast('Share link copied!', 'success'));
+};
+
+window.bulkDelete = async () => {
+  if (!confirm(`Delete ${selectedIds.size} files?`)) return;
+  for (const id of selectedIds) {
+    const f = allFiles.find(x => x.id === id);
+    if (f) {
+      await fetch(`https://www.googleapis.com/drive/v3/files/${f.driveFileId}`, {
+        method: 'DELETE', headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      await deleteDoc(doc(db, 'files', id));
+    }
+  }
+  selectedIds.clear();
+  toast('Files deleted', 'success');
+};
+
+// Preview
+window.previewFile = (e, driveId, mimeType, name) => {
+  if (e) e.stopPropagation();
+  const body = document.getElementById('modal-body');
+  document.getElementById('modal-title').textContent = name;
+  
+  let html = '';
+  if (mimeType.includes('image')) {
+    html = `<div class="preview-box"><img src="https://drive.google.com/thumbnail?id=${driveId}&sz=w1000"></div>`;
+  } else if (mimeType.includes('video') || mimeType.includes('pdf')) {
+    html = `<div class="preview-box" style="background:#fff"><iframe src="https://drive.google.com/file/d/${driveId}/preview" width="100%" height="500px" allow="autoplay"></iframe></div>`;
+  } else {
+    html = `<div class="preview-box">Preview not available</div>`;
+  }
+  
+  body.innerHTML = html;
+  document.getElementById('modal-foot').innerHTML = `
+    <button class="btn" onclick="window.open('https://drive.google.com/file/d/${driveId}/view', '_blank')">Open in Drive</button>
+    <button class="btn btn-primary" onclick="closeModal()">Close</button>
+  `;
+  document.getElementById('modal-box').classList.add('wide');
+  document.getElementById('modal-backdrop').classList.add('open');
+};
+
+window.closeModal = () => {
+  document.getElementById('modal-backdrop').classList.remove('open');
+};
+
+// Upload
+window.handleFiles = async (files) => {
+  if (!accessToken) return toast('Please sign in again', 'error');
+  
+  for (const file of files) {
+    const t = toast(`Uploading: ${file.name}`);
+    try {
+      const metadata = { name: file.name, mimeType: file.type || 'application/octet-stream' };
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      form.append('file', file);
+      
+      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,size', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}` },
+        body: form
+      });
+      
+      if (!res.ok) throw new Error('Upload failed');
+      const driveFile = await res.json();
+      
+      // Make public for sharing
+      await fetch(`https://www.googleapis.com/drive/v3/files/${driveFile.id}/permissions`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: 'reader', type: 'anyone' })
+      }).catch(() => {}); // ignore error
+      
+      await addDoc(collection(db, 'files'), {
+        uid: currentUser.uid,
+        driveFileId: driveFile.id,
+        name: driveFile.name,
+        mimeType: driveFile.mimeType,
+        size: driveFile.size || file.size,
+        isStarred: false,
+        isTrashed: false,
+        createdAt: serverTimestamp()
+      });
+      
+      t.remove();
+      toast('Uploaded: ' + file.name, 'success');
+    } catch (err) {
+      t.remove();
+      toast('Error: ' + err.message, 'error');
+    }
+  }
+};
+
+// Drag & Drop
+const dz = document.getElementById('dropzone');
+dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', (e) => {
+  e.preventDefault(); dz.classList.remove('dragover');
+  if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+});
+</script>
 </body>
 </html>
