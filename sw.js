@@ -1,4 +1,4 @@
-const V='mart-drive-v1';
+const V='mart-drive-v2.2.2';
 const SHELL=['./','index.html','terms_conditions.html','privacy_policy.html','manifest.webmanifest','icons/icon 192.jpg','icons/icon 512.jpg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>Promise.all(SHELL.map(u=>c.add(u).catch(()=>{})))).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
