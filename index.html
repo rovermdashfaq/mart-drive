@@ -380,6 +380,7 @@ let sortBy=localStorage.getItem('sort_v2')||'date',layout=localStorage.getItem('
 let selectMode=false,curList=[];const sel=new Set();
 let quota=null,syncing=false,joinInv=null,logoFile=null,logoMode='upload',logoExisting=null;
 const failedGrants=new Set();
+let memberQ=[],unsubQ=null,lastPub='';
 const keyOf=x=>x.kind+':'+x.id;
 const me=()=>currentUser.email.toLowerCase();
 const myOrg=()=>organizations.find(o=>o.id===currentOrgId);
@@ -445,7 +446,7 @@ onAuthStateChanged(auth,user=>{
     if(accessToken)loadQuota();
   }else{
     currentUser=null;accessToken=null;quota=null;$('app').classList.remove('ready');$('landing').style.display='block';document.documentElement.classList.remove('has-session');try{localStorage.removeItem('mart_has_session')}catch{}
-    [...unsubP,...unsubO,...unsubS,unsubOrgs,unsubR].forEach(u=>u&&u());unsubR=null;reqKey='';joinReqs=[];
+    [...unsubP,...unsubO,...unsubS,unsubOrgs,unsubR,unsubQ].forEach(u=>u&&u());unsubR=null;reqKey='';joinReqs=[];unsubQ=null;memberQ=[];
   }
 });
 
@@ -466,7 +467,7 @@ function setupListeners(){
       if(currentOrgId&&!myOrg())switchOrg(null);
       else{renderOrgSidebar();updateBrand();syncReqListener();render()}
     }
-    syncOrgGrants();
+    syncOrgGrants();publishQuota();
   },e=>{console.warn('orgs',e);runPendingJoin()});
   unsubP.forEach(u=>u());
   unsubP=Object.keys(store).map(k=>onSnapshot(query(collection(db,k),where('uid','==',uid)),s=>{
@@ -483,8 +484,10 @@ function setupListeners(){
 }
 function listenOrg(){
   unsubO.forEach(u=>u());unsubO=[];Object.values(store).forEach(v=>v.o=[]);
+  unsubQ&&unsubQ();unsubQ=null;memberQ=[];
   if(!currentOrgId)return;
   unsubO=Object.keys(store).map(k=>onSnapshot(query(collection(db,k),where('orgId','==',currentOrgId)),s=>{store[k].o=snapDocs(s);render()},e=>console.warn(k,e)));
+  unsubQ=onSnapshot(query(collection(db,'memberQuotas'),where('orgId','==',currentOrgId)),s=>{memberQ=snapDocs(s);renderStorage()},e=>console.warn('memberQuotas',e));
 }
 /* join requests listener (only for owners of the current organization) */
 function syncReqListener(){
@@ -497,13 +500,42 @@ const all=k=>{const m=new Map();[...store[k].p,...store[k].o].forEach(x=>m.set(x
 const ws=()=>[...all('folders').map(x=>({...x,kind:'folder'})),...all('files').map(x=>({...x,kind:'file'})),...all('notes').map(x=>({...x,kind:'note'}))];
 
 /* DRIVE STORAGE QUOTA */
+async function publishQuota(){
+  if(!quota||!currentUser||!organizations.length)return;
+  const lim=+quota.limit||0,usg=+quota.usage||0;
+  for(const o of organizations){
+    const key=o.id+'|'+lim+'|'+usg;
+    if(lastPub.includes(key))continue;
+    try{
+      await setDoc(doc(db,'memberQuotas',`${o.id}_${me()}`),{orgId:o.id,email:me(),name:currentUser.displayName||'',limit:lim,usage:usg,updatedAt:serverTimestamp()});
+      lastPub+=key+';';
+    }catch(e){console.warn('publishQuota',e)}
+  }
+}
+function teamStats(o){
+  const rows=o.members.map(m=>({m,q:memberQ.find(x=>x.email===m)}));
+  const rep=rows.filter(r=>r.q);
+  const cap=rep.reduce((s,r)=>s+(+r.q.limit||0),0),use=rep.reduce((s,r)=>s+(+r.q.usage||0),0);
+  return{rows,rep,cap,use,free:Math.max(0,cap-use)};
+}
+window.openTeamStorage=()=>{
+  const o=myOrg();if(!o)return;
+  const t=teamStats(o);
+  const list=t.rows.map(({m,q})=>{
+    if(!q)return`<div class="access-row"><span class="material-symbols-outlined" style="color:var(--muted)">account_circle</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis">${esc(m)}</span><span class="chip">Not synced yet</span></div>`;
+    const lim=+q.limit||0,usg=+q.usage||0;
+    const pct=lim?Math.min(100,usg/lim*100).toFixed(1):0;
+    return`<div style="padding:10px 0;border-bottom:1px solid var(--border)"><div style="display:flex;gap:8px;align-items:center"><span class="material-symbols-outlined" style="color:var(--muted)">account_circle</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis"><b>${esc(q.name||m.split('@')[0])}</b><br><small style="color:var(--muted)">${esc(m)}</small></span><span style="text-align:right"><b style="color:var(--success)">${lim?fmtSize(Math.max(0,lim-usg)):'Unlimited'}</b> free<br><small style="color:var(--muted)">${fmtSize(usg)} / ${lim?fmtSize(lim):'∞'}</small></span></div>${lim?`<div class="st-bar" style="margin:8px 0 0"><i style="width:${pct}%"></i></div>`:''}</div>`;
+  }).join('');
+  openModal(`${o.name} · Team storage`,`<div class="st-grid" style="margin-bottom:12px"><div><small>Total capacity</small><b>${fmtSize(t.cap)}</b></div><div><small>Used</small><b>${fmtSize(t.use)}</b></div><div><small>Free</small><b>${fmtSize(t.free)}</b></div></div><small style="color:var(--muted)">${t.rep.length} of ${o.members.length} members synced. A member appears after opening MART Drive once.</small>${list}`,`<button class="btn" onclick="closeModal()">Close</button>`);
+};
 async function loadQuota(){
   if(!accessToken)return;
   try{
     const r=await fetch('https://www.googleapis.com/drive/v3/about?fields=storageQuota',{headers:dh()});
     if(r.status===401){clearToken();quota=null;renderStorage();return}
     const j=await r.json();
-    quota=j.storageQuota||null;
+    quota=j.storageQuota||null;publishQuota();
   }catch(e){console.warn('quota',e)}
   renderStorage();
 }
@@ -529,9 +561,15 @@ function renderStorage(){
     free=`<button class="btn" onclick="refreshQuota()" style="padding:4px 10px"><span class="material-symbols-outlined" style="font-size:18px">refresh</span> Show</button>`;
     total='—';
   }
+  let totalBox=`<div><small>Google account total</small><b style="font-size:14px">${total}</b></div>`;
+  if(o){
+    const t=teamStats(o);
+    if(t.cap)bar=`<div class="st-bar"><i style="width:${Math.min(100,t.use/t.cap*100).toFixed(1)}%"></i></div>`;
+    totalBox=`<div style="cursor:pointer;border:1px solid var(--blue)" onclick="openTeamStorage()" title="Click to see each member's free space"><small>Team total capacity (${t.rep.length}/${o.members.length} members) · tap for details</small><b>${fmtSize(t.cap)}</b><small>${fmtSize(t.use)} used · ${fmtSize(t.free)} free</small></div>`;
+  }
   note=o?'Total counts every file uploaded by all members of this organization. Free space is your own Google Drive space, because the files you upload are stored in your Drive.':'Free space is the remaining space in your Google Drive (shared with Gmail &amp; Photos). Files in Trash still use space until deleted forever.';
   el.innerHTML=`<div class="st-head"><span><span class="material-symbols-outlined" style="vertical-align:middle;color:var(--blue)">cloud</span> Storage · ${esc(o?o.name:'Personal Drive')}</span>${quota?`<button class="icon-btn" title="Refresh" onclick="refreshQuota()"><span class="material-symbols-outlined" style="font-size:20px">refresh</span></button>`:''}</div>
-  <div class="st-grid"><div><small>Uploaded in ${o?'this organization':'Personal Drive'} (${fl.length} files)</small><b>${fmtSize(used)}</b></div><div><small>Free space (your Google Drive)</small><b>${free}</b></div><div><small>Google account total</small><b style="font-size:14px">${total}</b></div></div>${bar}${by}<div class="st-note">${note}</div>`;
+  <div class="st-grid"><div><small>Uploaded in ${o?'this organization':'Personal Drive'} (${fl.length} files)</small><b>${fmtSize(used)}</b></div><div><small>Free space (your Google Drive)</small><b>${free}</b></div>${totalBox}</div>${bar}${by}<div class="st-note">${note}</div>`;
 }
 
 /* Keep Drive permissions of my org files in sync with the member list */
