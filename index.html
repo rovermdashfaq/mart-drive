@@ -136,6 +136,7 @@ body.dark-mode .chip.own{background:#2D3133}
 .logo-prev{display:none;width:64px;height:64px;border-radius:10px;object-fit:cover;margin-top:8px;border:1px solid var(--border)}
 .step-t{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px}
 .req-act{display:flex;gap:8px;margin-top:10px}
+.aa-row{display:flex!important;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:0!important}.aa-row input{width:auto!important;margin-top:3px;flex:none;accent-color:var(--blue)}.aa-row small{font-weight:400}.aa-box{margin-top:16px;padding:12px;border:1px solid var(--border);border-radius:10px}.aa-state{font-size:13px}.aa-state b.on{color:#188038}.aa-state b.off{color:var(--muted)}
 .files-grid:not(.list) .file-icon-wrap.pv{width:100%;height:120px}
 .cmt{padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}.cmt small{color:var(--muted)}
 .vid{width:100%;max-height:480px;background:#000;border-radius:10px}
@@ -183,19 +184,6 @@ html.has-session #landing{display:none}
 .nav-logout{display:none}
 .mn-ic{display:flex;align-items:center;height:24px}
 @media(max-width:900px){.nav-logout{display:block}.user-btn{display:none}}
-/* auto-approve toggle */
-.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
-.toggle-row:last-child{border-bottom:none}
-.toggle-row .toggle-info{flex:1;min-width:0}
-.toggle-row .toggle-info b{display:block;font-size:14px;margin-bottom:2px}
-.toggle-row .toggle-info small{color:var(--muted);font-size:12px}
-.switch{position:relative;display:inline-block;width:44px;height:24px;flex:none}
-.switch input{opacity:0;width:0;height:0}
-.switch .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:var(--border);border-radius:24px;transition:.2s}
-.switch .slider:before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:var(--surface);border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-.switch input:checked+.slider{background:var(--success)}
-.switch input:checked+.slider:before{transform:translateX(20px)}
-.switch input:disabled+.slider{opacity:.5;cursor:not-allowed}
 </style>
 <script>
 (function(){
@@ -260,7 +248,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <p class="ld-sub">Built for individuals, clubs, schools and organizations that need a simple, shared place to keep their work.</p>
 <div class="ld-grid">
 <div class="ld-card"><span class="material-symbols-outlined">cloud_upload</span><h3>File storage</h3><p>Upload documents, images, videos and PDFs. Files are stored in your own Google Drive, and you can preview them in the app.</p></div>
-<div class="ld-card"><span class="material-symbols-outlined">groups</span><h3>Organizations &amp; teams</h3><p>Create an organization with one or more owners, add members by email or invite link, and approve join requests. Everyone in it can view, comment on and edit the shared files, notes and links.</p></div>
+<div class="ld-card"><span class="material-symbols-outlined">groups</span><h3>Organizations &amp; teams</h3><p>Create an organization with one or more owners, add members by email or invite link, and choose whether join requests are approved automatically or by an owner. Everyone in it can view, comment on and edit the shared files, notes and links.</p></div>
 <div class="ld-card"><span class="material-symbols-outlined">link</span><h3>Notes &amp; links with preview</h3><p>Save text notes and web links. Links show a live preview with title, description and image so they are easy to recognize.</p></div>
 <div class="ld-card"><span class="material-symbols-outlined">folder</span><h3>Folders &amp; organization</h3><p>Use folders, select multiple items at once, star important items, move things around, search everything, see your storage usage, and restore anything from the trash.</p></div>
 <div class="ld-card"><span class="material-symbols-outlined">lock</span><h3>Access control</h3><p>Share individual files with specific people as viewer, commenter or editor, and track them in Shared by me and Shared from. Personal items stay private to you.</p></div>
@@ -661,7 +649,17 @@ function syncReqListener(){
   const o=myOrg(),key=(o&&isOwner(o))?o.id:'';
   if(key===reqKey)return;
   reqKey=key;unsubR&&unsubR();unsubR=null;joinReqs=[];
-  if(key)unsubR=onSnapshot(query(collection(db,'joinRequests'),where('orgId','==',key)),s=>{joinReqs=snapDocs(s).filter(r=>r.status==='pending');render()},e=>console.warn('joinRequests',e));
+  if(key)unsubR=onSnapshot(query(collection(db,'joinRequests'),where('orgId','==',key)),s=>{joinReqs=snapDocs(s).filter(r=>r.status==='pending');render();autoApprovePending()},e=>console.warn('joinRequests',e));
+}
+/* Fallback for auto approve: if the joiner could not add themself, the request is saved with auto:true and any owner's app approves it while auto approve is ON */
+const autoDone=new Set();
+async function autoApprovePending(){
+  const o=myOrg();if(!o||!isOwner(o)||o.autoApprove!==true)return;
+  for(const r of joinReqs.filter(r=>r.auto===true&&r.orgId===o.id&&!autoDone.has(r.id))){
+    autoDone.add(r.id);
+    try{await updateDoc(doc(db,'organizations',o.id),{members:arrayUnion(r.email)});await deleteDoc(doc(db,'joinRequests',r.id));toast(r.email+' joined automatically','success')}
+    catch(e){autoDone.delete(r.id);console.warn('autoApprove',e)}
+  }
 }
 const all=k=>{if(extMode)return store[k].s;const m=new Map();[...store[k].p,...store[k].o].forEach(x=>m.set(x.id,x));return[...m.values()].filter(x=>(x.orgId||null)===currentOrgId)};
 const rawWs=()=>{const m=new Map();[['folders','folder'],['files','file'],['notes','note']].forEach(([k,kind])=>[...store[k].p,...store[k].o].forEach(x=>m.set(kind+x.id,{...x,kind})));return[...m.values()]};
@@ -802,6 +800,7 @@ function orgFormHTML(o,isNew){
     <img id="logo-prev" class="logo-prev" alt="Logo preview">
     <small>Uploaded logos are saved on ImgBB and the link is stored in your organization.</small>
   </div>
+  <div class="field"><label class="aa-row"><input type="checkbox" id="of-auto" ${o?.autoApprove?'checked':''}><span><b>Auto approve join requests</b><small>ON: anyone who joins with the invite link is added instantly. OFF: the request stays pending until an owner approves it. Only owners can change this.</small></span></label></div>
   ${isNew?`<div class="step-t">4. Add people (optional)</div>
   <div class="field"><label>Team members (emails)</label><textarea id="of-members" class="sm" placeholder="member1@gmail.com, member2@gmail.com"></textarea></div>
   <div class="field"><label>Owners (emails)</label><textarea id="of-owners" class="sm" placeholder="owner@gmail.com"></textarea><small>Owners can edit the organization, add/remove members, make other owners and approve join requests. You are an owner automatically.</small></div>`:''}`;
@@ -852,9 +851,10 @@ window.createOrg=async()=>{
   try{
     const logoUrl=await resolveLogo();
     const owners=[...new Set([me(),...own.list])],members=[...new Set([me(),...mem.list,...own.list])];
+    const autoApprove=!!$('of-auto')?.checked;
     const ref=doc(collection(db,'organizations')),code=genCode();
-    await setDoc(ref,{teamName:team,name,logoUrl,owner:currentUser.uid,ownerEmail:me(),owners,members,inviteCode:code,autoApprove:false,createdAt:serverTimestamp()});
-    await setDoc(doc(db,'invites',code),{orgId:ref.id,orgName:name,teamName:team,logoUrl,createdBy:me(),autoApprove:false}).catch(e=>console.warn('invite',e));
+    await setDoc(ref,{teamName:team,name,logoUrl,owner:currentUser.uid,ownerEmail:me(),owners,members,inviteCode:code,autoApprove,createdAt:serverTimestamp()});
+    await setDoc(doc(db,'invites',code),{orgId:ref.id,orgName:name,teamName:team,logoUrl,autoApprove,createdBy:me()}).catch(e=>console.warn('invite',e));
     toast('Organization created!','success');closeModal();
   }catch(e){toast('Failed: '+e.message,'error');btn.disabled=false;btn.textContent='Create'}
 };
@@ -871,8 +871,9 @@ window.updateOrg=async id=>{
   const btn=$('org-save');btn.disabled=true;btn.textContent='Saving…';
   try{
     const logoUrl=await resolveLogo();
-    await updateDoc(doc(db,'organizations',id),{teamName:team,name,logoUrl});
-    if(o.inviteCode)await setDoc(doc(db,'invites',o.inviteCode),{orgId:id,orgName:name,teamName:team,logoUrl,createdBy:me()},{merge:true}).catch(()=>{});
+    const autoApprove=!!$('of-auto')?.checked;
+    await updateDoc(doc(db,'organizations',id),{teamName:team,name,logoUrl,autoApprove});
+    if(o.inviteCode)await setDoc(doc(db,'invites',o.inviteCode),{orgId:id,orgName:name,teamName:team,logoUrl,autoApprove,createdBy:me()},{merge:true}).catch(()=>{});
     toast('Organization updated','success');closeModal();
   }catch(e){toast('Failed: '+e.message,'error');btn.disabled=false;btn.textContent='Save'}
 };
@@ -886,23 +887,11 @@ window.deleteOrg=async id=>{
   }catch(e){toast('Failed: '+e.message,'error')}
 };
 
-/* AUTO-APPROVE TOGGLE (owners only) */
-window.toggleAutoApprove=async(on=>{
-  const o=myOrg();
-  if(!o||!isOwner(o))return toast('Only owners can change this setting','error');
-  try{
-    await updateDoc(doc(db,'organizations',o.id),{autoApprove:!!on});
-    if(o.inviteCode)await setDoc(doc(db,'invites',o.inviteCode),{autoApprove:!!on},{merge:true}).catch(()=>{});
-    o.autoApprove=!!on;
-    toast(on?'Auto-approve enabled':'Auto-approve disabled','success');
-  }catch(e){toast('Failed: '+e.message,'error')}
-};
-
 /* MEMBERS, OWNERS & INVITE LINK */
 async function ensureInvite(o,force){
   if(o.inviteCode&&!force)return o.inviteCode;
   const old=o.inviteCode,code=genCode();
-  await setDoc(doc(db,'invites',code),{orgId:o.id,orgName:o.name,teamName:o.teamName||'',logoUrl:o.logoUrl||null,createdBy:me(),autoApprove:!!o.autoApprove});
+  await setDoc(doc(db,'invites',code),{orgId:o.id,orgName:o.name,teamName:o.teamName||'',logoUrl:o.logoUrl||null,autoApprove:o.autoApprove===true,createdBy:me()});
   await updateDoc(doc(db,'organizations',o.id),{inviteCode:code});
   if(old)await deleteDoc(doc(db,'invites',old)).catch(()=>{});
   o.inviteCode=code;return code;
@@ -917,10 +906,10 @@ window.openMembersModal=async id=>{
     const btns=own&&!self?`${ow?(!sole?`<button class="icon-btn" title="Remove owner role" data-act="demote" data-e="${esc(m)}"><span class="material-symbols-outlined" style="font-size:18px">remove_moderator</span></button>`:''):`<button class="icon-btn" title="Make owner" data-act="promote" data-e="${esc(m)}"><span class="material-symbols-outlined" style="font-size:18px">admin_panel_settings</span></button>`}${!sole?`<button class="icon-btn" title="Remove from organization" data-act="remove" data-e="${esc(m)}"><span class="material-symbols-outlined" style="font-size:18px">person_remove</span></button>`:''}`:'';
     return`<div class="access-row"><span class="material-symbols-outlined" style="color:var(--muted)">account_circle</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis">${esc(m)}${self?' (you)':''}</span>${ow?'<span class="chip own">Owner</span>':'<span class="chip">Member</span>'}${btns}</div>`;
   }).join('');
-  const inv=o.inviteCode?`<div class="field" style="margin-top:16px"><label>Invite link</label><div style="display:flex;gap:8px"><input id="inv-link" readonly value="${esc(inviteLink(o.inviteCode))}" style="flex:1;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><button class="btn" data-act="copyinv" title="Copy link"><span class="material-symbols-outlined">content_copy</span></button>${own?`<button class="btn" data-act="resetinv" title="Create a new link (old link stops working)"><span class="material-symbols-outlined">autorenew</span></button>`:''}</div><small style="color:var(--muted);font-size:12px">Anyone with this link can log in / sign up and request to join. An owner must approve every request.</small></div>`:`<p style="font-size:13px;color:var(--muted);margin-top:16px">No invite link yet. Ask an owner to open this window to create one.</p>`;
-  const autoRow=own?`<div class="toggle-row"><div class="toggle-info"><b>Auto-approve join requests</b><small>${o.autoApprove?'New members who use the invite link are added automatically.':'New members must be approved by an owner before they can join.'}</small></div><label class="switch"><input type="checkbox" ${o.autoApprove?'checked':''} onchange="toggleAutoApprove(this.checked)"><span class="slider"></span></label></div>`:'';
+  const inv=o.inviteCode?`<div class="field" style="margin-top:16px"><label>Invite link</label><div style="display:flex;gap:8px"><input id="inv-link" readonly value="${esc(inviteLink(o.inviteCode))}" style="flex:1;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><button class="btn" data-act="copyinv" title="Copy link"><span class="material-symbols-outlined">content_copy</span></button>${own?`<button class="btn" data-act="resetinv" title="Create a new link (old link stops working)"><span class="material-symbols-outlined">autorenew</span></button>`:''}</div><small style="color:var(--muted);font-size:12px">${o.autoApprove===true?'Anyone with this link can log in / sign up and join instantly (auto approve is ON).':'Anyone with this link can log in / sign up and request to join. An owner must approve every request (auto approve is OFF).'}</small></div>`:`<p style="font-size:13px;color:var(--muted);margin-top:16px">No invite link yet. Ask an owner to open this window to create one.</p>`;
   openModal(`${o.name} · Members (${o.members.length})`,
-   `<p style="font-size:13px;color:var(--muted);margin-bottom:12px">All members can view, comment and edit files, notes and links in this organization. Owners can also manage people and approve join requests.</p>${autoRow}<div class="step-t" style="margin-top:12px">Members</div>${rows}${inv}
+   `<p style="font-size:13px;color:var(--muted);margin-bottom:12px">All members can view, comment and edit files, notes and links in this organization. Owners can also manage people and approve join requests.</p>${rows}${inv}
+   ${own?`<div class="aa-box"><label class="aa-row"><input type="checkbox" data-act="autoapp" ${o.autoApprove===true?'checked':''}><span><b>Auto approve join requests</b><small>ON: people joining with the invite link are added instantly. OFF: they stay pending until an owner approves them.</small></span></label></div>`:`<div class="aa-box aa-state">Auto approve join requests: <b class="${o.autoApprove===true?'on':'off'}">${o.autoApprove===true?'ON':'OFF'}</b><small style="display:block;color:var(--muted);font-size:12px;margin-top:4px">Only owners can change this.</small></div>`}
    ${own?`<div class="field" style="margin-top:16px"><label>Add people (Google emails, separated by comma)</label><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="member-email" placeholder="name@gmail.com" style="flex:1;min-width:160px;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><select id="member-role" class="sel"><option value="member">Member</option><option value="owner">Owner</option></select><button class="btn btn-primary" data-act="add">Add</button></div></div>`:''}`,
    `${!own||owners.length>1?`<button class="btn" style="color:var(--error);border-color:var(--error)" data-act="leave">Leave</button>`:''}<button class="btn" onclick="closeModal()">Close</button>`);
   const handler=ev=>{
@@ -933,8 +922,20 @@ window.openMembersModal=async id=>{
     else if(a==='leave')leaveOrg(id);
     else if(a==='copyinv'){const t=$('inv-link').value;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Invite link copied!','success')).catch(()=>{$('inv-link').select();document.execCommand('copy');toast('Invite link copied!','success')})}
     else if(a==='resetinv')resetInvite(id);
+    else if(a==='autoapp')setAutoApprove(id,b.checked,b);
   };
   $('modal-body').onclick=handler;$('modal-foot').onclick=handler;
+};
+window.setAutoApprove=async(id,on,el)=>{
+  const o=organizations.find(x=>x.id===id);
+  if(!o||!isOwner(o)){if(el)el.checked=!on;return toast('Only owners can change auto approve','error')}
+  try{
+    await updateDoc(doc(db,'organizations',id),{autoApprove:on});
+    o.autoApprove=on;
+    const code=o.inviteCode||await ensureInvite(o);
+    await setDoc(doc(db,'invites',code),{orgId:id,orgName:o.name,teamName:o.teamName||'',logoUrl:o.logoUrl||null,autoApprove:on,createdBy:me()},{merge:true});
+    toast('Auto approve '+(on?'ON: new members join instantly':'OFF: owners must approve requests'),'success');openMembersModal(id);
+  }catch(e){if(el)el.checked=!on;toast('Failed: '+e.message,'error')}
 };
 window.resetInvite=async id=>{
   const o=organizations.find(x=>x.id===id);if(!o||!isOwner(o))return;
@@ -1001,7 +1002,7 @@ async function revokeDrive(fid,email){
 }
 async function shareWithMembers(fid){const o=myOrg(),done=[];if(!o)return done;for(const m of o.members)if(m!==me()){const r=await grantDrive(fid,m,ownersOf(o).includes(m)?'writer':'reader');if(r&&r.ok)done.push(m)}return done}
 
-/* JOIN via invite link + approval by owners (auto-approve if enabled) */
+/* JOIN via invite link + approval by owners */
 async function runPendingJoin(){
   const code=pendingJoin;if(!code||!currentUser)return;
   pendingJoin=null;try{localStorage.removeItem('mart_join')}catch{}
@@ -1010,32 +1011,40 @@ async function runPendingJoin(){
     if(!snap.exists())return toast('This invite link is invalid or has expired','error');
     const inv=snap.data();joinInv={code,...inv};
     if(organizations.some(o=>o.id===inv.orgId)){switchOrg(inv.orgId);return toast('You are already a member of '+inv.orgName,'success')}
-    /* Auto-approve: add member directly if the organization has it enabled */
-    if(inv.autoApprove){
-      try{
-        await updateDoc(doc(db,'organizations',inv.orgId),{members:arrayUnion(me())});
-        await setDoc(doc(db,'invites',code),{autoApprove:inv.autoApprove},{merge:true}).catch(()=>{});
-        toast('Joined '+inv.orgName+'! You now have access to the organization.','success');
-        /* the organizations listener will pick up the new membership and switch */
-        return;
-      }catch(e){
-        console.warn('auto-approve join failed',e);
-        /* Fall through to request modal if auto-approve fails */
-      }
-    }
     let pending=false;
     try{const ex=await getDoc(doc(db,'joinRequests',`${inv.orgId}_${me()}`));pending=ex.exists()&&ex.data().status==='pending'}catch{}
     const head=`<div style="text-align:center"><img src="${esc(inv.logoUrl||LOGO)}" style="width:72px;height:72px;border-radius:14px;object-fit:cover"><h3 style="margin:10px 0 2px">${esc(inv.orgName)}</h3><div class="file-meta">Team: ${esc(inv.teamName||'—')}</div>`;
     if(pending)return openModal('Join Organization',`${head}<p style="margin-top:12px;color:var(--muted)">Your request is already waiting for approval from an owner.</p></div>`,`<button class="btn btn-primary" onclick="closeModal()">OK</button>`);
+    if(inv.autoApprove===true)return openModal('Join Organization',`${head}<p style="margin-top:12px;color:var(--muted)">You can join this organization right away and get access to all its files, notes and links.</p></div>`,`<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="join-btn" onclick="requestJoin()">Join now</button>`);
     openModal('Join Organization',`${head}<p style="margin-top:12px;color:var(--muted)">Send a request to join. After an owner approves it, you will get access to all files, notes and links of this organization.</p></div>`,`<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="join-btn" onclick="requestJoin()">Request to join</button>`);
   }catch(e){toast('Could not open invite: '+e.message,'error')}
 }
 window.requestJoin=async()=>{
-  if(!joinInv)return;const btn=$('join-btn');btn.disabled=true;btn.textContent='Sending…';
+  if(!joinInv)return;const btn=$('join-btn');btn.disabled=true;btn.textContent='Please wait…';
+  const reqData=extra=>({orgId:joinInv.orgId,orgName:joinInv.orgName,teamName:joinInv.teamName||'',code:joinInv.code,email:me(),name:currentUser.displayName||'',photo:currentUser.photoURL||'',uid:currentUser.uid,status:'pending',createdAt:serverTimestamp(),...extra});
+  const reqRef=doc(db,'joinRequests',`${joinInv.orgId}_${me()}`);
   try{
-    await setDoc(doc(db,'joinRequests',`${joinInv.orgId}_${me()}`),{orgId:joinInv.orgId,orgName:joinInv.orgName,teamName:joinInv.teamName||'',code:joinInv.code,email:me(),name:currentUser.displayName||'',photo:currentUser.photoURL||'',uid:currentUser.uid,status:'pending',createdAt:serverTimestamp()});
+    /* re-check the invite so the current auto approve setting is used */
+    let auto=false;
+    try{const f=await getDoc(doc(db,'invites',joinInv.code));auto=f.exists()&&f.data().autoApprove===true}catch{}
+    if(auto){
+      try{
+        await updateDoc(doc(db,'organizations',joinInv.orgId),{members:arrayUnion(me())});
+        try{await deleteDoc(reqRef)}catch{}
+        const oid=joinInv.orgId;toast('You joined '+joinInv.orgName,'success');closeModal();
+        for(let i=0;i<20&&!organizations.some(o=>o.id===oid);i++)await new Promise(r=>setTimeout(r,250));
+        if(organizations.some(o=>o.id===oid))switchOrg(oid);
+        return;
+      }catch(e){
+        console.warn('auto join failed, falling back to an auto request',e);
+        /* fallback: an owner's app will add the user automatically while auto approve is ON */
+        await setDoc(reqRef,reqData({auto:true}));
+        toast('Request sent. You will be added automatically as soon as an owner is online.','success');closeModal();return;
+      }
+    }
+    await setDoc(reqRef,reqData({auto:false}));
     toast('Request sent! An owner will review it.','success');closeModal();
-  }catch(e){toast('Failed: '+e.message,'error');btn.disabled=false;btn.textContent='Request to join'}
+  }catch(e){toast('Failed: '+e.message,'error');btn.disabled=false;btn.textContent=(joinInv&&joinInv.autoApprove===true)?'Join now':'Request to join'}
 };
 function renderRequests(){
   const o=myOrg();
@@ -1502,4 +1511,4 @@ dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');if(e.dataTransfer.files.length)handleFiles(e.dataTransfer.files)});
 </script>
 </body>
-</html>
+  </html>
