@@ -8,764 +8,218 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
   <style>
     :root {
-      --navy: #163A5F;
-      --blue: #245B88;
-      --bg: #F5F7FA;
-      --surface: #FFFFFF;
-      --text: #1F2937;
-      --muted: #64748B;
-      --border: #E2E8F0;
-      --success: #15803D;
-      --error: #B91C1C;
-      --radius: 10px;
-      --radius-lg: 14px;
+      --navy: #163A5F; --blue: #245B88; --bg: #F5F7FA; --surface: #FFFFFF;
+      --text: #1F2937; --muted: #64748B; --border: #E2E8F0; --success: #15803D; --error: #B91C1C;
+      --radius: 10px; --radius-lg: 14px;
       --shadow-sm: 0 1px 2px rgba(15, 23, 42, .06);
       --shadow-md: 0 4px 12px rgba(15, 23, 42, .08);
       --shadow-lg: 0 12px 32px rgba(15, 23, 42, .16);
-      --sidebar-w: 260px;
-      --header-h: 64px;
+      --sidebar-w: 260px; --header-h: 64px;
       --transition: 200ms cubic-bezier(.4, 0, .2, 1);
     }
-
     body.dark-mode {
-      --navy: #A8C7FA;
-      --blue: #8AB4F8;
-      --bg: #131314;
-      --surface: #1E1F20;
-      --text: #E3E3E3;
-      --muted: #A1A1A1;
-      --border: #444746;
-      --success: #34A853;
-      --error: #F28B82;
+      --navy: #A8C7FA; --blue: #8AB4F8; --bg: #131314; --surface: #1E1F20;
+      --text: #E3E3E3; --muted: #A1A1A1; --border: #444746; --success: #34A853; --error: #F28B82;
     }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: var(--bg);
-      color: var(--text);
+      background: var(--bg); color: var(--text);
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      font-size: 14px;
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
+      font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased;
       transition: background 0.3s ease, color 0.2s ease;
     }
+    button { font: inherit; cursor: pointer; border: none; background: none; color: var(--text); }
+    :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 
-    button {
-      font: inherit;
-      cursor: pointer;
-      border: none;
-      background: none;
-      color: var(--text);
-    }
-
-    :focus-visible {
-      outline: 2px solid var(--blue);
-      outline-offset: 2px;
-    }
-
-    /* ----- AUTH SCREEN ----- */
+    /* ----- AUTH SCREEN (hidden by default; shown only if no saved session) ----- */
     #auth-screen {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #163A5F 0%, #245B88 100%);
-      padding: 20px;
-      z-index: 100;
+      position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #163A5F 0%, #245B88 100%); padding: 20px; z-index: 100;
     }
-
     .auth-card {
-      background: var(--surface);
-      border-radius: var(--radius-lg);
-      padding: 40px 32px;
-      width: 100%;
-      max-width: 420px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, .25);
-      text-align: center;
+      background: var(--surface); border-radius: var(--radius-lg); padding: 40px 32px;
+      width: 100%; max-width: 420px; box-shadow: 0 20px 50px rgba(0, 0, 0, .25); text-align: center;
     }
-
-    .auth-card img {
-      width: 80px;
-      margin-bottom: 20px;
-    }
-
-    .auth-card h1 {
-      font-size: 24px;
-      color: var(--text);
-      margin-bottom: 8px;
-    }
-
-    .auth-card p {
-      color: var(--muted);
-      font-size: 14px;
-      margin-bottom: 30px;
-    }
-
+    .auth-card img { width: 80px; margin-bottom: 20px; }
+    .auth-card h1 { font-size: 24px; color: var(--text); margin-bottom: 8px; }
+    .auth-card p { color: var(--muted); font-size: 14px; margin-bottom: 30px; }
     .google-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      width: 100%;
-      padding: 12px;
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 14px;
-      transition: all .2s;
-      color: #000;
+      display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%;
+      padding: 12px; background: #fff; border: 1px solid var(--border); border-radius: 8px;
+      font-weight: 600; font-size: 14px; transition: all .2s; color: #000;
     }
-
-    .google-btn:hover {
-      background: #f8f9fa;
-      box-shadow: var(--shadow-md);
-    }
+    .google-btn:hover { background: #f8f9fa; box-shadow: var(--shadow-md); }
 
     /* ----- LAYOUT ----- */
-    #app {
-      display: none;
-      min-height: 100vh;
-    }
-
-    #app.ready {
-      display: block;
-    }
-
+    #app { display: none; min-height: 100vh; }
+    #app.ready { display: block; }
     .sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      width: var(--sidebar-w);
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      z-index: 40;
-      transition: transform 0.2s ease;
+      position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-w);
+      background: var(--surface); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; z-index: 40; transition: transform 0.2s ease;
     }
-
     .sidebar-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 20px;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
+      display: flex; align-items: center; gap: 12px; padding: 20px;
+      border-bottom: 1px solid var(--border); cursor: pointer;
     }
-
-    .sidebar-brand img {
-      width: 36px;
-      height: 36px;
-      border-radius: 6px;
-      object-fit: cover;
-    }
-
-    .sidebar-brand h2 {
-      font-size: 16px;
-      color: var(--text);
-      font-weight: 700;
-      line-height: 1.2;
-    }
-
-    .sidebar-brand span {
-      font-size: 11px;
-      color: var(--muted);
-    }
-
+    .sidebar-brand img { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; }
+    .sidebar-brand h2 { font-size: 16px; color: var(--text); font-weight: 700; line-height: 1.2; }
+    .sidebar-brand span { font-size: 11px; color: var(--muted); }
     .new-btn {
-      margin: 16px;
-      padding: 12px 20px;
-      background: var(--navy);
-      color: var(--surface);
-      border-radius: 30px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: background .2s;
-      box-shadow: var(--shadow-md);
+      margin: 16px; padding: 12px 20px; background: var(--navy); color: var(--surface);
+      border-radius: 30px; font-weight: 600; display: flex; align-items: center;
+      justify-content: center; gap: 8px; transition: background .2s; box-shadow: var(--shadow-md);
     }
-
-    .new-btn:hover {
-      opacity: 0.9;
-    }
-
-    .nav-list {
-      list-style: none;
-      padding: 0 12px;
-      flex: 1;
-      overflow-y: auto;
-    }
-
+    .new-btn:hover { opacity: 0.9; }
+    .nav-list { list-style: none; padding: 0 12px; flex: 1; overflow-y: auto; }
     .nav-section {
-      padding: 12px 16px 4px;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .5px;
+      padding: 12px 16px 4px; font-size: 11px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .5px;
     }
-
     .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 10px 16px;
-      border-radius: 24px;
-      color: var(--text);
-      font-weight: 500;
-      cursor: pointer;
-      transition: background .2s;
-      margin-bottom: 4px;
-      font-size: 13px;
-      position: relative;
+      display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: 24px;
+      color: var(--text); font-weight: 500; cursor: pointer; transition: background .2s;
+      margin-bottom: 4px; font-size: 13px; position: relative;
     }
-
-    .nav-item:hover {
-      background: var(--bg);
-    }
-
-    .nav-item.active {
-      background: #E8F0F7;
-      color: var(--blue);
-      font-weight: 600;
-    }
-
-    body.dark-mode .nav-item.active {
-      background: #2D3133;
-    }
-
-    .nav-item .material-symbols-outlined {
-      font-size: 20px;
-    }
-
-    .org-edit-btn {
-      margin-left: auto;
-      opacity: 0;
-      transition: opacity 0.15s;
-      font-size: 18px;
-      color: var(--muted);
-    }
-
-    .nav-item:hover .org-edit-btn {
-      opacity: 1;
-    }
+    .nav-item:hover { background: var(--bg); }
+    .nav-item.active { background: #E8F0F7; color: var(--blue); font-weight: 600; }
+    body.dark-mode .nav-item.active { background: #2D3133; }
+    .nav-item .material-symbols-outlined { font-size: 20px; }
+    .org-edit-btn { margin-left: auto; opacity: 0; transition: opacity 0.15s; font-size: 18px; color: var(--muted); }
+    .nav-item:hover .org-edit-btn { opacity: 1; }
 
     /* ----- HEADER ----- */
     .header {
-      position: fixed;
-      top: 0;
-      left: var(--sidebar-w);
-      right: 0;
-      height: var(--header-h);
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 0 24px;
-      z-index: 30;
-      transition: left 0.2s;
+      position: fixed; top: 0; left: var(--sidebar-w); right: 0; height: var(--header-h);
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 16px; padding: 0 24px; z-index: 30; transition: left 0.2s;
     }
-
     .search-box {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--bg);
-      border-radius: 24px;
-      padding: 0 16px;
-      height: 44px;
-      width: 100%;
-      max-width: 600px;
-      transition: box-shadow .2s;
+      display: flex; align-items: center; gap: 10px; background: var(--bg); border-radius: 24px;
+      padding: 0 16px; height: 44px; width: 100%; max-width: 600px; transition: box-shadow .2s;
     }
-
-    .search-box:focus-within {
-      background: var(--surface);
-      box-shadow: var(--shadow-md);
-      border: 1px solid var(--border);
-    }
-
-    .search-box input {
-      border: none;
-      background: transparent;
-      flex: 1;
-      font-size: 15px;
-      outline: none;
-      color: var(--text);
-    }
-
+    .search-box:focus-within { background: var(--surface); box-shadow: var(--shadow-md); border: 1px solid var(--border); }
+    .search-box input { border: none; background: transparent; flex: 1; font-size: 15px; outline: none; color: var(--text); }
     .user-btn {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 4px 12px 4px 4px;
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      background: var(--surface);
-      transition: background .2s;
+      display: flex; align-items: center; gap: 10px; padding: 4px 12px 4px 4px;
+      border: 1px solid var(--border); border-radius: 24px; background: var(--surface); transition: background .2s;
     }
-
-    .user-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-    }
-
-    .icon-btn {
-      padding: 8px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background .2s;
-    }
-
-    .icon-btn:hover {
-      background: var(--bg);
-    }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; }
+    .icon-btn { padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background .2s; }
+    .icon-btn:hover { background: var(--bg); }
 
     /* ----- MAIN ----- */
-    .main {
-      margin-left: var(--sidebar-w);
-      padding-top: var(--header-h);
-      padding-bottom: 60px;
-      transition: margin-left 0.2s;
-    }
-
-    .content {
-      padding: 24px;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    .page-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .page-title {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    .toolbar {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
+    .main { margin-left: var(--sidebar-w); padding-top: var(--header-h); padding-bottom: 60px; transition: margin-left 0.2s; }
+    .content { padding: 24px; max-width: 1400px; margin: 0 auto; }
+    .page-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+    .page-title { font-size: 24px; font-weight: 700; color: var(--text); }
+    .toolbar { display: flex; gap: 8px; align-items: center; }
     .btn {
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-weight: 500;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-      transition: all .2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      padding: 8px 16px; border-radius: 8px; font-weight: 500; border: 1px solid var(--border);
+      background: var(--surface); color: var(--text); transition: all .2s; display: flex; align-items: center; gap: 6px;
     }
-
-    .btn-primary {
-      background: var(--blue);
-      color: #fff;
-      border-color: var(--blue);
-    }
+    .btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
 
     /* ----- DROPZONE & PROGRESS ----- */
     .dropzone {
-      border: 2px dashed var(--border);
-      border-radius: var(--radius-lg);
-      padding: 30px 20px;
-      text-align: center;
-      margin-bottom: 24px;
-      background: var(--surface);
-      transition: all .2s;
-      cursor: pointer;
+      border: 2px dashed var(--border); border-radius: var(--radius-lg); padding: 30px 20px;
+      text-align: center; margin-bottom: 24px; background: var(--surface); transition: all .2s; cursor: pointer;
     }
-
-    .dropzone:hover,
-    .dropzone.dragover {
-      border-color: var(--blue);
-      background: var(--bg);
-    }
-
+    .dropzone:hover, .dropzone.dragover { border-color: var(--blue); background: var(--bg); }
     #upload-progress-container {
-      display: none;
-      margin-bottom: 20px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
+      display: none; margin-bottom: 20px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: var(--radius); padding: 16px;
     }
-
-    .progress-bar-wrap {
-      width: 100%;
-      height: 8px;
-      background: var(--bg);
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: 8px;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      background: var(--blue);
-      width: 0%;
-      transition: width 0.2s;
-    }
-
-    .progress-text {
-      font-size: 13px;
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 4px;
-    }
+    .progress-bar-wrap { width: 100%; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; margin-top: 8px; }
+    .progress-bar-fill { height: 100%; background: var(--blue); width: 0%; transition: width 0.2s; }
+    .progress-text { font-size: 13px; display: flex; justify-content: space-between; margin-bottom: 4px; }
 
     /* ----- FILES GRID ----- */
-    .files-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 16px;
-    }
-
+    .files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
     .file-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      cursor: pointer;
-      transition: all .2s;
-      position: relative;
-      display: flex;
-      flex-direction: column;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 16px; cursor: pointer; transition: all .2s; position: relative; display: flex; flex-direction: column;
     }
-
-    .file-card:hover {
-      box-shadow: var(--shadow-md);
-      border-color: var(--muted);
-    }
-
+    .file-card:hover { box-shadow: var(--shadow-md); border-color: var(--muted); }
     .file-icon-wrap {
-      width: 48px;
-      height: 48px;
-      border-radius: 8px;
-      background: var(--bg);
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 12px;
-      font-size: 24px;
-      overflow: hidden;
+      width: 48px; height: 48px; border-radius: 8px; background: var(--bg); color: var(--text);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 24px; overflow: hidden;
     }
-
-    .file-icon-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-
-    .file-name {
-      font-weight: 600;
-      font-size: 14px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      margin-bottom: 4px;
-    }
-
-    .file-meta {
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 12px;
-    }
-
-    .file-actions {
-      display: flex;
-      gap: 4px;
-      margin-top: auto;
-      opacity: 0;
-      transition: opacity .2s;
-      justify-content: flex-end;
-    }
-
-    .file-card:hover .file-actions {
-      opacity: 1;
-    }
+    .file-icon-wrap img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+    .file-name { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px; }
+    .file-meta { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .file-actions { display: flex; gap: 4px; margin-top: auto; opacity: 0; transition: opacity .2s; justify-content: flex-end; }
+    .file-card:hover .file-actions { opacity: 1; }
 
     /* ----- MODALS & CONTEXT MENU ----- */
     .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, .6);
-      z-index: 1000;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      position: fixed; inset: 0; background: rgba(0, 0, 0, .6); z-index: 1000;
+      display: none; align-items: center; justify-content: center; padding: 20px;
     }
-
-    .modal-backdrop.open {
-      display: flex;
-    }
-
+    .modal-backdrop.open { display: flex; }
     .modal {
-      background: var(--surface);
-      border-radius: var(--radius-lg);
-      width: 100%;
-      max-width: 500px;
-      max-height: 90vh;
-      display: flex;
-      flex-direction: column;
-      box-shadow: var(--shadow-lg);
+      background: var(--surface); border-radius: var(--radius-lg); width: 100%; max-width: 500px;
+      max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg);
     }
-
-    .modal.wide {
-      max-width: 800px;
+    .modal.wide { max-width: 800px; }
+    .modal-head { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 20px; overflow-y: auto; }
+    .modal-foot { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+    .field label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 8px; }
+    .field input, .field select {
+      width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--bg); color: var(--text); outline: none;
     }
-
-    .modal-head {
-      padding: 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .modal-body {
-      padding: 20px;
-      overflow-y: auto;
-    }
-
-    .modal-foot {
-      padding: 16px 20px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-
-    .field label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 8px;
-    }
-
-    .field input,
-    .field select {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--bg);
-      color: var(--text);
-      outline: none;
-    }
-
-    /* Context Menu */
     .context-menu {
-      position: fixed;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      box-shadow: var(--shadow-lg);
-      padding: 6px;
-      z-index: 2000;
-      display: none;
-      flex-direction: column;
-      min-width: 220px;
+      position: fixed; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      box-shadow: var(--shadow-lg); padding: 6px; z-index: 2000; display: none; flex-direction: column; min-width: 220px;
     }
-
-    .context-menu.open {
-      display: flex;
-    }
-
-    .ctx-item {
-      padding: 10px 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      color: var(--text);
-    }
-
-    .ctx-item:hover {
-      background: var(--bg);
-    }
-
-    .ctx-item .material-symbols-outlined {
-      font-size: 20px;
-      color: var(--muted);
-    }
-
-    .ctx-divider {
-      height: 1px;
-      background: var(--border);
-      margin: 6px 0;
-    }
-
-    /* Access Management */
-    .access-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
+    .context-menu.open { display: flex; }
+    .ctx-item { padding: 10px 16px; display: flex; align-items: center; gap: 12px; font-size: 14px; border-radius: 6px; cursor: pointer; color: var(--text); }
+    .ctx-item:hover { background: var(--bg); }
+    .ctx-item .material-symbols-outlined { font-size: 20px; color: var(--muted); }
+    .ctx-divider { height: 1px; background: var(--border); margin: 6px 0; }
+    .access-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
     .access-row select {
-      width: auto;
-      padding: 6px 10px;
-      font-size: 13px;
-      border-radius: 6px;
-      background: var(--bg);
-      color: var(--text);
-      border: 1px solid var(--border);
+      width: auto; padding: 6px 10px; font-size: 13px; border-radius: 6px;
+      background: var(--bg); color: var(--text); border: 1px solid var(--border);
     }
-
-    /* Mobile Nav */
     .mobile-nav {
-      display: none;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 60px;
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      z-index: 50;
-      justify-content: space-around;
-      align-items: center;
+      display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
+      background: var(--surface); border-top: 1px solid var(--border); z-index: 50;
+      justify-content: space-around; align-items: center;
     }
-
-    .mobile-nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      font-size: 11px;
-      color: var(--muted);
-      gap: 4px;
-      cursor: pointer;
-    }
-
-    .mobile-nav-item.active {
-      color: var(--blue);
-    }
-
-    /* Preview */
+    .mobile-nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--muted); gap: 4px; cursor: pointer; }
+    .mobile-nav-item.active { color: var(--blue); }
     .preview-box {
-      background: #000;
-      border-radius: 10px;
-      min-height: 200px;
-      max-height: 500px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      margin-bottom: 20px;
+      background: #000; border-radius: 10px; min-height: 200px; max-height: 500px;
+      display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 20px;
     }
-
-    .preview-box img,
-    .preview-box video {
-      max-width: 100%;
-      max-height: 480px;
-      object-fit: contain;
-    }
-
-    /* Toasts */
-    .toast-stack {
-      position: fixed;
-      bottom: 80px;
-      right: 24px;
-      z-index: 2000;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
+    .preview-box img, .preview-box video { max-width: 100%; max-height: 480px; object-fit: contain; }
+    .toast-stack { position: fixed; bottom: 80px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
     .toast {
-      background: var(--surface);
-      color: var(--text);
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-size: 14px;
-      box-shadow: var(--shadow-lg);
-      border-left: 4px solid var(--blue);
+      background: var(--surface); color: var(--text); padding: 12px 20px; border-radius: 8px;
+      font-size: 14px; box-shadow: var(--shadow-lg); border-left: 4px solid var(--blue);
     }
-
-    .toast.error {
-      border-left-color: var(--error);
-    }
-
-    .toast.success {
-      border-left-color: var(--success);
-    }
+    .toast.error { border-left-color: var(--error); }
+    .toast.success { border-left-color: var(--success); }
 
     @media (max-width: 900px) {
-      .sidebar {
-        transform: translateX(-100%);
-      }
-
-      .sidebar.open {
-        transform: translateX(0);
-      }
-
-      .header {
-        left: 0;
-        padding: 0 12px;
-      }
-
-      .main {
-        margin-left: 0;
-      }
-
-      .files-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      }
-
-      .file-actions {
-        opacity: 1;
-      }
-
-      .mobile-nav {
-        display: flex;
-      }
-
-      .search-box {
-        max-width: 100%;
-      }
-
-      .new-btn {
-        display: none;
-      }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .header { left: 0; padding: 0 12px; }
+      .main { margin-left: 0; }
+      .files-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+      .file-actions { opacity: 1; }
+      .mobile-nav { display: flex; }
+      .search-box { max-width: 100%; }
+      .new-btn { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Auth Screen -->
+  <!-- Auth Screen (hidden until we know there is no saved session) -->
   <div id="auth-screen">
     <div class="auth-card">
       <img src="https://i.ibb.co/TDDQSCjK/Picsart-26-10-26-00-05-00-213.png" alt="MART Drive">
@@ -863,7 +317,7 @@
     </div>
   </div>
 
-  <!-- Context Menu (Google Drive Style) -->
+  <!-- Context Menu -->
   <div class="context-menu" id="context-menu">
     <div class="ctx-item" onclick="ctxAction('open')"><span class="material-symbols-outlined">open_in_new</span> Open</div>
     <div class="ctx-item" onclick="ctxAction('share')"><span class="material-symbols-outlined">share</span> Share / Copy Link</div>
@@ -893,7 +347,7 @@
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, indexedDBLocalPersistence } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot, query, where, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     const firebaseConfig = {
@@ -910,12 +364,15 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    // Keep the user signed in across refreshes until they press Sign Out
+    try { await setPersistence(auth, browserLocalPersistence); }
+    catch { try { await setPersistence(auth, indexedDBLocalPersistence); } catch (e) { console.warn(e); } }
+
     let currentUser = null;
     let accessToken = null;
     let allFiles = [], allFolders = [], organizations = [];
     let currentOrgId = null, currentFolderId = null, currentView = 'drive', searchTerm = '';
     let unsubFiles = null, unsubFolders = null, unsubOrgs = null;
-    let hasTriedSilentLogin = false;
     let ctxTargetItem = null;
 
     // ----------------------------------------------------
@@ -930,42 +387,75 @@
     };
 
     // ----------------------------------------------------
-    // AUTHENTICATION
+    // AUTHENTICATION (persistent login + saved Drive token)
     // ----------------------------------------------------
-    window.signIn = async () => {
-      const provider = new GoogleAuthProvider();
-      provider.addScope('https://www.googleapis.com/auth/drive.file');
-      provider.setCustomParameters({ prompt: 'consent' });
+    const TOKEN_KEY = 'mart_drive_token';
+    const TOKEN_TTL = 55 * 60 * 1000; // Google access tokens last ~1 hour
+    let tokenPromise = null;
+
+    function saveToken(t, uid) {
+      accessToken = t;
+      try { localStorage.setItem(TOKEN_KEY, JSON.stringify({ t, uid, exp: Date.now() + TOKEN_TTL })); } catch {}
+    }
+    function loadToken(uid) {
       try {
-        const result = await signInWithPopup(auth, provider);
-        accessToken = GoogleAuthProvider.credentialFromResult(result).accessToken;
+        const s = JSON.parse(localStorage.getItem(TOKEN_KEY) || 'null');
+        if (s && s.uid === uid && s.exp > Date.now()) return s.t;
+      } catch {}
+      return null;
+    }
+    function clearToken() {
+      accessToken = null;
+      try { localStorage.removeItem(TOKEN_KEY); } catch {}
+    }
+    function makeProvider(hint) {
+      const p = new GoogleAuthProvider();
+      p.addScope('https://www.googleapis.com/auth/drive.file');
+      p.setCustomParameters(hint ? { login_hint: hint } : { prompt: 'consent' });
+      return p;
+    }
+
+    // Call before any Google Drive API request
+    async function ensureToken() {
+      const cached = currentUser && loadToken(currentUser.uid);
+      if (cached) { accessToken = cached; return cached; }
+      if (!tokenPromise) {
+        tokenPromise = signInWithPopup(auth, makeProvider(currentUser?.email))
+          .then(r => {
+            saveToken(GoogleAuthProvider.credentialFromResult(r).accessToken, r.user.uid);
+            return accessToken;
+          })
+          .finally(() => { tokenPromise = null; });
+      }
+      return tokenPromise;
+    }
+
+    window.signIn = async () => {
+      try {
+        const result = await signInWithPopup(auth, makeProvider());
+        saveToken(GoogleAuthProvider.credentialFromResult(result).accessToken, result.user.uid);
       } catch (err) { toast(err.message, 'error'); }
     };
 
-    window.logout = async () => { await signOut(auth); window.location.reload(); };
+    window.logout = async () => {
+      clearToken();
+      await signOut(auth);
+      window.location.reload();
+    };
 
-    onAuthStateChanged(auth, async (user) => {
+    onAuthStateChanged(auth, (user) => {
       if (user) {
         currentUser = user;
+        accessToken = loadToken(user.uid);
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('app').classList.add('ready');
         if (user.photoURL) {
           const av = document.getElementById('user-avatar');
           av.src = user.photoURL; av.style.display = 'block';
         }
-        if (!accessToken && !hasTriedSilentLogin) {
-          hasTriedSilentLogin = true;
-          try {
-            const provider = new GoogleAuthProvider();
-            provider.addScope('https://www.googleapis.com/auth/drive.file');
-            provider.setCustomParameters({ prompt: '' });
-            const result = await signInWithPopup(auth, provider);
-            accessToken = GoogleAuthProvider.credentialFromResult(result).accessToken;
-          } catch (err) { console.warn("Silent login failed."); }
-        }
         setupListeners();
       } else {
-        currentUser = null; accessToken = null; hasTriedSilentLogin = false;
+        currentUser = null; accessToken = null;
         document.getElementById('app').classList.remove('ready');
         document.getElementById('auth-screen').style.display = 'flex';
         if (unsubFiles) unsubFiles(); if (unsubFolders) unsubFolders(); if (unsubOrgs) unsubOrgs();
@@ -1022,7 +512,6 @@
       container.innerHTML += `<div class="nav-item" style="color:var(--blue)" onclick="openOrgModal()"><span class="material-symbols-outlined">add_circle</span> Create Org</div>`;
     }
 
-    // Create / Edit / Delete Organization
     window.openOrgModal = () => {
       document.getElementById('modal-title').textContent = 'Create Organization';
       document.getElementById('modal-body').innerHTML = `
@@ -1070,7 +559,6 @@
       if (!confirm('Delete this organization permanently? All associated folders/files metadata will be removed.')) return;
       const org = organizations.find(o => o.id === orgId);
       if (org.owner !== currentUser.uid) return toast('Only owner can delete', 'error');
-      // Remove org and its folders/files (metadata only; actual drive files remain)
       const orgFolders = allFolders.filter(f => f.orgId === orgId);
       for (let f of orgFolders) await deleteDoc(doc(db, 'folders', f.id));
       const orgFiles = allFiles.filter(f => f.orgId === orgId);
@@ -1080,7 +568,6 @@
       toast('Organization deleted', 'success'); closeModal();
     };
 
-    // Folder creation
     window.openNewFolderModal = () => {
       document.getElementById('modal-title').textContent = 'Create Folder';
       document.getElementById('modal-body').innerHTML = `<div class="field"><label>Folder Name</label><input type="text" id="folder-name" placeholder="Untitled Folder"></div>`;
@@ -1111,6 +598,8 @@
     // ----------------------------------------------------
     window.setView = (view) => { currentView = view; currentFolderId = null; render(); };
     window.handleSearch = (val) => { searchTerm = val.toLowerCase(); render(); };
+    window.render = render;
+    Object.defineProperty(window, 'currentFolderId', { get: () => currentFolderId, set: (v) => { currentFolderId = v; } });
 
     function render() {
       renderBreadcrumbs();
@@ -1162,8 +651,9 @@
             <div class="file-name" title="${item.name}">${item.name}</div>
             <div class="file-meta">${fmtSize(item.size)}</div>
             <div class="file-actions">
-              <button class="icon-btn" onclick="event.stopPropagation(); openContextMenu(event, ${JSON.stringify(item).replace(/"/g, '&quot;')})"><span class="material-symbols-outlined">more_vert</span></button>
+              <button class="icon-btn"><span class="material-symbols-outlined">more_vert</span></button>
             </div>`;
+          card.querySelector('.file-actions button').onclick = (e) => { e.stopPropagation(); openContextMenu(e, item); };
           card.onclick = () => previewFile(item.driveFileId, item.mimeType, item.name);
         }
         grid.appendChild(card);
@@ -1233,14 +723,17 @@
       }
       else if (action === 'copy') {
         try {
+          await ensureToken();
           toast('Creating copy...', 'success');
           const res = await fetch(`https://www.googleapis.com/drive/v3/files/${item.driveFileId}/copy`, {
             method: 'POST', headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: 'Copy of ' + item.name })
           });
           const newFile = await res.json();
+          if (newFile.error) throw new Error(newFile.error.message);
+          const { id: _id, type: _type, ...rest } = item;
           await addDoc(collection(db, 'files'), {
-            ...item, id: undefined, driveFileId: newFile.id, name: newFile.name, createdAt: serverTimestamp()
+            ...rest, driveFileId: newFile.id, name: newFile.name, createdAt: serverTimestamp()
           });
           toast('Copy created!', 'success');
         } catch (err) { toast('Copy failed', 'error'); }
@@ -1258,8 +751,9 @@
         document.getElementById('modal-backdrop').classList.add('open');
       }
       else if (action === 'delete') {
-        if (!confirm('Move to trash?')) return;
         try {
+          if (item.type === 'file') await ensureToken();
+          if (!confirm('Move to trash?')) return;
           if (item.type === 'file') {
             await fetch(`https://www.googleapis.com/drive/v3/files/${item.driveFileId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${accessToken}` } });
             await deleteDoc(doc(db, 'files', item.id));
@@ -1278,7 +772,6 @@
       document.getElementById('modal-title').textContent = 'Manage Access';
       const body = document.getElementById('modal-body');
 
-      // For files, we can manage via Google Drive API; for folders, it's local metadata only
       if (item.type === 'file' && item.driveFileId) {
         body.innerHTML = `
           <p style="margin-bottom:12px">Share this file with specific people or make it public.</p>
@@ -1302,7 +795,6 @@
         document.getElementById('modal-backdrop').classList.add('open');
         loadPermissions(item.driveFileId);
       } else {
-        // Local folder or item without driveFileId: show metadata-only management
         body.innerHTML = `
           <p style="margin-bottom:12px">Folder sharing link: <input type="text" readonly value="${window.location.origin}${window.location.pathname}?folder=${item.id}" style="width:100%; padding:8px; margin-top:6px; background:var(--bg); border:1px solid var(--border); border-radius:6px;"></p>
           <p style="color:var(--muted); font-size:13px;">Folder permissions are managed within your organization. Actual file permissions must be set individually.</p>`;
@@ -1311,11 +803,11 @@
       }
     }
 
-    // Google Drive permission management
     async function loadPermissions(fileId) {
       const container = document.getElementById('permissions-list');
       if (!container) return;
       try {
+        await ensureToken();
         const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions?fields=permissions(id,emailAddress,role,type)`, {
           headers: { Authorization: `Bearer ${accessToken}` }
         });
@@ -1348,6 +840,7 @@
       const role = document.getElementById('share-role').value;
       if (!email) return toast('Email required', 'error');
       try {
+        await ensureToken();
         const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
@@ -1362,6 +855,7 @@
 
     window.updatePermission = async (fileId, permId, newRole) => {
       try {
+        await ensureToken();
         await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions/${permId}`, {
           method: 'PATCH',
           headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
@@ -1373,6 +867,7 @@
 
     window.removePermission = async (fileId, permId) => {
       try {
+        await ensureToken();
         await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions/${permId}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${accessToken}` }
@@ -1382,12 +877,12 @@
       } catch (err) { toast('Remove failed', 'error'); }
     };
 
-    // Rename
     window.renameItem = async (id, type) => {
       const newName = document.getElementById('rename-input').value.trim();
       if (!newName) return;
       try {
         if (type === 'file') {
+          await ensureToken();
           await fetch(`https://www.googleapis.com/drive/v3/files/${ctxTargetItem.driveFileId}`, {
             method: 'PATCH', headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: newName })
@@ -1404,14 +899,15 @@
     // UPLOAD & PREVIEW
     // ----------------------------------------------------
     window.handleFiles = async (files) => {
-      if (!accessToken) return toast('Please sign in again.', 'error');
+      const list = Array.from(files);
+      try { await ensureToken(); } catch { return toast('Please allow Google access', 'error'); }
       const pContainer = document.getElementById('upload-progress-container');
       const pFill = document.getElementById('progress-fill');
       const pPct = document.getElementById('progress-percent');
       const pName = document.getElementById('progress-filename');
       pContainer.style.display = 'block';
 
-      for (const file of files) {
+      for (const file of list) {
         pName.textContent = `Uploading: ${file.name}`; pFill.style.width = '0%'; pPct.textContent = '0%';
         try {
           const metadata = { name: file.name, mimeType: file.type || 'application/octet-stream' };
@@ -1478,13 +974,9 @@
     dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
     dz.addEventListener('drop', (e) => { e.preventDefault(); dz.classList.remove('dragover'); if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files); });
 
-    // Handle folder share link query param
     window.addEventListener('load', () => {
       const params = new URLSearchParams(window.location.search);
-      if (params.has('folder')) {
-        // We'll handle after auth, just store
-        console.log('Folder share link detected');
-      }
+      if (params.has('folder')) console.log('Folder share link detected');
     });
   </script>
 </body>
