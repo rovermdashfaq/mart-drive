@@ -26,6 +26,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:var(--text)
 .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:60;transition:transform .2s}
 .sidebar-brand{display:flex;align-items:center;gap:12px;padding:20px;border-bottom:1px solid var(--border);cursor:pointer}
 .sidebar-brand img{width:36px;height:36px;border-radius:6px;object-fit:cover}.sidebar-brand h2{font-size:16px;font-weight:700;line-height:1.2}.sidebar-brand span{font-size:11px;color:var(--muted)}
+.sidebar-brand div{min-width:0}.sidebar-brand h2,.sidebar-brand span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .new-btn{margin:16px;padding:12px 20px;background:var(--navy);color:var(--surface);border-radius:30px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:var(--shadow-md)}
 .nav-list{list-style:none;padding:0 12px;flex:1;overflow-y:auto}
 .nav-section{padding:12px 16px 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
@@ -34,6 +35,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:var(--text)
 body.dark-mode .nav-item.active{background:#2D3133}.nav-item .material-symbols-outlined{font-size:20px}
 .org-btns{margin-left:auto;display:flex;gap:2px;opacity:0;transition:opacity .15s}.nav-item:hover .org-btns{opacity:1}
 .org-btns .material-symbols-outlined{font-size:18px;color:var(--muted);padding:2px;border-radius:50%}.org-btns .material-symbols-outlined:hover{background:var(--border)}
+.badge{margin-left:auto;background:var(--error);color:#fff;border-radius:10px;font-size:11px;font-weight:700;padding:0 7px;min-width:20px;text-align:center}
 .header{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--header-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 24px;z-index:30}
 #menu-btn{display:none}
 .search-box{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:24px;padding:0 16px;height:44px;width:100%;max-width:600px}
@@ -48,6 +50,7 @@ body.dark-mode .nav-item.active{background:#2D3133}.nav-item .material-symbols-o
 .page-title{font-size:24px;font-weight:700}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .btn{padding:8px 14px;border-radius:8px;font-weight:500;border:1px solid var(--border);background:var(--surface);color:var(--text);display:flex;align-items:center;gap:6px}
 .btn .material-symbols-outlined{font-size:20px}.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn:disabled{opacity:.6;cursor:not-allowed}
 .sel{padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit}
 .dropzone{border:2px dashed var(--border);border-radius:var(--radius-lg);padding:26px 20px;text-align:center;margin-bottom:24px;background:var(--surface);cursor:pointer}
 .dropzone:hover,.dropzone.dragover{border-color:var(--blue);background:var(--bg)}
@@ -85,6 +88,8 @@ body.dark-mode .file-card.selected{background:#2D3133}
 .files-grid.list .lp-img,.files-grid.list .note-body{display:none}.files-grid.list .star,.files-grid.list .chk{position:static}
 .files-grid.list .share-det{flex:1;min-width:0}
 .chip{display:inline-block;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:0 8px;color:var(--muted);white-space:nowrap}
+.chip.own{background:#E8F0F7;color:var(--blue);border-color:var(--blue)}
+body.dark-mode .chip.own{background:#2D3133}
 .share-det{display:flex;flex-direction:column;gap:2px;margin-top:4px}
 .share-row{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted);min-width:0}
 .share-row .em{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
@@ -98,6 +103,8 @@ body.dark-mode .file-card.selected{background:#2D3133}
 .field{margin-bottom:12px}.field label{display:block;font-size:13px;font-weight:500;margin-bottom:6px}
 .field input,.field select,.field textarea{width:100%;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none;font:inherit}
 .field textarea{resize:vertical;min-height:140px}
+.field textarea.sm{min-height:60px}
+.field small{display:block;color:var(--muted);font-size:12px;margin-top:4px}
 .colors{display:flex;gap:8px}.colors label{width:26px;height:26px;border-radius:50%;border:2px solid transparent;background:var(--c);cursor:pointer;margin:0}
 .colors input{display:none}.colors input:checked+span{display:block;width:100%;height:100%;border-radius:50%;box-shadow:0 0 0 2px var(--text)}
 .colors label span{display:block;width:100%;height:100%}
@@ -114,6 +121,22 @@ body.dark-mode .file-card.selected{background:#2D3133}
 .toast-stack{position:fixed;bottom:80px;right:24px;z-index:2000;display:flex;flex-direction:column;gap:8px}
 .toast{background:var(--surface);color:var(--text);padding:12px 20px;border-radius:8px;box-shadow:var(--shadow-lg);border-left:4px solid var(--blue)}
 .toast.error{border-left-color:var(--error)}.toast.success{border-left-color:var(--success)}
+/* storage */
+.storage{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:20px;display:none}
+.st-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-weight:600;margin-bottom:10px}
+.st-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.st-grid>div{background:var(--bg);border-radius:8px;padding:10px 12px}
+.st-grid small{display:block;color:var(--muted);font-size:12px}.st-grid b{font-size:17px}
+.st-bar{height:8px;border-radius:4px;background:var(--bg);border:1px solid var(--border);overflow:hidden;margin:12px 0 4px}
+.st-bar i{display:block;height:100%;background:var(--blue)}
+.st-note{font-size:12px;color:var(--muted);margin-top:6px}
+.st-by{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted);align-items:center}
+/* org form */
+.seg{display:flex;gap:8px;margin-bottom:8px}.seg .btn{flex:1;justify-content:center}.seg .btn.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.logo-prev{display:none;width:64px;height:64px;border-radius:10px;object-fit:cover;margin-top:8px;border:1px solid var(--border)}
+.step-t{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px}
+.req-act{display:flex;gap:8px;margin-top:10px}
+.files-grid.list .req-act{margin:0}
 @media(max-width:900px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:none}.header{left:0;padding:0 12px}#menu-btn{display:flex}.main{margin-left:0}
 .files-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.more{opacity:1}.org-btns{opacity:1}.mobile-nav{display:flex}.search-box{max-width:100%}.new-btn{display:none}.user-btn span{display:none}.user-btn{padding:4px}}
 html{scroll-behavior:smooth}
@@ -207,6 +230,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <section class="ld-hero ld-wrap">
 <h1>One secure workspace for your files, notes and team</h1>
 <p>MART Drive is a cloud storage and collaboration web app. Upload files to your own Google Drive, organize them in folders, share them with your team or organization, and keep notes and web links with live previews, all in one place.</p>
+<div id="invite-banner" class="ld-note" style="display:none;margin-bottom:14px;color:var(--blue);font-weight:600;font-size:15px">You have been invited to join an organization. Log in or sign up to send your join request.</div>
 <div class="ld-cta"><button class="btn btn-primary ld-btn-lg" onclick="signIn()">Sign up with Google</button><button class="btn ld-btn-lg" onclick="signIn()">Log in with Google</button></div>
 <div class="ld-note">Free to use. No new password: sign-in is handled securely by Google.<br>By continuing you agree to our <a href="terms_conditions.html">Terms &amp; Conditions</a> and <a href="privacy_policy.html">Privacy Policy</a>.</div>
 </section>
@@ -216,9 +240,9 @@ document.addEventListener('DOMContentLoaded',function(){
 <p class="ld-sub">Built for individuals, clubs, schools and organizations that need a simple, shared place to keep their work.</p>
 <div class="ld-grid">
 <div class="ld-card"><span class="material-symbols-outlined">cloud_upload</span><h3>File storage</h3><p>Upload documents, images, videos and PDFs. Files are stored in your own Google Drive, and you can preview them in the app.</p></div>
-<div class="ld-card"><span class="material-symbols-outlined">groups</span><h3>Organizations &amp; teams</h3><p>Create an organization and add members by email. Everyone in it can view, comment on and edit the shared files, notes and links.</p></div>
+<div class="ld-card"><span class="material-symbols-outlined">groups</span><h3>Organizations &amp; teams</h3><p>Create an organization with one or more owners, add members by email or invite link, and approve join requests. Everyone in it can view, comment on and edit the shared files, notes and links.</p></div>
 <div class="ld-card"><span class="material-symbols-outlined">link</span><h3>Notes &amp; links with preview</h3><p>Save text notes and web links. Links show a live preview with title, description and image so they are easy to recognize.</p></div>
-<div class="ld-card"><span class="material-symbols-outlined">folder</span><h3>Folders &amp; organization</h3><p>Use folders, select multiple items at once, star important items, move things around, search everything, and restore anything from the trash.</p></div>
+<div class="ld-card"><span class="material-symbols-outlined">folder</span><h3>Folders &amp; organization</h3><p>Use folders, select multiple items at once, star important items, move things around, search everything, see your storage usage, and restore anything from the trash.</p></div>
 <div class="ld-card"><span class="material-symbols-outlined">lock</span><h3>Access control</h3><p>Share individual files with specific people as viewer, commenter or editor, and track them in Shared by me and Shared from. Personal items stay private to you.</p></div>
 <div class="ld-card"><span class="material-symbols-outlined">devices</span><h3>Works everywhere</h3><p>A fast, responsive web app for phone, tablet and desktop, with light and dark themes. Nothing to install.</p></div>
 </div></section>
@@ -236,8 +260,8 @@ document.addEventListener('DOMContentLoaded',function(){
 <div class="ld-data">
 <ul>
 <li><b>Your profile:</b> your name, email address and profile photo are used only to sign you in, show who you are, and match you to organizations you belong to.</li>
-<li><b>Google Drive access:</b> MART Drive requests the limited <b>drive.file</b> permission. It can only create and manage files that you upload through MART Drive. It cannot see or change the rest of your Google Drive.</li>
-<li><b>App data:</b> folder names, notes, saved links, sharing details and organization membership are stored in Google Firebase (Firestore) so they sync across your devices.</li>
+<li><b>Google Drive access:</b> MART Drive requests the limited <b>drive.file</b> permission. It can only create and manage files that you upload through MART Drive. It cannot see or change the rest of your Google Drive. It also reads your Drive storage quota (used and free space) so it can show you how much space is left.</li>
+<li><b>App data:</b> folder names, notes, saved links, sharing details, organization membership and join requests are stored in Google Firebase (Firestore) so they sync across your devices. Organization logos you upload are hosted on ImgBB.</li>
 <li><b>Your control:</b> we never sell your data or use it for advertising. You can delete items in the app and revoke access any time from your Google Account permissions.</li>
 </ul>
 <p class="ld-note" style="margin-top:14px">Read the full <a href="privacy_policy.html">Privacy Policy</a> and <a href="terms_conditions.html">Terms &amp; Conditions</a>.</p>
@@ -252,7 +276,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
 <div id="app">
 <aside class="sidebar" id="sidebar">
-<div class="sidebar-brand" onclick="openOrgModal()"><img id="org-logo-display" src="https://i.ibb.co/zhhYdVdD/Picsart-26-10-26-09-26-17-563.jpg" alt="Logo"><div><h2 id="org-name-display">Personal Drive</h2><span>Tap to create organization</span></div></div>
+<div class="sidebar-brand" onclick="openOrgModal()"><img id="org-logo-display" src="https://i.ibb.co/zhhYdVdD/Picsart-26-10-26-09-26-17-563.jpg" alt="Logo"><div><h2 id="org-name-display">Personal Drive</h2><span id="org-sub">Tap to create organization</span></div></div>
 <button class="new-btn" onclick="document.getElementById('file-input').click()"><span class="material-symbols-outlined">add</span> Upload File</button>
 <ul class="nav-list">
 <li><div class="nav-item" data-v="drive" onclick="setView('drive')"><span class="material-symbols-outlined">folder</span> My Files</div></li>
@@ -261,6 +285,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <li><div class="nav-item" data-v="starred" onclick="setView('starred')"><span class="material-symbols-outlined">star</span> Starred</div></li>
 <li><div class="nav-item" data-v="sharedby" onclick="setView('sharedby')"><span class="material-symbols-outlined">person_add</span> Shared by me</div></li>
 <li><div class="nav-item" data-v="sharedfrom" onclick="setView('sharedfrom')"><span class="material-symbols-outlined">folder_shared</span> Shared from</div></li>
+<li id="nav-requests" style="display:none"><div class="nav-item" data-v="requests" onclick="setView('requests')"><span class="material-symbols-outlined">how_to_reg</span> Join Requests <span class="badge" id="req-badge" style="display:none"></span></div></li>
 <li><div class="nav-item" data-v="trash" onclick="setView('trash')"><span class="material-symbols-outlined">delete</span> Trash</div></li>
 <li><div class="nav-item" onclick="toggleDarkMode()"><span class="material-symbols-outlined">dark_mode</span> Toggle Theme</div></li>
 <li class="nav-section">Organizations</li>
@@ -279,7 +304,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <div class="page-head">
 <div><h1 class="page-title" id="page-title">My Files</h1><div style="font-size:13px;color:var(--muted)" id="page-meta">0 items</div></div>
 <div class="toolbar">
-<select id="sort-sel" class="sel" onchange="setSort(this.value)"><option value="name">Name</option><option value="date">Newest</option><option value="size">Size</option></select>
+<select id="sort-sel" class="sel" onchange="setSort(this.value)"><option value="date">Newest</option><option value="name">Name</option><option value="size">Size</option></select>
 <button class="btn" id="layout-btn" onclick="toggleLayout()" title="Grid / List"><span class="material-symbols-outlined">view_list</span></button>
 <button class="btn" id="sel-btn" onclick="toggleSelectMode()" title="Select multiple"><span class="material-symbols-outlined">checklist</span> Select</button>
 <button class="btn mk" onclick="openNoteModal(null,'text')"><span class="material-symbols-outlined">sticky_note_2</span> Note</button>
@@ -293,6 +318,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <button class="btn" onclick="selectAll()"><span class="material-symbols-outlined">select_all</span> Select all</button>
 <span id="bulk-actions" style="display:contents"></span>
 </div>
+<div class="storage" id="storage-card"></div>
 <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()"><h3>Drag &amp; Drop or Click to Upload</h3><input type="file" id="file-input" hidden multiple onchange="handleFiles(this.files)"></div>
 <div id="upload-progress-container"><div class="progress-text"><span id="progress-filename">Uploading...</span><span id="progress-percent">0%</span></div><div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div></div>
 <div id="breadcrumbs" style="margin-bottom:16px;font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"></div>
@@ -333,12 +359,13 @@ document.addEventListener('DOMContentLoaded',function(){
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, indexedDBLocalPersistence } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore, collection, doc, addDoc, setDoc, deleteDoc, updateDoc, onSnapshot, query, where, serverTimestamp, getDocs, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getFirestore, collection, doc, addDoc, setDoc, getDoc, deleteDoc, updateDoc, onSnapshot, query, where, serverTimestamp, getDocs, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const firebaseConfig={apiKey:"AIzaSyDUcT6hVqLHy3pYzwg1oktI7amTpF9Qj4c",authDomain:"mart-drive.firebaseapp.com",projectId:"mart-drive",storageBucket:"mart-drive.firebasestorage.app",messagingSenderId:"829348083361",appId:"1:829348083361:web:d6e91ccec70c2b9d53e2e0",measurementId:"G-J2ERB07TW0"};
 const app=initializeApp(firebaseConfig), auth=getAuth(app), db=getFirestore(app);
 try{await setPersistence(auth,browserLocalPersistence)}catch{try{await setPersistence(auth,indexedDBLocalPersistence)}catch(e){console.warn(e)}}
 
+const IMGBB_KEY='cab7044412d615b8514735a853183975';
 const LOGO="https://i.ibb.co/zhhYdVdD/Picsart-26-10-26-09-26-17-563.jpg";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -347,13 +374,48 @@ const COLORS=['','#F59E0B','#10B981','#3B82F6','#EC4899'];
 const store={files:{p:[],o:[]},folders:{p:[],o:[]},notes:{p:[],o:[]}};
 let sharedBy=[],sharedFrom=[],unsubS=[];
 let currentUser=null,accessToken=null,organizations=[],currentOrgId=null,currentFolderId=null,currentView='drive',searchTerm='',ctxItem=null,accessItem=null,moveItems=[];
-let unsubP=[],unsubO=[],unsubOrgs=null,firstOrgLoad=true,tokenPromise=null,pendingPreview=null,pvTimer=null,pendingFolder=new URLSearchParams(location.search).get('folder');
-let sortBy=localStorage.getItem('sort')||'name',layout=localStorage.getItem('layout')||'grid';
+let unsubP=[],unsubO=[],unsubOrgs=null,unsubR=null,reqKey='',joinReqs=[],firstOrgLoad=true,tokenPromise=null,pendingPreview=null,pvTimer=null,pendingFolder=new URLSearchParams(location.search).get('folder');
+/* default sort = Newest (new key so everyone gets the new default) */
+let sortBy=localStorage.getItem('sort_v2')||'date',layout=localStorage.getItem('layout')||'grid';
 let selectMode=false,curList=[];const sel=new Set();
+let quota=null,syncing=false,joinInv=null,logoFile=null,logoMode='upload',logoExisting=null;
+const failedGrants=new Set();
 const keyOf=x=>x.kind+':'+x.id;
 const me=()=>currentUser.email.toLowerCase();
 const myOrg=()=>organizations.find(o=>o.id===currentOrgId);
 const roleLabel=r=>({reader:'Viewer',commenter:'Commenter',writer:'Editor'}[r]||r);
+const EMAIL_RE=/^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+/* OWNERS helpers (supports several owners; legacy single-owner orgs still work) */
+function ownersOf(o){
+  const s=new Set((o.owners||[]).map(x=>String(x).toLowerCase()));
+  if(!s.size)s.add(String(o.ownerEmail||o.members?.[0]||'').toLowerCase());
+  return[...s].filter(Boolean);
+}
+function isOwner(o){
+  if(!o||!currentUser)return false;
+  if(o.owners&&o.owners.length)return ownersOf(o).includes(me());
+  return ownersOf(o).includes(me())||o.owner===currentUser.uid;
+}
+const genCode=()=>{const a=new Uint8Array(18);crypto.getRandomValues(a);return[...a].map(b=>b.toString(36).padStart(2,'0')).join('').slice(0,24)};
+const inviteLink=code=>`${location.origin}${location.pathname}?join=${code}`;
+function parseEmails(str){
+  const list=[],bad=[];
+  String(str||'').split(/[\s,;]+/).map(s=>s.trim().toLowerCase()).filter(Boolean).forEach(e=>{EMAIL_RE.test(e)?(!list.includes(e)&&list.push(e)):bad.push(e)});
+  return{list,bad};
+}
+
+/* INVITE param (?join=CODE) is remembered until the user is logged in */
+let pendingJoin=null;
+{
+  const jp=new URLSearchParams(location.search).get('join');
+  if(jp){
+    try{localStorage.setItem('mart_join',jp)}catch{}
+    const u=new URL(location.href);u.searchParams.delete('join');history.replaceState(null,'',u.pathname+u.search+u.hash);
+  }
+  try{pendingJoin=localStorage.getItem('mart_join')}catch{}
+  if(pendingJoin)$('invite-banner').style.display='block';
+}
 
 /* THEME */
 if(localStorage.getItem('theme')==='dark')document.body.classList.add('dark-mode');
@@ -380,9 +442,10 @@ onAuthStateChanged(auth,user=>{
     $('landing').style.display='none';document.documentElement.classList.add('has-session');try{localStorage.setItem('mart_has_session','1')}catch{}$('app').classList.add('ready');
     if(user.photoURL){$('user-avatar').src=user.photoURL;$('user-avatar').style.display='block'}else $('so-ic').style.display='block';
     $('sort-sel').value=sortBy;setupListeners();
+    if(accessToken)loadQuota();
   }else{
-    currentUser=null;accessToken=null;$('app').classList.remove('ready');$('landing').style.display='block';document.documentElement.classList.remove('has-session');try{localStorage.removeItem('mart_has_session')}catch{}
-    [...unsubP,...unsubO,...unsubS,unsubOrgs].forEach(u=>u&&u());
+    currentUser=null;accessToken=null;quota=null;$('app').classList.remove('ready');$('landing').style.display='block';document.documentElement.classList.remove('has-session');try{localStorage.removeItem('mart_has_session')}catch{}
+    [...unsubP,...unsubO,...unsubS,unsubOrgs,unsubR].forEach(u=>u&&u());unsubR=null;reqKey='';joinReqs=[];
   }
 });
 
@@ -393,15 +456,24 @@ function setupListeners(){
   unsubOrgs&&unsubOrgs();
   unsubOrgs=onSnapshot(query(collection(db,'organizations'),where('members','array-contains',me())),s=>{
     organizations=snapDocs(s);
-    if(firstOrgLoad){firstOrgLoad=false;let sv=null;try{sv=localStorage.getItem('mart_org')}catch{}if(sv&&organizations.some(o=>o.id===sv)){switchOrg(sv);return}}
-    if(currentOrgId&&!myOrg()){switchOrg(null);return}
-    renderOrgSidebar();updateBrand();
-  },e=>console.warn('orgs',e));
+    let handled=false;
+    if(firstOrgLoad){
+      firstOrgLoad=false;let sv=null;try{sv=localStorage.getItem('mart_org')}catch{}
+      if(sv&&organizations.some(o=>o.id===sv)){switchOrg(sv);handled=true}
+      setTimeout(runPendingJoin,0);
+    }
+    if(!handled){
+      if(currentOrgId&&!myOrg())switchOrg(null);
+      else{renderOrgSidebar();updateBrand();syncReqListener();render()}
+    }
+    syncOrgGrants();
+  },e=>{console.warn('orgs',e);runPendingJoin()});
   unsubP.forEach(u=>u());
   unsubP=Object.keys(store).map(k=>onSnapshot(query(collection(db,k),where('uid','==',uid)),s=>{
     store[k].p=snapDocs(s);
     if(k==='folders'&&pendingFolder&&store.folders.p.some(f=>f.id===pendingFolder)){const f=store.folders.p.find(x=>x.id===pendingFolder);pendingFolder=null;if((f.orgId||null)===currentOrgId)currentFolderId=f.id}
     render();
+    if(k==='files')syncOrgGrants();
   },e=>console.warn(k,e)));
   unsubS.forEach(u=>u&&u());
   unsubS=[
@@ -414,89 +486,346 @@ function listenOrg(){
   if(!currentOrgId)return;
   unsubO=Object.keys(store).map(k=>onSnapshot(query(collection(db,k),where('orgId','==',currentOrgId)),s=>{store[k].o=snapDocs(s);render()},e=>console.warn(k,e)));
 }
+/* join requests listener (only for owners of the current organization) */
+function syncReqListener(){
+  const o=myOrg(),key=(o&&isOwner(o))?o.id:'';
+  if(key===reqKey)return;
+  reqKey=key;unsubR&&unsubR();unsubR=null;joinReqs=[];
+  if(key)unsubR=onSnapshot(query(collection(db,'joinRequests'),where('orgId','==',key)),s=>{joinReqs=snapDocs(s).filter(r=>r.status==='pending');render()},e=>console.warn('joinRequests',e));
+}
 const all=k=>{const m=new Map();[...store[k].p,...store[k].o].forEach(x=>m.set(x.id,x));return[...m.values()].filter(x=>(x.orgId||null)===currentOrgId)};
 const ws=()=>[...all('folders').map(x=>({...x,kind:'folder'})),...all('files').map(x=>({...x,kind:'file'})),...all('notes').map(x=>({...x,kind:'note'}))];
 
+/* DRIVE STORAGE QUOTA */
+async function loadQuota(){
+  if(!accessToken)return;
+  try{
+    const r=await fetch('https://www.googleapis.com/drive/v3/about?fields=storageQuota',{headers:dh()});
+    if(r.status===401){clearToken();quota=null;renderStorage();return}
+    const j=await r.json();
+    quota=j.storageQuota||null;
+  }catch(e){console.warn('quota',e)}
+  renderStorage();
+}
+window.refreshQuota=async()=>{try{await ensureToken();await loadQuota()}catch(e){toast('Please allow Google access','error')}};
+function renderStorage(){
+  const el=$('storage-card');if(!el)return;
+  const show=currentUser&&currentView==='drive'&&!searchTerm;
+  el.style.display=show?'block':'none';if(!show)return;
+  const o=myOrg(),fl=all('files'),used=fl.reduce((s,x)=>s+(+x.size||0),0);
+  let by='';
+  if(o){
+    const m={};fl.forEach(x=>{const k=x.by||'unknown';m[k]=(m[k]||0)+(+x.size||0)});
+    const rows=Object.entries(m).sort((a,b)=>b[1]-a[1]);
+    if(rows.length)by=`<div class="st-by"><span>Uploaded by:</span>${rows.map(([k,v])=>`<span class="chip">${esc(k.split('@')[0])}: ${fmtSize(v)}</span>`).join('')}</div>`;
+  }
+  let free,total,bar='',note='';
+  if(quota){
+    const lim=+quota.limit||0,usg=+quota.usage||0;
+    free=lim?fmtSize(Math.max(0,lim-usg)):'Unlimited';
+    total=lim?`${fmtSize(usg)} of ${fmtSize(lim)}`:`${fmtSize(usg)} used (unlimited plan)`;
+    if(lim)bar=`<div class="st-bar"><i style="width:${Math.min(100,usg/lim*100).toFixed(1)}%"></i></div>`;
+  }else{
+    free=`<button class="btn" onclick="refreshQuota()" style="padding:4px 10px"><span class="material-symbols-outlined" style="font-size:18px">refresh</span> Show</button>`;
+    total='—';
+  }
+  note=o?'Total counts every file uploaded by all members of this organization. Free space is your own Google Drive space, because the files you upload are stored in your Drive.':'Free space is the remaining space in your Google Drive (shared with Gmail &amp; Photos). Files in Trash still use space until deleted forever.';
+  el.innerHTML=`<div class="st-head"><span><span class="material-symbols-outlined" style="vertical-align:middle;color:var(--blue)">cloud</span> Storage · ${esc(o?o.name:'Personal Drive')}</span>${quota?`<button class="icon-btn" title="Refresh" onclick="refreshQuota()"><span class="material-symbols-outlined" style="font-size:20px">refresh</span></button>`:''}</div>
+  <div class="st-grid"><div><small>Uploaded in ${o?'this organization':'Personal Drive'} (${fl.length} files)</small><b>${fmtSize(used)}</b></div><div><small>Free space (your Google Drive)</small><b>${free}</b></div><div><small>Google account total</small><b style="font-size:14px">${total}</b></div></div>${bar}${by}<div class="st-note">${note}</div>`;
+}
+
+/* Keep Drive permissions of my org files in sync with the member list */
+async function syncOrgGrants(){
+  if(syncing||!currentOrgId||!accessToken||!currentUser)return;
+  const o=myOrg();if(!o)return;
+  const files=store.files.p.filter(f=>f.orgId===currentOrgId&&f.driveFileId);
+  const todo=files.filter(f=>o.members.some(m=>m!==me()&&!(f.grantedTo||[]).includes(m)&&!failedGrants.has(f.id+'_'+m)));
+  if(!todo.length)return;
+  syncing=true;
+  try{
+    for(const f of todo){
+      const done=[];
+      for(const m of o.members){
+        if(m===me()||(f.grantedTo||[]).includes(m)||failedGrants.has(f.id+'_'+m))continue;
+        const r=await grantDrive(f.driveFileId,m);
+        if(r&&r.status===401){clearToken();return}
+        if(r&&r.ok)done.push(m);else failedGrants.add(f.id+'_'+m);
+      }
+      if(done.length)await updateDoc(doc(db,'files',f.id),{grantedTo:arrayUnion(...done)}).catch(()=>{});
+    }
+  }catch(e){console.warn('sync grants',e)}finally{syncing=false}
+}
+
 /* ORGANIZATIONS */
-function updateBrand(){const o=myOrg();$('org-name-display').textContent=o?o.name:'Personal Drive';$('org-logo-display').src=(o&&o.logoUrl)||LOGO}
+function updateBrand(){const o=myOrg();$('org-name-display').textContent=o?o.name:'Personal Drive';$('org-sub').textContent=o?('Team: '+(o.teamName||'—')):'Tap to create organization';$('org-logo-display').src=(o&&o.logoUrl)||LOGO}
 window.switchOrg=id=>{
   currentOrgId=id;currentFolderId=null;
   try{id?localStorage.setItem('mart_org',id):localStorage.removeItem('mart_org')}catch{}
-  listenOrg();updateBrand();renderOrgSidebar();setView('drive');
+  listenOrg();syncReqListener();updateBrand();renderOrgSidebar();setView('drive');syncOrgGrants();
 };
 function renderOrgSidebar(){
   let h=`<div class="nav-item ${!currentOrgId?'active':''}" onclick="switchOrg(null)"><span class="material-symbols-outlined">person</span> Personal Drive</div>`;
   organizations.forEach(o=>{
-    const own=o.owner===currentUser.uid;
-    h+=`<div class="nav-item ${currentOrgId===o.id?'active':''}" onclick="switchOrg('${o.id}')">
+    const own=isOwner(o);
+    h+=`<div class="nav-item ${currentOrgId===o.id?'active':''}" onclick="switchOrg('${o.id}')" title="${esc(o.teamName||'')}">
       <img src="${esc(o.logoUrl||LOGO)}" style="width:20px;height:20px;border-radius:4px;object-fit:cover">
       <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(o.name)}</span>
-      <span class="org-btns"><span class="material-symbols-outlined" title="Members" onclick="event.stopPropagation();openMembersModal('${o.id}')">group</span>${own?`<span class="material-symbols-outlined" title="Edit" onclick="event.stopPropagation();openEditOrgModal('${o.id}')">edit</span>`:''}</span></div>`;
+      <span class="org-btns"><span class="material-symbols-outlined" title="Members &amp; invite" onclick="event.stopPropagation();openMembersModal('${o.id}')">group</span>${own?`<span class="material-symbols-outlined" title="Edit" onclick="event.stopPropagation();openEditOrgModal('${o.id}')">edit</span>`:''}</span></div>`;
   });
   h+=`<div class="nav-item" style="color:var(--blue)" onclick="openOrgModal()"><span class="material-symbols-outlined">add_circle</span> Create Org</div>`;
   $('org-list-container').innerHTML=h;
 }
+
+/* organization form (create + edit): Team name -> Organization name -> Logo -> (optional) members & owners */
+function orgFormHTML(o,isNew){
+  logoFile=null;logoMode='upload';logoExisting=o?.logoUrl||null;
+  return`<div class="field"><label>1. Team Name</label><input id="of-team" value="${esc(o?.teamName||'')}" placeholder="e.g. Core Team"></div>
+  <div class="field"><label>2. Organization Name</label><input id="of-name" value="${esc(o?.name||'')}" placeholder="e.g. Bangladesh Scouts"></div>
+  <div class="field"><label>3. Logo (optional)</label>
+    <div class="seg"><button type="button" class="btn on" id="lm-upload" onclick="setLogoMode('upload')"><span class="material-symbols-outlined">upload</span> Upload image</button><button type="button" class="btn" id="lm-url" onclick="setLogoMode('url')"><span class="material-symbols-outlined">link</span> Paste link</button></div>
+    <div id="lg-upload"><input type="file" id="of-file" accept="image/*" onchange="pickLogo(this)"></div>
+    <div id="lg-url" style="display:none"><input id="of-url" value="${esc(o?.logoUrl||'')}" placeholder="https://example.com/logo.png" oninput="refreshLogoPrev()"></div>
+    <img id="logo-prev" class="logo-prev" alt="Logo preview">
+    <small>Uploaded logos are saved on ImgBB and the link is stored in your organization.</small>
+  </div>
+  ${isNew?`<div class="step-t">4. Add people (optional)</div>
+  <div class="field"><label>Team members (emails)</label><textarea id="of-members" class="sm" placeholder="member1@gmail.com, member2@gmail.com"></textarea></div>
+  <div class="field"><label>Owners (emails)</label><textarea id="of-owners" class="sm" placeholder="owner@gmail.com"></textarea><small>Owners can edit the organization, add/remove members, make other owners and approve join requests. You are an owner automatically.</small></div>`:''}`;
+}
+window.setLogoMode=m=>{
+  logoMode=m;
+  $('lm-upload').classList.toggle('on',m==='upload');$('lm-url').classList.toggle('on',m==='url');
+  $('lg-upload').style.display=m==='upload'?'block':'none';$('lg-url').style.display=m==='url'?'block':'none';
+  refreshLogoPrev();
+};
+window.pickLogo=input=>{
+  const f=input.files&&input.files[0];
+  if(!f){logoFile=null;return refreshLogoPrev()}
+  if(!f.type.startsWith('image/')){input.value='';logoFile=null;toast('Please choose an image file','error');return refreshLogoPrev()}
+  if(f.size>32*1024*1024){input.value='';logoFile=null;toast('Image must be under 32 MB','error');return refreshLogoPrev()}
+  logoFile=f;refreshLogoPrev();
+};
+window.refreshLogoPrev=()=>{
+  const img=$('logo-prev');if(!img)return;
+  let src='';
+  if(logoMode==='upload')src=logoFile?URL.createObjectURL(logoFile):(logoExisting||'');
+  else src=normUrl($('of-url').value)||'';
+  img.style.display=src?'block':'none';if(src)img.src=src;
+};
+async function uploadImgbb(file){
+  const fd=new FormData();fd.append('image',file);
+  const r=await fetch('https://api.imgbb.com/1/upload?key='+IMGBB_KEY,{method:'POST',body:fd});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok||!j.success)throw new Error(j.error?.message||'Logo upload failed');
+  return j.data.url||j.data.display_url;
+}
+async function resolveLogo(){
+  if(logoMode==='upload')return logoFile?await uploadImgbb(logoFile):(logoExisting||null);
+  const v=$('of-url').value.trim();if(!v)return null;
+  const u=normUrl(v);if(!u)throw new Error('Enter a valid logo link');return u;
+}
 window.openOrgModal=()=>{
-  openModal('Create Organization',`<div class="field"><label>Organization Name</label><input id="org-name-input" placeholder="e.g. Bangladesh Scouts"></div><div class="field"><label>Logo Image URL (Optional)</label><input id="org-logo-input" placeholder="https://example.com/logo.png"></div><p style="font-size:13px;color:var(--muted)">After creating, add team members with the <b>group</b> icon. Members can view, comment and edit everything in the organization.</p>`,`<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="createOrg()">Create</button>`);
+  openModal('Create Organization',orgFormHTML(null,true),`<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="org-save" onclick="createOrg()">Create</button>`);
+  refreshLogoPrev();
 };
 window.createOrg=async()=>{
-  const name=$('org-name-input').value.trim();if(!name)return toast('Name required','error');
-  try{await addDoc(collection(db,'organizations'),{name,logoUrl:$('org-logo-input').value.trim()||null,owner:currentUser.uid,ownerEmail:me(),members:[me()],createdAt:serverTimestamp()});toast('Organization created!','success');closeModal()}catch(e){toast('Failed: '+e.message,'error')}
+  const team=$('of-team').value.trim(),name=$('of-name').value.trim();
+  if(!team)return toast('Team name required','error');
+  if(!name)return toast('Organization name required','error');
+  const mem=parseEmails($('of-members').value),own=parseEmails($('of-owners').value);
+  if(mem.bad.length||own.bad.length)return toast('Invalid email: '+[...mem.bad,...own.bad][0],'error');
+  const btn=$('org-save');btn.disabled=true;btn.textContent='Creating…';
+  try{
+    const logoUrl=await resolveLogo();
+    const owners=[...new Set([me(),...own.list])],members=[...new Set([me(),...mem.list,...own.list])];
+    const ref=doc(collection(db,'organizations')),code=genCode();
+    await setDoc(ref,{teamName:team,name,logoUrl,owner:currentUser.uid,ownerEmail:me(),owners,members,inviteCode:code,createdAt:serverTimestamp()});
+    await setDoc(doc(db,'invites',code),{orgId:ref.id,orgName:name,teamName:team,logoUrl,createdBy:me()}).catch(e=>console.warn('invite',e));
+    toast('Organization created!','success');closeModal();
+  }catch(e){toast('Failed: '+e.message,'error');btn.disabled=false;btn.textContent='Create'}
 };
 window.openEditOrgModal=id=>{
-  const o=organizations.find(x=>x.id===id);if(!o)return;if(o.owner!==currentUser.uid)return toast('Only owner can edit','error');
-  openModal('Edit Organization',`<div class="field"><label>Organization Name</label><input id="edit-org-name" value="${esc(o.name)}"></div><div class="field"><label>Logo Image URL</label><input id="edit-org-logo" value="${esc(o.logoUrl||'')}"></div>`,
-  `<button class="btn" onclick="deleteOrg('${id}')" style="color:var(--error);border-color:var(--error)">Delete</button><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="updateOrg('${id}')">Save</button>`);
+  const o=organizations.find(x=>x.id===id);if(!o)return;if(!isOwner(o))return toast('Only owners can edit','error');
+  openModal('Edit Organization',orgFormHTML(o,false),
+  `<button class="btn" onclick="deleteOrg('${id}')" style="color:var(--error);border-color:var(--error)">Delete</button><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="org-save" onclick="updateOrg('${id}')">Save</button>`);
+  refreshLogoPrev();
 };
 window.updateOrg=async id=>{
-  const name=$('edit-org-name').value.trim(),logoUrl=$('edit-org-logo').value.trim()||null;if(!name)return toast('Name required','error');
-  await updateDoc(doc(db,'organizations',id),{name,logoUrl});toast('Organization updated','success');closeModal();
+  const o=organizations.find(x=>x.id===id);if(!o||!isOwner(o))return;
+  const team=$('of-team').value.trim(),name=$('of-name').value.trim();
+  if(!team)return toast('Team name required','error');if(!name)return toast('Organization name required','error');
+  const btn=$('org-save');btn.disabled=true;btn.textContent='Saving…';
+  try{
+    const logoUrl=await resolveLogo();
+    await updateDoc(doc(db,'organizations',id),{teamName:team,name,logoUrl});
+    if(o.inviteCode)await setDoc(doc(db,'invites',o.inviteCode),{orgId:id,orgName:name,teamName:team,logoUrl,createdBy:me()},{merge:true}).catch(()=>{});
+    toast('Organization updated','success');closeModal();
+  }catch(e){toast('Failed: '+e.message,'error');btn.disabled=false;btn.textContent='Save'}
 };
 window.deleteOrg=async id=>{
+  const o=organizations.find(x=>x.id===id);if(!o||!isOwner(o))return;
   if(!confirm('Delete this organization permanently? All its folders, files (metadata) and notes will be removed for every member.'))return;
-  for(const c of['files','folders','notes']){const s=await getDocs(query(collection(db,c),where('orgId','==',id)));for(const d of s.docs)await deleteDoc(d.ref)}
-  await deleteDoc(doc(db,'organizations',id));if(currentOrgId===id)switchOrg(null);toast('Organization deleted','success');closeModal();
-};
-
-/* MEMBERS */
-window.openMembersModal=id=>{
-  const o=organizations.find(x=>x.id===id);if(!o)return;
-  const own=o.owner===currentUser.uid,oe=o.ownerEmail||o.members[0];
-  const rows=o.members.map(m=>`<div class="access-row"><span class="material-symbols-outlined" style="color:var(--muted)">account_circle</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis">${esc(m)}</span>${m===oe?'<span class="chip">Owner</span>':'<span class="chip">Member</span>'}${own&&m!==oe?`<button class="icon-btn" onclick="removeMember('${id}','${esc(m)}')"><span class="material-symbols-outlined" style="font-size:18px">person_remove</span></button>`:''}</div>`).join('');
-  openModal(`${o.name} · Members (${o.members.length})`,
-   `<p style="font-size:13px;color:var(--muted);margin-bottom:12px">All members can view, comment and edit files, notes and links in this organization.</p>${rows}
-   ${own?`<div class="field" style="margin-top:16px"><label>Add member (Google email)</label><div style="display:flex;gap:8px"><input id="member-email" type="email" placeholder="name@gmail.com" style="flex:1;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><button class="btn btn-primary" onclick="addMember('${id}')">Add</button></div></div>`:''}`,
-   `${!own?`<button class="btn" style="color:var(--error);border-color:var(--error)" onclick="leaveOrg('${id}')">Leave</button>`:''}<button class="btn" onclick="closeModal()">Close</button>`);
-};
-async function myOrgFiles(orgId){return store.files.p.filter(f=>f.orgId===orgId&&f.driveFileId&&f.uid===currentUser.uid)}
-window.addMember=async id=>{
-  const o=organizations.find(x=>x.id===id),email=$('member-email').value.trim().toLowerCase();
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return toast('Enter a valid email','error');
-  if(o.members.includes(email))return toast('Already a member','error');
   try{
-    await updateDoc(doc(db,'organizations',id),{members:arrayUnion(email)});o.members=[...o.members,email];
-    toast('Member added','success');openMembersModal(id);
-    try{await ensureToken();for(const f of await myOrgFiles(id))await grantDrive(f.driveFileId,email)}catch{}
+    for(const c of['files','folders','notes','joinRequests']){const s=await getDocs(query(collection(db,c),where('orgId','==',id)));for(const d of s.docs)await deleteDoc(d.ref)}
+    if(o.inviteCode)await deleteDoc(doc(db,'invites',o.inviteCode)).catch(()=>{});
+    await deleteDoc(doc(db,'organizations',id));if(currentOrgId===id)switchOrg(null);toast('Organization deleted','success');closeModal();
   }catch(e){toast('Failed: '+e.message,'error')}
 };
-window.removeMember=async(id,email)=>{
-  if(!confirm('Remove '+email+'?'))return;const o=organizations.find(x=>x.id===id);
+
+/* MEMBERS, OWNERS & INVITE LINK */
+async function ensureInvite(o,force){
+  if(o.inviteCode&&!force)return o.inviteCode;
+  const old=o.inviteCode,code=genCode();
+  await setDoc(doc(db,'invites',code),{orgId:o.id,orgName:o.name,teamName:o.teamName||'',logoUrl:o.logoUrl||null,createdBy:me()});
+  await updateDoc(doc(db,'organizations',o.id),{inviteCode:code});
+  if(old)await deleteDoc(doc(db,'invites',old)).catch(()=>{});
+  o.inviteCode=code;return code;
+}
+window.openMembersModal=async id=>{
+  const o=organizations.find(x=>x.id===id);if(!o)return;
+  const own=isOwner(o);
+  if(own&&!o.inviteCode){try{await ensureInvite(o)}catch(e){console.warn(e)}}
+  const owners=ownersOf(o);
+  const rows=o.members.map(m=>{
+    const ow=owners.includes(m),self=m===me(),sole=ow&&owners.length<=1;
+    const btns=own&&!self?`${ow?(!sole?`<button class="icon-btn" title="Remove owner role" data-act="demote" data-e="${esc(m)}"><span class="material-symbols-outlined" style="font-size:18px">remove_moderator</span></button>`:''):`<button class="icon-btn" title="Make owner" data-act="promote" data-e="${esc(m)}"><span class="material-symbols-outlined" style="font-size:18px">admin_panel_settings</span></button>`}${!sole?`<button class="icon-btn" title="Remove from organization" data-act="remove" data-e="${esc(m)}"><span class="material-symbols-outlined" style="font-size:18px">person_remove</span></button>`:''}`:'';
+    return`<div class="access-row"><span class="material-symbols-outlined" style="color:var(--muted)">account_circle</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis">${esc(m)}${self?' (you)':''}</span>${ow?'<span class="chip own">Owner</span>':'<span class="chip">Member</span>'}${btns}</div>`;
+  }).join('');
+  const inv=o.inviteCode?`<div class="field" style="margin-top:16px"><label>Invite link</label><div style="display:flex;gap:8px"><input id="inv-link" readonly value="${esc(inviteLink(o.inviteCode))}" style="flex:1;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><button class="btn" data-act="copyinv" title="Copy link"><span class="material-symbols-outlined">content_copy</span></button>${own?`<button class="btn" data-act="resetinv" title="Create a new link (old link stops working)"><span class="material-symbols-outlined">autorenew</span></button>`:''}</div><small style="color:var(--muted);font-size:12px">Anyone with this link can log in / sign up and request to join. An owner must approve every request.</small></div>`:`<p style="font-size:13px;color:var(--muted);margin-top:16px">No invite link yet. Ask an owner to open this window to create one.</p>`;
+  openModal(`${o.name} · Members (${o.members.length})`,
+   `<p style="font-size:13px;color:var(--muted);margin-bottom:12px">All members can view, comment and edit files, notes and links in this organization. Owners can also manage people and approve join requests.</p>${rows}${inv}
+   ${own?`<div class="field" style="margin-top:16px"><label>Add people (Google emails, separated by comma)</label><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="member-email" placeholder="name@gmail.com" style="flex:1;min-width:160px;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><select id="member-role" class="sel"><option value="member">Member</option><option value="owner">Owner</option></select><button class="btn btn-primary" data-act="add">Add</button></div></div>`:''}`,
+   `${!own||owners.length>1?`<button class="btn" style="color:var(--error);border-color:var(--error)" data-act="leave">Leave</button>`:''}<button class="btn" onclick="closeModal()">Close</button>`);
+  const handler=ev=>{
+    const b=ev.target.closest('[data-act]');if(!b)return;
+    const a=b.dataset.act,e=b.dataset.e;
+    if(a==='promote')setOwner(id,e,true);
+    else if(a==='demote')setOwner(id,e,false);
+    else if(a==='remove')removeMember(id,e);
+    else if(a==='add')addMembers(id);
+    else if(a==='leave')leaveOrg(id);
+    else if(a==='copyinv'){const t=$('inv-link').value;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Invite link copied!','success')).catch(()=>{$('inv-link').select();document.execCommand('copy');toast('Invite link copied!','success')})}
+    else if(a==='resetinv')resetInvite(id);
+  };
+  $('modal-body').onclick=handler;$('modal-foot').onclick=handler;
+};
+window.resetInvite=async id=>{
+  const o=organizations.find(x=>x.id===id);if(!o||!isOwner(o))return;
+  if(!confirm('Create a new invite link? The old link will stop working.'))return;
+  try{await ensureInvite(o,true);toast('New invite link created','success');openMembersModal(id)}catch(e){toast('Failed: '+e.message,'error')}
+};
+async function addMembers(id){
+  const o=organizations.find(x=>x.id===id);if(!o||!isOwner(o))return;
+  const p=parseEmails($('member-email').value),role=$('member-role').value;
+  if(!p.list.length||p.bad.length)return toast(p.bad.length?('Invalid email: '+p.bad[0]):'Enter an email','error');
+  const fresh=p.list.filter(e=>!o.members.includes(e)||(role==='owner'&&!ownersOf(o).includes(e)));
+  if(!fresh.length)return toast('Already added','error');
   try{
-    await updateDoc(doc(db,'organizations',id),{members:arrayRemove(email)});o.members=o.members.filter(m=>m!==email);
+    try{await ensureToken()}catch{}
+    const members=[...new Set([...o.members,...fresh])];
+    const data={members};
+    if(role==='owner')data.owners=[...new Set([...ownersOf(o),...fresh])];
+    await updateDoc(doc(db,'organizations',id),data);
+    o.members=members;if(data.owners)o.owners=data.owners;
+    toast(role==='owner'?'Owner added':'Member added','success');openMembersModal(id);
+  }catch(e){toast('Failed: '+e.message,'error')}
+}
+async function setOwner(id,email,make){
+  const o=organizations.find(x=>x.id===id);if(!o||!isOwner(o))return;
+  const cur=ownersOf(o),next=make?[...new Set([...cur,email])]:cur.filter(x=>x!==email);
+  if(!next.length)return toast('An organization needs at least one owner','error');
+  try{await updateDoc(doc(db,'organizations',id),{owners:next});o.owners=next;toast(make?'Now an owner':'Owner role removed','success');openMembersModal(id)}
+  catch(e){toast('Failed: '+e.message,'error')}
+}
+window.removeMember=async(id,email)=>{
+  const o=organizations.find(x=>x.id===id);if(!o||!isOwner(o))return;
+  const owners=ownersOf(o);
+  if(owners.includes(email)&&owners.length<=1)return toast('Cannot remove the only owner','error');
+  if(!confirm('Remove '+email+'?'))return;
+  try{
+    try{await ensureToken()}catch{}
+    const nextOwners=owners.filter(x=>x!==email);
+    await updateDoc(doc(db,'organizations',id),{members:arrayRemove(email),owners:nextOwners});
+    o.members=o.members.filter(m=>m!==email);o.owners=nextOwners;
     toast('Member removed','success');openMembersModal(id);
-    try{await ensureToken();for(const f of await myOrgFiles(id))await revokeDrive(f.driveFileId,email)}catch{}
+    try{
+      for(const f of store.files.p.filter(f=>f.orgId===id&&f.driveFileId)){
+        await revokeDrive(f.driveFileId,email);
+        await updateDoc(doc(db,'files',f.id),{grantedTo:arrayRemove(email)}).catch(()=>{});
+      }
+    }catch{}
   }catch(e){toast('Failed: '+e.message,'error')}
 };
 window.leaveOrg=async id=>{
+  const o=organizations.find(x=>x.id===id);if(!o)return;
+  const owners=ownersOf(o);
+  if(owners.includes(me())&&owners.length<=1)return toast('You are the only owner. Make another member an owner first.','error');
   if(!confirm('Leave this organization?'))return;
-  try{await updateDoc(doc(db,'organizations',id),{members:arrayRemove(me())});closeModal();if(currentOrgId===id)switchOrg(null)}catch(e){toast('Failed: '+e.message,'error')}
+  try{
+    const data={members:arrayRemove(me())};
+    if(owners.includes(me()))data.owners=owners.filter(x=>x!==me());
+    await updateDoc(doc(db,'organizations',id),data);closeModal();if(currentOrgId===id)switchOrg(null);
+  }catch(e){toast('Failed: '+e.message,'error')}
 };
-const grantDrive=(fid,email)=>fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions?sendNotificationEmail=false`,{method:'POST',headers:dh(),body:JSON.stringify({role:'writer',type:'user',emailAddress:email})}).catch(()=>{});
+const grantDrive=(fid,email)=>fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions?sendNotificationEmail=false`,{method:'POST',headers:dh(),body:JSON.stringify({role:'writer',type:'user',emailAddress:email})}).catch(()=>null);
 async function revokeDrive(fid,email){
   const r=await(await fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions?fields=permissions(id,emailAddress)`,{headers:dh()})).json();
   for(const p of r.permissions||[])if((p.emailAddress||'').toLowerCase()===email)await fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions/${p.id}`,{method:'DELETE',headers:dh()});
 }
-async function shareWithMembers(fid){const o=myOrg();if(!o)return;for(const m of o.members)if(m!==me())await grantDrive(fid,m)}
+async function shareWithMembers(fid){const o=myOrg(),done=[];if(!o)return done;for(const m of o.members)if(m!==me()){const r=await grantDrive(fid,m);if(r&&r.ok)done.push(m)}return done}
+
+/* JOIN via invite link + approval by owners */
+async function runPendingJoin(){
+  const code=pendingJoin;if(!code||!currentUser)return;
+  pendingJoin=null;try{localStorage.removeItem('mart_join')}catch{}
+  try{
+    const snap=await getDoc(doc(db,'invites',code));
+    if(!snap.exists())return toast('This invite link is invalid or has expired','error');
+    const inv=snap.data();joinInv={code,...inv};
+    if(organizations.some(o=>o.id===inv.orgId)){switchOrg(inv.orgId);return toast('You are already a member of '+inv.orgName,'success')}
+    let pending=false;
+    try{const ex=await getDoc(doc(db,'joinRequests',`${inv.orgId}_${me()}`));pending=ex.exists()&&ex.data().status==='pending'}catch{}
+    const head=`<div style="text-align:center"><img src="${esc(inv.logoUrl||LOGO)}" style="width:72px;height:72px;border-radius:14px;object-fit:cover"><h3 style="margin:10px 0 2px">${esc(inv.orgName)}</h3><div class="file-meta">Team: ${esc(inv.teamName||'—')}</div>`;
+    if(pending)return openModal('Join Organization',`${head}<p style="margin-top:12px;color:var(--muted)">Your request is already waiting for approval from an owner.</p></div>`,`<button class="btn btn-primary" onclick="closeModal()">OK</button>`);
+    openModal('Join Organization',`${head}<p style="margin-top:12px;color:var(--muted)">Send a request to join. After an owner approves it, you will get access to all files, notes and links of this organization.</p></div>`,`<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="join-btn" onclick="requestJoin()">Request to join</button>`);
+  }catch(e){toast('Could not open invite: '+e.message,'error')}
+}
+window.requestJoin=async()=>{
+  if(!joinInv)return;const btn=$('join-btn');btn.disabled=true;btn.textContent='Sending…';
+  try{
+    await setDoc(doc(db,'joinRequests',`${joinInv.orgId}_${me()}`),{orgId:joinInv.orgId,orgName:joinInv.orgName,teamName:joinInv.teamName||'',code:joinInv.code,email:me(),name:currentUser.displayName||'',photo:currentUser.photoURL||'',uid:currentUser.uid,status:'pending',createdAt:serverTimestamp()});
+    toast('Request sent! An owner will review it.','success');closeModal();
+  }catch(e){toast('Failed: '+e.message,'error');btn.disabled=false;btn.textContent='Request to join'}
+};
+function renderRequests(){
+  const o=myOrg();
+  $('page-title').textContent=TITLES.requests;
+  $('page-meta').textContent=`${joinReqs.length} pending ${joinReqs.length===1?'request':'requests'}${o?' · '+o.name:''}`;
+  curList=joinReqs;
+  const grid=$('files-grid');grid.className='files-grid '+(layout==='list'?'list':'');grid.innerHTML='';
+  if(!joinReqs.length){grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">No pending join requests.<br>Share the invite link (members icon next to the organization) to invite people.</div>`;return}
+  [...joinReqs].sort((a,b)=>ts(b)-ts(a)).forEach(r=>{
+    const card=document.createElement('div');card.className='file-card';card.style.cursor='default';
+    const d=r.createdAt?.toDate?.().toLocaleDateString()||'';
+    card.innerHTML=`<div class="file-icon-wrap">${r.photo?`<img src="${esc(r.photo)}" referrerpolicy="no-referrer" onerror="this.remove()">`:'<span class="material-symbols-outlined">person</span>'}</div><div class="file-name" title="${esc(r.name||r.email)}">${esc(r.name||r.email)}</div><div class="file-meta">${esc(r.email)}${d?' · '+d:''}</div><div class="req-act"><button class="btn btn-primary" data-a="ap"><span class="material-symbols-outlined">check</span> Approve</button><button class="btn" data-a="rj" style="color:var(--error);border-color:var(--error)"><span class="material-symbols-outlined">close</span> Reject</button></div>`;
+    card.querySelector('[data-a=ap]').onclick=()=>approveReq(r);
+    card.querySelector('[data-a=rj]').onclick=()=>rejectReq(r);
+    grid.appendChild(card);
+  });
+}
+async function approveReq(r){
+  const o=myOrg();if(!o||!isOwner(o))return;
+  try{
+    try{await ensureToken()}catch{}
+    await updateDoc(doc(db,'organizations',o.id),{members:arrayUnion(r.email)});
+    await deleteDoc(doc(db,'joinRequests',r.id));
+    toast(r.email+' approved and added','success');
+  }catch(e){toast('Failed: '+e.message,'error')}
+}
+async function rejectReq(r){
+  if(!confirm('Reject the request from '+r.email+'?'))return;
+  try{await deleteDoc(doc(db,'joinRequests',r.id));toast('Request rejected','success')}catch(e){toast('Failed: '+e.message,'error')}
+}
 
 /* FOLDERS */
 window.openNewFolderModal=()=>openModal('Create Folder',`<div class="field"><label>Folder Name</label><input id="folder-name" placeholder="Untitled Folder"></div>`,`<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="createFolder()">Create</button>`);
@@ -554,10 +883,11 @@ window.bulk=async a=>{
 /* RENDER */
 window.setView=v=>{currentView=v;currentFolderId=null;sel.clear();selectMode=false;document.getElementById('sidebar').classList.remove('open');render()};
 window.handleSearch=v=>{searchTerm=v.toLowerCase().trim();render()};
-window.setSort=v=>{sortBy=v;localStorage.setItem('sort',v);render()};
+window.setSort=v=>{sortBy=v;localStorage.setItem('sort_v2',v);render()};
 window.toggleLayout=()=>{layout=layout==='grid'?'list':'grid';localStorage.setItem('layout',layout);render()};
-const TITLES={drive:'My Files',notes:'Notes & Links',recent:'Recent',starred:'Starred',trash:'Trash',sharedby:'Shared by me',sharedfrom:'Shared from'};
-const ts=x=>x.createdAt?.toMillis?.()||0;
+const TITLES={drive:'My Files',notes:'Notes & Links',recent:'Recent',starred:'Starred',trash:'Trash',sharedby:'Shared by me',sharedfrom:'Shared from',requests:'Join Requests'};
+/* pending server timestamps (null) count as "now" so new items appear first under Newest */
+const ts=x=>x.createdAt&&x.createdAt.toMillis?x.createdAt.toMillis():Date.now();
 function fileIcon(mt,did){
   mt=mt||'';
   if(mt.includes('image')&&did)return`<img src="https://drive.google.com/thumbnail?id=${did}&sz=w200&authuser=0" loading="lazy">`;
@@ -569,13 +899,20 @@ const MORE='<button class="icon-btn more"><span class="material-symbols-outlined
 
 function render(){
   if(!currentUser)return;
+  const o0=myOrg(),showReq=!!(o0&&isOwner(o0));
+  $('nav-requests').style.display=showReq?'':'none';
+  const rb=$('req-badge');rb.textContent=joinReqs.length;rb.style.display=(showReq&&joinReqs.length)?'inline-block':'none';
+  if(currentView==='requests'&&!showReq)currentView='drive';
   renderBreadcrumbs();
   document.querySelectorAll('[data-v]').forEach(e=>e.classList.toggle('active',e.dataset.v===currentView));
-  const shareView=currentView==='sharedby'||currentView==='sharedfrom';
-  $('sel-btn').style.display=shareView?'none':'flex';
-  document.querySelectorAll('.mk').forEach(b=>b.style.display=(currentView==='trash'||shareView)?'none':'flex');
+  const special=['sharedby','sharedfrom','requests'].includes(currentView);
+  $('sel-btn').style.display=special?'none':'flex';
+  document.querySelectorAll('.mk').forEach(b=>b.style.display=(currentView==='trash'||special)?'none':'flex');
   $('layout-btn').innerHTML=`<span class="material-symbols-outlined">${layout==='grid'?'view_list':'grid_view'}</span>`;
-  if(shareView){$('bulkbar').style.display='none';$('dropzone').style.display='none';return renderShares()}
+  if(special){
+    $('bulkbar').style.display='none';$('dropzone').style.display='none';$('storage-card').style.display='none';
+    return currentView==='requests'?renderRequests():renderShares();
+  }
   const W=ws(),live=W.filter(x=>!x.trashed);let list;
   const match=x=>[x.name,x.content,x.url,x.preview?.title,x.preview?.description].some(v=>v&&String(v).toLowerCase().includes(searchTerm));
   if(searchTerm&&currentView!=='trash')list=live.filter(match);
@@ -590,6 +927,7 @@ function render(){
   $('page-title').textContent=currentView==='drive'?(o?o.name:'My Files'):TITLES[currentView];
   $('page-meta').textContent=`${list.length} items${total?' · '+fmtSize(total):''}${o?' · '+o.members.length+' members':''}`;
   $('dropzone').style.display=currentView==='drive'&&!searchTerm?'block':'none';
+  renderStorage();
   updateBulk();
   const grid=$('files-grid');grid.className='files-grid '+(layout==='list'?'list ':'')+(selectMode?'sel-on':'');grid.innerHTML='';
   if(!list.length){grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">${currentView==='trash'?'Trash is empty.':'Nothing here yet.'}</div>`;return}
@@ -712,7 +1050,7 @@ async function purgeItems(items){
     }
     await deleteDoc(doc(db,COL[x.kind],x.id));
   }
-  toast('Deleted','success');return true;
+  toast('Deleted','success');loadQuota();return true;
 }
 window.ctxAction=async action=>{
   $('context-menu').classList.remove('open');if(!ctxItem)return;const item=ctxItem;
@@ -736,8 +1074,9 @@ window.ctxAction=async action=>{
       await ensureToken();toast('Creating copy...','success');
       const nf=await(await fetch(`https://www.googleapis.com/drive/v3/files/${item.driveFileId}/copy`,{method:'POST',headers:dh(),body:JSON.stringify({name:'Copy of '+item.name})})).json();
       if(nf.error)throw new Error(nf.error.message);
-      await addDoc(collection(db,'files'),{...rest,driveFileId:nf.id,name:nf.name,uid:currentUser.uid,by:me(),starred:false,createdAt:serverTimestamp()});
-      shareWithMembers(nf.id);toast('Copy created!','success');
+      /* grantedTo starts empty: the sync routine gives all org members access to the new copy */
+      await addDoc(collection(db,'files'),{...rest,driveFileId:nf.id,name:nf.name,uid:currentUser.uid,by:me(),starred:false,grantedTo:[],createdAt:serverTimestamp()});
+      toast('Copy created!','success');loadQuota();
     }
   }
   else if(action==='info'){
@@ -813,7 +1152,7 @@ async function loadPermissions(fid){
 }
 window.addPermission=async fid=>{
   const email=$('share-email').value.trim().toLowerCase(),role=$('share-role').value;if(!email)return toast('Email required','error');
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return toast('Enter a valid email','error');
+  if(!EMAIL_RE.test(email))return toast('Enter a valid email','error');
   if(email===me())return toast('You already own this file','error');
   try{
     await ensureToken();
@@ -916,11 +1255,11 @@ window.handleFiles=async files=>{
         x.onload=()=>x.status>=200&&x.status<300?res(JSON.parse(x.responseText)):rej(new Error('Upload failed'));x.onerror=()=>rej(new Error('Network error'));x.send(form);
       });
       await fetch(`https://www.googleapis.com/drive/v3/files/${df.id}/permissions`,{method:'POST',headers:dh(),body:JSON.stringify({role:'reader',type:'anyone'})}).catch(()=>{});
-      await shareWithMembers(df.id);
-      await addDoc(collection(db,'files'),{driveFileId:df.id,name:df.name,mimeType:df.mimeType,size:+(df.size||file.size),folderId:currentFolderId,orgId:currentOrgId||null,uid:currentUser.uid,by:me(),starred:false,trashed:false,createdAt:serverTimestamp()});
+      const granted=await shareWithMembers(df.id);
+      await addDoc(collection(db,'files'),{driveFileId:df.id,name:df.name,mimeType:df.mimeType,size:+(df.size||file.size),folderId:currentFolderId,orgId:currentOrgId||null,uid:currentUser.uid,by:me(),starred:false,trashed:false,grantedTo:granted,createdAt:serverTimestamp()});
     }catch(e){toast('Error: '+file.name,'error')}
   }
-  setTimeout(()=>{pc.style.display='none'},1000);$('file-input').value='';toast('Upload complete!','success');
+  setTimeout(()=>{pc.style.display='none'},1000);$('file-input').value='';toast('Upload complete!','success');loadQuota();
 };
 window.previewFile=x=>{
   const mt=x.mimeType||'';let h='<div class="preview-box">Preview not available</div>';
@@ -931,10 +1270,11 @@ window.previewFile=x=>{
 
 /* UTILS */
 function openModal(title,body,foot,wide){
+  $('modal-body').onclick=null;$('modal-foot').onclick=null;
   $('modal-title').textContent=title;$('modal-body').innerHTML=body;$('modal-foot').innerHTML=foot||'';
   $('modal-box').classList.toggle('wide',!!wide);$('modal-backdrop').classList.add('open');
 }
-window.closeModal=()=>{$('modal-backdrop').classList.remove('open');$('modal-body').innerHTML=''};
+window.closeModal=()=>{$('modal-backdrop').classList.remove('open');$('modal-body').innerHTML='';$('modal-body').onclick=null;$('modal-foot').onclick=null};
 $('modal-backdrop').addEventListener('mousedown',e=>{if(e.target.id==='modal-backdrop')closeModal()});
 function toast(msg,type=''){const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;$('toast-stack').appendChild(t);setTimeout(()=>t.remove(),3500)}
 function fmtSize(b){b=+b;if(!b)return '0 B';if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';if(b<1073741824)return(b/1048576).toFixed(1)+' MB';return(b/1073741824).toFixed(2)+' GB'}
