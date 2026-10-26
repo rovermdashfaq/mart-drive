@@ -141,7 +141,7 @@ body.dark-mode .chip.own{background:#2D3133}
 .vid{width:100%;max-height:480px;background:#000;border-radius:10px}
 .files-grid.list .req-act{margin:0}
 @media(max-width:900px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:none}.header{left:0;padding:0 12px}#menu-btn{display:flex}.main{margin-left:0}
-.files-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.more{opacity:1}.org-btns{opacity:1}.mobile-nav{display:flex}.search-box{max-width:100%}.new-btn{display:none}.user-btn span{display:none}.user-btn{padding:4px}}
+.files-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.more{opacity:1}.org-btns{opacity:1}.mobile-nav{display:flex}.search-box{max-width:100%}.new-btn{display:none}.user-btn span{display:none}.user-btn{padding:4%}}
 html{scroll-behavior:smooth}
 #landing{background:var(--bg);color:var(--text);min-height:100vh}
 html.has-session #landing{display:none}
@@ -179,6 +179,10 @@ html.has-session #landing{display:none}
 #pwa-fab .material-symbols-outlined{font-size:18px}
 @media(min-width:601px){.pwa-back{align-items:center}}
 @media(max-width:900px){#pwa-fab{bottom:calc(76px + env(safe-area-inset-bottom,0px))}}
+/* mobile logout & org icon */
+.nav-logout{display:none}
+.mn-ic{display:flex;align-items:center;height:24px}
+@media(max-width:900px){.nav-logout{display:block}.user-btn{display:none}}
 </style>
 <script>
 (function(){
@@ -291,6 +295,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <li id="nav-requests" style="display:none"><div class="nav-item" data-v="requests" onclick="setView('requests')"><span class="material-symbols-outlined">how_to_reg</span> Join Requests <span class="badge" id="req-badge" style="display:none"></span></div></li>
 <li><div class="nav-item" data-v="trash" onclick="setView('trash')"><span class="material-symbols-outlined">delete</span> Trash</div></li>
 <li><div class="nav-item" onclick="toggleDarkMode()"><span class="material-symbols-outlined">dark_mode</span> Toggle Theme</div></li>
+<li class="nav-logout"><div class="nav-item" onclick="logout()"><span class="material-symbols-outlined">logout</span> Log out</div></li>
 <li class="nav-section">Organizations</li>
 <div id="org-list-container"></div>
 </ul>
@@ -330,7 +335,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
 <div class="mobile-nav">
 <div class="mobile-nav-item" data-v="drive" onclick="setView('drive')"><span class="material-symbols-outlined">home</span>Home</div>
-<div class="mobile-nav-item" data-v="notes" onclick="setView('notes')"><span class="material-symbols-outlined">sticky_note_2</span>Notes</div>
+<div class="mobile-nav-item" id="mn-org" onclick="openOrgList()"><span class="mn-ic"><span class="material-symbols-outlined">corporate_fare</span></span>Orgs</div>
 <div class="mobile-nav-item" onclick="document.getElementById('file-input').click()"><span class="material-symbols-outlined">add_circle</span>Upload</div>
 <div class="mobile-nav-item" onclick="document.getElementById('sidebar').classList.toggle('open')"><span class="material-symbols-outlined">menu</span>Menu</div>
 </div>
@@ -374,7 +379,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const COL={file:'files',folder:'folders',note:'notes'};
 const COLORS=['','#F59E0B','#10B981','#3B82F6','#EC4899'];
-const store={files:{p:[],o:[]},folders:{p:[],o:[]},notes:{p:[],o:[]}};
+const store={files:{p:[],o:[],s:[]},folders:{p:[],o:[],s:[]},notes:{p:[],o:[],s:[]}};
 let sharedBy=[],sharedFrom=[],unsubS=[];
 let currentUser=null,accessToken=null,organizations=[],currentOrgId=null,currentFolderId=null,currentView='drive',searchTerm='',ctxItem=null,accessItem=null,moveItems=[];
 let unsubP=[],unsubO=[],unsubOrgs=null,unsubR=null,reqKey='',joinReqs=[],firstOrgLoad=true,tokenPromise=null,pendingPreview=null,pvTimer=null,pendingFolder=new URLSearchParams(location.search).get('folder');
@@ -392,10 +397,17 @@ const EMAIL_RE=/^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const RANK={reader:1,commenter:2,writer:3};
 let cmtUnsub=null,shareItem=null,thumbBusy=false;const thumbTried=new Set();
 let pendingFile=null;
+let extMode=false,pendingFshare=null;
+
 {const fp=new URLSearchParams(location.search).get('file');
  if(fp){try{localStorage.setItem('mart_file',fp)}catch{}const u=new URL(location.href);u.searchParams.delete('file');history.replaceState(null,'',u.pathname+u.search+u.hash)}
  try{pendingFile=localStorage.getItem('mart_file')}catch{}
  if(pendingFile){const b=$('invite-banner');b.textContent='Log in or sign up to open the shared file.';b.style.display='block'}}
+
+{const fp=new URLSearchParams(location.search).get('fshare');
+ if(fp){try{localStorage.setItem('mart_fshare',fp)}catch{}const u=new URL(location.href);u.searchParams.delete('fshare');history.replaceState(null,'',u.pathname+u.search+u.hash)}
+ try{pendingFshare=localStorage.getItem('mart_fshare')}catch{}
+ if(pendingFshare){const b=$('invite-banner');b.textContent='Log in or sign up to open the shared folder.';b.style.display='block'}}
 
 /* ROLES: owner / uploader = writer (editor); org members = reader (view + download); acl & links can raise it */
 function roleOf(x){
@@ -406,9 +418,9 @@ function roleOf(x){
   const a=(x.acl||[]).find(a=>a.e===me());return a?a.r:'reader';
 }
 function menuFor(item){
-  const a=MENUS[item.kind];if(item.kind!=='file')return a;
-  const r=roleOf(item),mine=item.uid===currentUser.uid,o=organizations.find(o=>o.id===item.orgId),mg=mine||(o&&isOwner(o));
-  return a.filter(k=>k==='access'?mg:['rename','move','trash'].includes(k)?r==='writer':k==='copy'?mine:true);
+  const a=MENUS[item.kind];if(item.kind==='sgroup'||item.kind==='sfrom')return a;
+  const r=roleOf(item),mine=item.uid===currentUser.uid,o=organizations.find(o=>o.id===item.orgId),mg=mine||(o&&isOwner(o)),ext=!mine&&!o;
+  return a.filter(k=>k==='access'?mg:['rename','move','trash'].includes(k)?((item.kind==='file'||ext)?r==='writer':true):k==='copy'?(item.kind==='file'?mine:!ext):true);
 }
 
 /* DOWNLOAD directly from the website (no Drive page) */
@@ -499,7 +511,7 @@ async function runPendingFile(){
 window.openAccessModal=item=>{
   accessItem=item;const o=organizations.find(x=>x.id===item.orgId);
   if(!(item.uid===currentUser.uid||(o&&isOwner(o))))return openModal('Manage Access',`<p>Only <b>${esc(item.by||'the uploader')}</b> or an organization owner can manage access to this file.</p>`,`<button class="btn" onclick="closeModal()">Close</button>`);
-  openModal('Manage Access',`<p style="margin-bottom:12px">${o?'Organization members can already view and download. ':''}Give <b>${esc(item.name)}</b> extra access (view, comment or edit) to any member, or to anyone outside the team by email.</p><div id="permissions-list" style="margin-bottom:16px"></div><div class="field"><label>Add people (email)</label><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="share-email" type="email" placeholder="user@example.com" style="flex:1;min-width:160px;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><select id="share-role" class="sel"><option value="reader">Viewer</option><option value="commenter">Commenter</option><option value="writer">Editor</option></select><button class="btn btn-primary" onclick="addPermission()">Add</button></div></div>`,`<button class="btn" onclick="closeModal()">Close</button>`);
+  openModal('Manage Access',`<p style="margin-bottom:12px">${o?'Organization members can already view and download. ':''}Give <b>${esc(item.name)}</b>${item.kind==='folder'?' and everything inside it':''} extra access (view, comment or edit) to any member, or to anyone outside the team by email.</p><div id="permissions-list" style="margin-bottom:16px"></div><div class="field"><label>Add people (email)</label><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="share-email" type="email" placeholder="user@example.com" style="flex:1;min-width:160px;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><select id="share-role" class="sel"><option value="reader">Viewer</option><option value="commenter">Commenter</option><option value="writer">Editor</option></select><button class="btn btn-primary" onclick="addPermission()">Add</button></div></div>`,`<button class="btn" onclick="closeModal()">Close</button>`);
   renderAcl();
 };
 function renderAcl(){
@@ -511,9 +523,10 @@ function renderAcl(){
     r.querySelector('span').textContent=a.e;r.querySelector('select').onchange=ev=>setAcl(a.e,ev.target.value);r.querySelector('button').onclick=()=>setAcl(a.e,null);c.appendChild(r)});
 }
 async function setAcl(email,role){
+  if(accessItem.kind==='folder')return setFolderAcl(accessItem,email,role);
   const it=accessItem,acl=(it.acl||[]).filter(a=>a.e!==email);if(role)acl.push({e:email,r:role});
   try{
-    await updateDoc(doc(db,'files',it.id),{acl});it.acl=acl;renderAcl();
+    await updateDoc(doc(db,'files',it.id),{acl,aclEmails:acl.map(a=>a.e)});it.acl=acl;renderAcl();
     if(it.uid===currentUser.uid){try{await ensureToken();await revokeDrive(it.driveFileId,email);if(role)await grantDrive(it.driveFileId,email,role)}catch{}}
     if(role)await syncShare(it,email,role,null).catch(()=>{});else await deleteDoc(doc(db,'shares',`${it.id}_${email}`)).catch(()=>{});
     toast(role?'Access saved':'Access removed','success');
@@ -582,7 +595,7 @@ onAuthStateChanged(auth,user=>{
     $('landing').style.display='none';document.documentElement.classList.add('has-session');try{localStorage.setItem('mart_has_session','1')}catch{}$('app').classList.add('ready');
     if(user.photoURL){$('user-avatar').src=user.photoURL;$('user-avatar').style.display='block'}else $('so-ic').style.display='block';
     $('sort-sel').value=sortBy;setupListeners();
-    if(accessToken){loadQuota();backfillThumbs()}setTimeout(runPendingFile,400);
+    if(accessToken){loadQuota();backfillThumbs()}setTimeout(runPendingFile,400);setTimeout(runPendingFshare,900);
   }else{
     currentUser=null;accessToken=null;quota=null;$('app').classList.remove('ready');$('landing').style.display='block';document.documentElement.classList.remove('has-session');try{localStorage.removeItem('mart_has_session')}catch{}
     [...unsubP,...unsubO,...unsubS,unsubOrgs,unsubR,unsubQ].forEach(u=>u&&u());unsubR=null;reqKey='';joinReqs=[];unsubQ=null;memberQ=[];
@@ -618,7 +631,9 @@ function setupListeners(){
   unsubS.forEach(u=>u&&u());
   unsubS=[
     onSnapshot(query(collection(db,'shares'),where('ownerUid','==',uid)),s=>{sharedBy=snapDocs(s);render()},e=>console.warn('sharedBy',e)),
-    onSnapshot(query(collection(db,'shares'),where('email','==',me())),s=>{sharedFrom=snapDocs(s);render()},e=>console.warn('sharedFrom',e))
+    onSnapshot(query(collection(db,'shares'),where('email','==',me())),s=>{sharedFrom=snapDocs(s);render()},e=>console.warn('sharedFrom',e)),
+    ...['files','folders','notes'].map(k=>onSnapshot(query(collection(db,k),where('aclEmails','array-contains',me())),s=>{store[k].s=snapDocs(s).filter(x=>x.uid!==uid);render()},e=>console.warn('acl-'+k,e))),
+    onSnapshot(query(collection(db,'folderGrants'),where('ownerUid','==',uid)),s=>snapDocs(s).forEach(applyGrant),e=>console.warn('grants',e))
   ];
 }
 function listenOrg(){
@@ -635,7 +650,10 @@ function syncReqListener(){
   reqKey=key;unsubR&&unsubR();unsubR=null;joinReqs=[];
   if(key)unsubR=onSnapshot(query(collection(db,'joinRequests'),where('orgId','==',key)),s=>{joinReqs=snapDocs(s).filter(r=>r.status==='pending');render()},e=>console.warn('joinRequests',e));
 }
-const all=k=>{const m=new Map();[...store[k].p,...store[k].o].forEach(x=>m.set(x.id,x));return[...m.values()].filter(x=>(x.orgId||null)===currentOrgId)};
+const all=k=>{if(extMode)return store[k].s;const m=new Map();[...store[k].p,...store[k].o].forEach(x=>m.set(x.id,x));return[...m.values()].filter(x=>(x.orgId||null)===currentOrgId)};
+const rawWs=()=>{const m=new Map();[['folders','folder'],['files','file'],['notes','note']].forEach(([k,kind])=>[...store[k].p,...store[k].o].forEach(x=>m.set(kind+x.id,{...x,kind})));return[...m.values()]};
+const inh=()=>{const f=all('folders').find(x=>x.id===currentFolderId);return f&&f.acl&&f.acl.length?{acl:f.acl,aclEmails:f.acl.map(a=>a.e)}:{}};
+const topExt=()=>{const ids=new Set(store.folders.s.map(f=>f.id));return store.folders.s.filter(f=>!f.trashed&&!ids.has(f.parentId)).map(f=>{const k={...f,kind:'folder'};return{...k,ext:true,role:roleOf(k)}})};
 const ws=()=>[...all('folders').map(x=>({...x,kind:'folder'})),...all('files').map(x=>({...x,kind:'file'})),...all('notes').map(x=>({...x,kind:'note'}))];
 
 /* DRIVE STORAGE QUOTA */
@@ -681,7 +699,7 @@ async function loadQuota(){
 window.refreshQuota=async()=>{try{await ensureToken();await loadQuota()}catch(e){toast('Please allow Google access','error')}};
 function renderStorage(){
   const el=$('storage-card');if(!el)return;
-  const show=currentUser&&currentView==='drive'&&!searchTerm;
+  const show=currentUser&&currentView==='drive'&&!searchTerm&&!extMode;
   el.style.display=show?'block':'none';if(!show)return;
   const o=myOrg(),fl=all('files'),used=fl.reduce((s,x)=>s+(+x.size||0),0);
   let by='';
@@ -736,7 +754,7 @@ async function syncOrgGrants(){
 /* ORGANIZATIONS */
 function updateBrand(){const o=myOrg();$('org-name-display').textContent=o?o.name:'Personal Drive';$('org-sub').textContent=o?('Team: '+(o.teamName||'—')):'Tap to create organization';$('org-logo-display').src=(o&&o.logoUrl)||LOGO}
 window.switchOrg=id=>{
-  currentOrgId=id;currentFolderId=null;
+  extMode=false;currentOrgId=id;currentFolderId=null;
   try{id?localStorage.setItem('mart_org',id):localStorage.removeItem('mart_org')}catch{}
   listenOrg();syncReqListener();updateBrand();renderOrgSidebar();setView('drive');syncOrgGrants();
 };
@@ -751,7 +769,13 @@ function renderOrgSidebar(){
   });
   h+=`<div class="nav-item" style="color:var(--blue)" onclick="openOrgModal()"><span class="material-symbols-outlined">add_circle</span> Create Org</div>`;
   $('org-list-container').innerHTML=h;
+  const f0=[...organizations].sort((a,b)=>ts(a)-ts(b))[0],mi=$('mn-org')?.querySelector('.mn-ic');
+  if(mi)mi.innerHTML=f0&&f0.logoUrl?`<img src="${esc(f0.logoUrl)}" style="width:24px;height:24px;border-radius:6px;object-fit:cover">`:'<span class="material-symbols-outlined">corporate_fare</span>';
 }
+window.openOrgList=()=>{
+  const row=(id,name,logo)=>`<div class="nav-item ${currentOrgId===id?'active':''}" onclick="closeModal();switchOrg(${id?`'${id}'`:'null'})"><img src="${esc(logo||LOGO)}" style="width:24px;height:24px;border-radius:6px;object-fit:cover"><span>${esc(name)}</span></div>`;
+  openModal('Organizations',row(null,'Personal Drive',LOGO)+organizations.map(o=>row(o.id,o.name,o.logoUrl)).join('')+`<div class="nav-item" style="color:var(--blue)" onclick="closeModal();openOrgModal()"><span class="material-symbols-outlined">add_circle</span> Create Org</div>`,`<button class="btn" onclick="closeModal()">Close</button>`);
+};
 
 /* organization form (create + edit): Team name -> Organization name -> Logo -> (optional) members & owners */
 function orgFormHTML(o,isNew){
@@ -1008,18 +1032,18 @@ async function rejectReq(r){
 window.openNewFolderModal=()=>openModal('Create Folder',`<div class="field"><label>Folder Name</label><input id="folder-name" placeholder="Untitled Folder"></div>`,`<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="createFolder()">Create</button>`);
 window.createFolder=async()=>{
   const name=$('folder-name').value.trim();if(!name)return;
-  try{await addDoc(collection(db,'folders'),{name,parentId:currentFolderId,orgId:currentOrgId||null,uid:currentUser.uid,by:me(),starred:false,trashed:false,createdAt:serverTimestamp()});toast('Folder created','success');closeModal()}catch(e){toast('Failed: '+e.message,'error')}
+  try{await addDoc(collection(db,'folders'),{name,parentId:currentFolderId,...inh(),orgId:currentOrgId||null,uid:currentUser.uid,by:me(),starred:false,trashed:false,createdAt:serverTimestamp()});toast('Folder created','success');closeModal()}catch(e){toast('Failed: '+e.message,'error')}
 };
-window.openFolder=id=>{currentFolderId=id;sel.clear();selectMode=false;if(searchTerm){searchTerm='';$('search-input').value=''}if(currentView!=='drive')currentView='drive';render()};
+window.openFolder=id=>{if(currentView==='sharedfrom')extMode=true;currentFolderId=id;sel.clear();selectMode=false;if(searchTerm){searchTerm='';$('search-input').value=''}if(currentView!=='drive')currentView='drive';render()};
 function folderPath(f){const p=[];let c=f;while(c){p.unshift(c);c=all('folders').find(x=>x.id===c.parentId)}return p}
 function renderBreadcrumbs(){
   const bc=$('breadcrumbs');
-  if(currentView!=='drive'||searchTerm){bc.innerHTML='';return}
-  let h=`<span data-f="" style="cursor:pointer;color:var(--blue)">${currentOrgId?'Root':'My Drive'}</span>`;
-  if(currentFolderId){const cur=all('folders').find(f=>f.id===currentFolderId);folderPath(cur).forEach(f=>h+=`<span style="color:var(--muted)">/</span><span data-f="${f.id}" style="cursor:pointer;color:var(--blue)">${esc(f.name)}</span>`)}
+  if((currentView!=='drive'&&currentView!=='sharedfrom')||searchTerm){bc.innerHTML='';return}
+  let h=`<span data-f="" style="cursor:pointer;color:var(--blue)">${extMode?'Shared from':currentOrgId?'Root':'My Drive'}</span>`;
+  if(currentFolderId){const cur=all('folders').find(f=>f.id===currentFolderId);if(cur)folderPath(cur).forEach(f=>h+=`<span style="color:var(--muted)">/</span><span data-f="${f.id}" style="cursor:pointer;color:var(--blue)">${esc(f.name)}</span>`)}
   bc.innerHTML=h;
 }
-$('breadcrumbs').addEventListener('click',e=>{const c=e.target.closest('[data-f]');if(c){currentFolderId=c.dataset.f||null;sel.clear();selectMode=false;render()}});
+$('breadcrumbs').addEventListener('click',e=>{const c=e.target.closest('[data-f]');if(c){if(extMode&&!c.dataset.f)return setView('sharedfrom');currentFolderId=c.dataset.f||null;sel.clear();selectMode=false;render()}});
 function subtree(folder,W=ws()){
   const out=[];const walk=id=>W.forEach(x=>{if((x.kind==='folder'&&x.parentId===id)||((x.kind==='file'||x.kind==='note')&&x.folderId===id)){out.push(x);if(x.kind==='folder')walk(x.id)}});
   walk(folder.id);return out;
@@ -1058,7 +1082,7 @@ window.bulk=async a=>{
 };
 
 /* RENDER */
-window.setView=v=>{currentView=v;currentFolderId=null;sel.clear();selectMode=false;document.getElementById('sidebar').classList.remove('open');render()};
+window.setView=v=>{extMode=false;currentView=v;currentFolderId=null;sel.clear();selectMode=false;document.getElementById('sidebar').classList.remove('open');render()};
 window.handleSearch=v=>{searchTerm=v.toLowerCase().trim();render()};
 window.setSort=v=>{sortBy=v;localStorage.setItem('sort_v2',v);render()};
 window.toggleLayout=()=>{layout=layout==='grid'?'list':'grid';localStorage.setItem('layout',layout);render()};
@@ -1084,7 +1108,7 @@ function render(){
   document.querySelectorAll('[data-v]').forEach(e=>e.classList.toggle('active',e.dataset.v===currentView));
   const special=['sharedby','sharedfrom','requests'].includes(currentView);
   $('sel-btn').style.display=special?'none':'flex';
-  document.querySelectorAll('.mk').forEach(b=>b.style.display=(currentView==='trash'||special)?'none':'flex');
+  document.querySelectorAll('.mk').forEach(b=>b.style.display=(currentView==='trash'||special||extMode)?'none':'flex');
   $('layout-btn').innerHTML=`<span class="material-symbols-outlined">${layout==='grid'?'view_list':'grid_view'}</span>`;
   if(special){
     $('bulkbar').style.display='none';$('dropzone').style.display='none';$('storage-card').style.display='none';
@@ -1103,7 +1127,7 @@ function render(){
   const o=myOrg(),total=list.reduce((s,x)=>s+(+x.size||0),0);
   $('page-title').textContent=currentView==='drive'?(o?o.name:'My Files'):TITLES[currentView];
   $('page-meta').textContent=`${list.length} items${total?' · '+fmtSize(total):''}${o?' · '+o.members.length+' members':''}`;
-  $('dropzone').style.display=currentView==='drive'&&!searchTerm?'block':'none';
+  $('dropzone').style.display=currentView==='drive'&&!searchTerm&&!extMode?'block':'none';
   renderStorage();
   updateBulk();
   const grid=$('files-grid');grid.className='files-grid '+(layout==='list'?'list ':'')+(selectMode?'sel-on':'');grid.innerHTML='';
@@ -1155,19 +1179,22 @@ function renderShares(){
     list=[...m.values()];list.forEach(g=>g.entries.sort((a,b)=>String(a.email).localeCompare(String(b.email))));
     if(searchTerm)list=list.filter(g=>String(g.name).toLowerCase().includes(searchTerm)||g.entries.some(e=>String(e.email).toLowerCase().includes(searchTerm)));
   }else{
-    list=sharedFrom.map(s=>({...s,kind:'sfrom',by:s.ownerEmail}));
-    if(searchTerm)list=list.filter(s=>String(s.name).toLowerCase().includes(searchTerm)||String(s.ownerEmail).toLowerCase().includes(searchTerm));
+    list=[...topExt(),...sharedFrom.map(s=>({...s,kind:'sfrom',by:s.ownerEmail}))];
+    if(searchTerm)list=list.filter(s=>String(s.name).toLowerCase().includes(searchTerm)||String(s.ownerEmail||s.by||'').toLowerCase().includes(searchTerm));
   }
   list.sort((a,b)=>sortBy==='date'?ts(b)-ts(a):sortBy==='size'?(b.size||0)-(a.size||0):String(a.name).localeCompare(String(b.name)));
   curList=list;
   $('page-title').textContent=TITLES[currentView];
-  $('page-meta').textContent=`${list.length} ${list.length===1?'file':'files'}${by?' shared with others':' shared with you'}`;
+  $('page-meta').textContent=`${list.length} ${list.length===1?'item':'items'}${by?' shared with others':' shared with you'}`;
   const grid=$('files-grid');grid.className='files-grid '+(layout==='list'?'list':'');grid.innerHTML='';
-  if(!list.length){grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">${by?'You haven\'t shared any file yet. Use “Manage Access” on a file to share it.':'No one has shared a file with you yet.'}</div>`;return}
+  if(!list.length){grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">${by?'You haven\'t shared any file yet. Use “Manage Access” on a file to share it.':'No one has shared a file or folder with you yet.'}</div>`;return}
   list.forEach(x=>{
     const card=document.createElement('div');card.className='file-card';
     const d=x.createdAt?.toDate?.().toLocaleDateString()||'';
-    if(x.kind==='sgroup'){
+    if(x.ext){
+      card.innerHTML=`<div class="file-icon-wrap"><span class="material-symbols-outlined" style="color:#F59E0B">folder_shared</span></div><div class="file-name" title="${esc(x.name)}">${esc(x.name)}</div><div class="file-meta">From: ${esc(x.by||'—')}</div><div class="share-det"><div class="share-row"><span class="chip">${roleLabel(x.role)}</span><span>Folder${d?' · '+d:''}</span></div></div>${MORE}`;
+      card.onclick=()=>openFolder(x.id);
+    }else if(x.kind==='sgroup'){
       const n=x.entries.length;
       const rows=x.entries.slice(0,3).map(e=>`<div class="share-row"><span class="material-symbols-outlined" style="font-size:14px">person</span><span class="em">${esc(e.email)}</span><span class="chip">${roleLabel(e.role)}</span></div>`).join('')+(n>3?`<div class="share-row">+${n-3} more</div>`:'');
       card.innerHTML=`<div class="file-icon-wrap">${fileIcon(x.mimeType,x.driveFileId)}</div><div class="file-name" title="${esc(x.name)}">${esc(x.name)}</div><div class="file-meta">Shared with ${n} ${n>1?'people':'person'}${x.size?' · '+fmtSize(x.size):''}${d?' · '+d:''}</div><div class="share-det">${rows}</div>${MORE}`;
@@ -1196,7 +1223,7 @@ async function stopSharing(g){
 }
 
 /* CONTEXT MENU */
-const MENUS={file:['open','star','share','access','download','rename','move','copy','info','trash'],folder:['open','star','share','rename','move','info','trash'],note:['open','star','copytext','move','copy','info','trash'],sgroup:['open','access','stopall'],sfrom:['open','share','download','info']};
+const MENUS={file:['open','star','share','access','download','rename','move','copy','info','trash'],folder:['open','star','share','access','rename','move','info','trash'],note:['open','star','copytext','move','copy','info','trash'],sgroup:['open','access','stopall'],sfrom:['open','share','download','info']};
 function openContextMenu(e,item){
   e.preventDefault();ctxItem=item;const m=$('context-menu');
   const allow=currentView==='trash'?['restore','purge']:menuFor(item);
@@ -1236,8 +1263,8 @@ window.ctxAction=async action=>{
   else if(action==='star')await upd(item,{starred:!item.starred});
   else if(action==='share'&&item.kind!=='folder'){openShareLink(item)}
   else if(action==='share'){
-    const link=item.kind==='folder'?`${location.origin}${location.pathname}?folder=${item.id}`:`https://drive.google.com/file/d/${item.driveFileId}/view`;
-    await navigator.clipboard.writeText(link);toast('Link copied!','success');
+    if(item.uid!==currentUser.uid)return toast('Only the folder owner can create a share link','error');
+    openFolderLink(item);
   }
   else if(action==='copytext'){await navigator.clipboard.writeText(item.ntype==='link'?item.url:item.content||'');toast('Copied!','success')}
   else if(action==='access')openAccessModal(item.kind==='sgroup'?fileItemOf(item):item);
@@ -1247,13 +1274,13 @@ window.ctxAction=async action=>{
   else if(action==='move')openMoveModal([item]);
   else if(action==='copy'){
     const {id:_i,kind:_k,...rest}=item;
-    if(item.kind==='note'){await addDoc(collection(db,'notes'),{...rest,name:'Copy of '+item.name,uid:currentUser.uid,by:me(),starred:false,createdAt:serverTimestamp()});toast('Copy created!','success')}
+    if(item.kind==='note'){await addDoc(collection(db,'notes'),{...rest,...inh(),name:'Copy of '+item.name,uid:currentUser.uid,by:me(),starred:false,createdAt:serverTimestamp()});toast('Copy created!','success')}
     else{
       await ensureToken();toast('Creating copy...','success');
       const nf=await(await fetch(`https://www.googleapis.com/drive/v3/files/${item.driveFileId}/copy`,{method:'POST',headers:dh(),body:JSON.stringify({name:'Copy of '+item.name})})).json();
       if(nf.error)throw new Error(nf.error.message);
       /* grantedTo starts empty: the sync routine gives all org members access to the new copy */
-      await addDoc(collection(db,'files'),{...rest,driveFileId:nf.id,name:nf.name,uid:currentUser.uid,by:me(),starred:false,grantedTo:[],createdAt:serverTimestamp()});
+      await addDoc(collection(db,'files'),{...rest,...inh(),driveFileId:nf.id,name:nf.name,uid:currentUser.uid,by:me(),starred:false,grantedTo:[],createdAt:serverTimestamp()});
       toast('Copy created!','success');loadQuota();
     }
   }
@@ -1292,72 +1319,50 @@ window.doMove=async()=>{
   }catch(e){toast('Move failed','error')}
 };
 
-/* DRIVE ACCESS (per-file permissions, tracked in Shared by me / Shared from) */
-function openAccessModalOld(item){
-  accessItem=item;
-  if(item.uid!==currentUser.uid)return openModal('Manage Access',`<p>Only <b>${esc(item.by||'the uploader')}</b> can manage Google Drive permissions for this file. In an organization, all members already have edit access.</p>`,`<button class="btn" onclick="closeModal()">Close</button>`);
-  openModal('Manage Access',`<p style="margin-bottom:12px">Share <b>${esc(item.name)}</b> with specific people. Shared files appear under <b>Shared by me</b> for you and <b>Shared from</b> for them.</p><div id="permissions-list" style="margin-bottom:16px;min-height:50px">Loading...</div>
-  <div class="field"><label>Add people (email)</label><div style="display:flex;gap:8px"><input id="share-email" type="email" placeholder="user@example.com" style="flex:1;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><select id="share-role" class="sel"><option value="reader">Viewer</option><option value="commenter">Commenter</option><option value="writer">Editor</option></select><button class="btn btn-primary" onclick="addPermission('${item.driveFileId}')">Add</button></div></div>`,`<button class="btn" onclick="closeModal()">Close</button>`);
-  loadPermissions(item.driveFileId);
+/* Folder Share Link */
+function openFolderLink(item){
+  shareItem=item;
+  openModal('Share folder link',`<p style="margin-bottom:12px">Anyone with this link (after logging in) gets access to <b>${esc(item.name)}</b> and everything inside it.</p><div class="field"><label>Access level</label><select id="sl-role"><option value="reader">Viewer</option><option value="commenter">Commenter</option><option value="writer">Editor</option></select></div><div class="field"><input id="sl-link" readonly></div><small style="color:var(--muted)">Access is applied by the owner's app, so it appears once the owner is online.</small>`,`<button class="btn" onclick="closeModal()">Close</button><button class="btn btn-primary" onclick="copyFolderLink()">Copy link</button>`);
+  const set=()=>{$('sl-link').value=`${location.origin}${location.pathname}?fshare=${item.id}_${$('sl-role').value}`};$('sl-role').onchange=set;set();
 }
-async function loadPermissionsOld(fid){
-  const c=$('permissions-list'),item=accessItem;if(!c||!item)return;
+window.copyFolderLink=async()=>{
+  const it=shareItem,r=$('sl-role').value;
   try{
-    await ensureToken();
-    const d=await(await fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions?fields=permissions(id,emailAddress,role,type)`,{headers:dh()})).json();
-    if(d.error)throw new Error(d.error.message);
-    if(!$('permissions-list'))return;
-    const org=organizations.find(o=>o.id===item.orgId);
-    const people=(d.permissions||[]).filter(p=>p.type==='user'&&p.emailAddress&&p.role!=='owner'&&p.emailAddress.toLowerCase()!==me()&&!(org&&org.members.includes(p.emailAddress.toLowerCase())));
-    /* keep Shared by me / Shared from in sync with Drive */
-    try{
-      const em=new Set(people.map(p=>p.emailAddress.toLowerCase()));
-      for(const p of people){const e=p.emailAddress.toLowerCase();if(!sharedBy.some(s=>s.id===`${item.id}_${e}`))await syncShare(item,e,p.role,p.id)}
-      for(const s of sharedBy.filter(s=>s.fileId===item.id&&!em.has(s.email)))await deleteDoc(doc(db,'shares',s.id));
-    }catch(e){console.warn('share sync',e)}
-    if(!people.length){c.innerHTML='<p style="color:var(--muted)">No additional permissions yet.</p>';return}
-    c.innerHTML='';
-    people.forEach(p=>{
-      const email=p.emailAddress.toLowerCase();
-      const r=document.createElement('div');r.className='access-row';
-      r.innerHTML=`<span style="flex:1;overflow:hidden;text-overflow:ellipsis"></span><select>${[['reader','Viewer'],['commenter','Commenter'],['writer','Editor']].map(([v,l])=>`<option value="${v}" ${p.role===v?'selected':''}>${l}</option>`).join('')}</select><button class="icon-btn" title="Remove access"><span class="material-symbols-outlined" style="font-size:18px">delete</span></button>`;
-      r.querySelector('span').textContent=p.emailAddress;
-      r.querySelector('select').onchange=ev=>updatePermission(fid,p.id,ev.target.value,email);
-      r.querySelector('button').onclick=()=>removePermission(fid,p.id,email);
-      c.appendChild(r);
-    });
-  }catch(e){c.innerHTML=`<p style="color:var(--error)">Could not load permissions: ${esc(e.message)}</p>`}
-}
-window.addPermissionOld=async fid=>{
-  const email=$('share-email').value.trim().toLowerCase(),role=$('share-role').value;if(!email)return toast('Email required','error');
-  if(!EMAIL_RE.test(email))return toast('Enter a valid email','error');
-  if(email===me())return toast('You already own this file','error');
-  try{
-    await ensureToken();
-    const r=await fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions`,{method:'POST',headers:dh(),body:JSON.stringify({role,type:'user',emailAddress:email})});
-    const j=await r.json();if(!r.ok)throw new Error(j.error?.message||'Failed');
-    await syncShare(accessItem,email,role,j.id);
-    toast('Permission added','success');loadPermissions(fid);$('share-email').value='';
+    await setDoc(doc(db,'folderLinks',`${it.id}_${r}`),{folderId:it.id,name:it.name,ownerUid:it.uid,ownerEmail:it.by||'',role:r,createdBy:me()},{merge:true});
+    const t=$('sl-link').value;try{await navigator.clipboard.writeText(t)}catch{$('sl-link').select();document.execCommand('copy')}
+    toast('Link copied!','success');
   }catch(e){toast('Failed: '+e.message,'error')}
 };
-window.updatePermissionOld=async(fid,pid,role,email)=>{
+async function runPendingFshare(){
+  const c=pendingFshare;if(!c||!currentUser)return;pendingFshare=null;try{localStorage.removeItem('mart_fshare')}catch{}
   try{
-    await ensureToken();
-    const r=await fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions/${pid}`,{method:'PATCH',headers:dh(),body:JSON.stringify({role})});
-    if(!r.ok)throw new Error('Update failed');
-    await syncShare(accessItem,email,role,pid);
-    toast('Permission updated','success');
-  }catch{toast('Update failed','error')}
-};
-window.removePermissionOld=async(fid,pid,email)=>{
+    const s=await getDoc(doc(db,'folderLinks',c));if(!s.exists())return toast('This folder link is invalid or was removed','error');
+    const l=s.data();
+    if(l.ownerUid===currentUser.uid)return toast('This is your own folder','success');
+    if(store.folders.s.some(f=>f.id===l.folderId)){setView('sharedfrom');return openFolder(l.folderId)}
+    await setDoc(doc(db,'folderGrants',`${l.folderId}_${me()}`),{folderId:l.folderId,ownerUid:l.ownerUid,email:me(),role:l.role,name:l.name,createdAt:serverTimestamp()});
+    toast('Access requested. "'+l.name+'" will appear in Shared from shortly.','success');
+  }catch(e){toast('Could not open link: '+e.message,'error')}
+}
+
+/* Set access to a whole folder and all items within it */
+async function setFolderAcl(folder,email,role,silent){
+  const items=[folder,...subtree(folder,rawWs())];let ok=0;
+  await Promise.all(items.map(async x=>{
+    const acl=(x.acl||[]).filter(a=>a.e!==email);if(role)acl.push({e:email,r:role});
+    try{await updateDoc(doc(db,COL[x.kind],x.id),{acl,aclEmails:acl.map(a=>a.e)});ok++;if(x.id===folder.id)folder.acl=acl}catch(e){console.warn('acl',x.name,e)}
+  }));
+  if(silent)return;
+  renderAcl();toast(ok?(role?`Access saved (${ok} items)`:'Access removed'):'Failed: check Firestore rules',ok?'success':'error');
+}
+async function applyGrant(g){
   try{
-    await ensureToken();
-    const r=await fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions/${pid}`,{method:'DELETE',headers:dh()});
-    if(!r.ok&&r.status!==404)throw new Error('Remove failed');
-    await deleteDoc(doc(db,'shares',`${accessItem.id}_${email}`)).catch(()=>{});
-    toast('Permission removed','success');loadPermissions(fid);
-  }catch{toast('Remove failed','error')}
-};
+    const l=await getDoc(doc(db,'folderLinks',`${g.folderId}_${g.role}`));
+    const f=rawWs().find(x=>x.kind==='folder'&&x.id===g.folderId);
+    if(l.exists()&&f)await setFolderAcl(f,g.email,g.role,true);
+    await deleteDoc(doc(db,'folderGrants',g.id));
+  }catch(e){console.warn('grant',e)}
+}
 
 /* NOTES & LINKS (with live link preview) */
 const normUrl=u=>{u=(u||'').trim();if(!u)return null;if(!/^https?:\/\//i.test(u))u='https://'+u;try{return new URL(u).href}catch{return null}};
@@ -1402,7 +1407,7 @@ window.saveNote=async(id,ntype)=>{
     }else if(!name)name=content.split('\n')[0].slice(0,60)||'Untitled note';
     data.name=name;
     if(id)await updateDoc(doc(db,'notes',id),data);
-    else await addDoc(collection(db,'notes'),{...data,folderId:currentFolderId||null,orgId:currentOrgId||null,uid:currentUser.uid,by:me(),starred:false,trashed:false,createdAt:serverTimestamp()});
+    else await addDoc(collection(db,'notes'),{...data,...inh(),folderId:currentFolderId||null,orgId:currentOrgId||null,uid:currentUser.uid,by:me(),starred:false,trashed:false,createdAt:serverTimestamp()});
     toast('Saved','success');closeModal();
   }catch(e){toast('Save failed: '+e.message,'error');btn.disabled=false;btn.textContent='Save'}
 };
@@ -1436,16 +1441,10 @@ window.handleFiles=async files=>{
       const granted=await shareWithMembers(df.id);
       let thumb='';
       if((file.type||'').startsWith('video/')){try{pn.textContent='Creating thumbnail…';thumb=await uploadImgbb(await thumbFile(URL.createObjectURL(file)))}catch(e){console.warn('thumb',e)}}
-      await addDoc(collection(db,'files'),{driveFileId:df.id,name:df.name,mimeType:df.mimeType,size:+(df.size||file.size),folderId:currentFolderId,orgId:currentOrgId||null,uid:currentUser.uid,by:me(),starred:false,trashed:false,grantedTo:granted,thumb,createdAt:serverTimestamp()});
+      await addDoc(collection(db,'files'),{driveFileId:df.id,...inh(),name:df.name,mimeType:df.mimeType,size:+(df.size||file.size),folderId:currentFolderId,orgId:currentOrgId||null,uid:currentUser.uid,by:me(),starred:false,trashed:false,grantedTo:granted,thumb,createdAt:serverTimestamp()});
     }catch(e){toast('Error: '+file.name,'error')}
   }
   setTimeout(()=>{pc.style.display='none'},1000);$('file-input').value='';toast('Upload complete!','success');loadQuota();backfillThumbs();
-};
-window.previewFileOld=x=>{
-  const mt=x.mimeType||'';let h='<div class="preview-box">Preview not available</div>';
-  if(mt.includes('image'))h=`<div class="preview-box"><img src="https://drive.google.com/thumbnail?id=${x.driveFileId}&sz=w1000&authuser=0"></div>`;
-  else if(mt.includes('video')||mt.includes('pdf'))h=`<div class="preview-box" style="background:#fff"><iframe src="https://drive.google.com/file/d/${x.driveFileId}/preview" width="100%" height="500px" allow="autoplay"></iframe></div>`;
-  openModal(x.name||'Preview',h,`<button class="btn" onclick="closeModal()">Close</button><a class="btn btn-primary" href="https://drive.google.com/file/d/${x.driveFileId}/view" target="_blank" rel="noopener" style="text-decoration:none"><span class="material-symbols-outlined">open_in_new</span> Open / Edit in Drive</a>`,true);
 };
 
 /* UTILS */
