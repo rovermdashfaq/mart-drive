@@ -15,21 +15,21 @@
   ],
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "icons/icon 192.jpg",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/jpg",
       "purpose": "any"
     },
     {
-      "src": "icon-512.png",
+      "src": "icons/icon 512.jpg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/jpg",
       "purpose": "any"
     },
     {
-      "src": "icon-maskable-512.png",
+      "src": "icons/icon maskable 512.jpg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/jpg",
       "purpose": "maskable"
     }
   ]
