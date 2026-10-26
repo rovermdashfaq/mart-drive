@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#163A5F" />
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icons/icon 192.jpg">
+<link rel="apple-touch-icon" href="icons/icon 192.jpg">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="MART Drive">
@@ -172,7 +172,7 @@ function install(){
 }
 document.addEventListener('DOMContentLoaded',function(){
   var pop=document.createElement('div');pop.className='pwa-back';
-  pop.innerHTML='<div class="pwa-card" role="dialog" aria-modal="true" aria-labelledby="pwa-t"><img src="icon-192.png" alt=""><h3 id="pwa-t">Install MART Drive</h3><p id="pwa-p">Add MART Drive to your device for faster access, a full-screen app experience and one-tap launch from your home screen.</p><div class="pwa-act"><button class="btn" id="pwa-no">Not now</button><button class="btn btn-primary" id="pwa-yes">Install</button></div></div>';
+  pop.innerHTML='<div class="pwa-card" role="dialog" aria-modal="true" aria-labelledby="pwa-t"><img src="icons/icon 192.jpg" alt=""><h3 id="pwa-t">Install MART Drive</h3><p id="pwa-p">Add MART Drive to your device for faster access, a full-screen app experience and one-tap launch from your home screen.</p><div class="pwa-act"><button class="btn" id="pwa-no">Not now</button><button class="btn btn-primary" id="pwa-yes">Install</button></div></div>';
   var fab=document.createElement('button');fab.id='pwa-fab';fab.type='button';fab.innerHTML='<span class="material-symbols-outlined">install_mobile</span> Install app';
   document.body.appendChild(pop);document.body.appendChild(fab);
   ui={pop:pop,fab:fab,txt:pop.querySelector('#pwa-p'),yes:pop.querySelector('#pwa-yes'),no:pop.querySelector('#pwa-no')};
