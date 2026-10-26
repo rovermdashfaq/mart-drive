@@ -383,7 +383,7 @@ const COLORS=['','#F59E0B','#10B981','#3B82F6','#EC4899'];
 const store={files:{p:[],o:[],s:[]},folders:{p:[],o:[],s:[]},notes:{p:[],o:[],s:[]}};
 let sharedBy=[],sharedFrom=[],unsubS=[];
 let currentUser=null,accessToken=null,organizations=[],currentOrgId=null,currentFolderId=null,currentView='drive',searchTerm='',ctxItem=null,accessItem=null,moveItems=[];
-let unsubP=[],unsubO=[],unsubOrgs=null,unsubR=null,reqKey='',joinReqs=[],firstOrgLoad=true,tokenPromise=null,pendingPreview=null,pvTimer=null,pendingFolder=new URLSearchParams(location.search).get('folder');
+let unsubP=[],unsubO=[],unsubOrgs=null,unsubR=null,unsubG=null,reqKey='',joinReqs=[],firstOrgLoad=true,tokenPromise=null,pendingPreview=null,pvTimer=null,pendingFolder=new URLSearchParams(location.search).get('folder');
 /* default sort = Newest (new key so everyone gets the new default) */
 let sortBy=localStorage.getItem('sort_v2')||'date',layout=localStorage.getItem('layout')||'grid';
 let selectMode=false,curList=[];const sel=new Set();
@@ -421,7 +421,7 @@ function roleOf(x){
 function menuFor(item){
   const a=MENUS[item.kind];if(item.kind==='sgroup'||item.kind==='sfrom')return a;
   const r=roleOf(item),mine=item.uid===currentUser.uid,o=organizations.find(o=>o.id===item.orgId),mg=mine||(o&&isOwner(o)),ext=!mine&&!o;
-  return a.filter(k=>k==='access'?mg:['rename','move','trash'].includes(k)?((item.kind==='file'||ext)?r==='writer':true):k==='copy'?(item.kind==='file'?mine:!ext):true);
+  return a.filter(k=>k==='access'||(k==='share'&&item.kind==='folder')?mg:['rename','move','trash'].includes(k)?((item.kind==='file'||ext)?r==='writer':true):k==='copy'?(item.kind==='file'?mine:!ext):true);
 }
 
 /* DOWNLOAD directly from the website (no Drive page) */
@@ -599,7 +599,7 @@ onAuthStateChanged(auth,user=>{
     if(accessToken){loadQuota();backfillThumbs()}setTimeout(runPendingFile,400);setTimeout(runPendingFshare,900);
   }else{
     currentUser=null;accessToken=null;quota=null;$('app').classList.remove('ready');$('landing').style.display='block';document.documentElement.classList.remove('has-session');try{localStorage.removeItem('mart_has_session')}catch{}
-    [...unsubP,...unsubO,...unsubS,unsubOrgs,unsubR,unsubQ].forEach(u=>u&&u());unsubR=null;reqKey='';joinReqs=[];unsubQ=null;memberQ=[];
+    [...unsubP,...unsubO,...unsubS,unsubOrgs,unsubR,unsubG,unsubQ].forEach(u=>u&&u());unsubR=null;unsubG=null;reqKey='';joinReqs=[];unsubQ=null;memberQ=[];
   }
 });
 
@@ -649,6 +649,9 @@ function syncReqListener(){
   const o=myOrg(),key=(o&&isOwner(o))?o.id:'';
   if(key===reqKey)return;
   reqKey=key;unsubR&&unsubR();unsubR=null;joinReqs=[];
+  /* organization owners also apply folder share-link grants of their organization (same as the folder's creator) */
+  unsubG&&unsubG();unsubG=null;
+  if(key)unsubG=onSnapshot(query(collection(db,'folderGrants'),where('orgId','==',key)),s=>snapDocs(s).forEach(applyGrant),e=>console.warn('org grants',e));
   if(key)unsubR=onSnapshot(query(collection(db,'joinRequests'),where('orgId','==',key)),s=>{joinReqs=snapDocs(s).filter(r=>r.status==='pending');render();autoApprovePending()},e=>console.warn('joinRequests',e));
 }
 /* Fallback for auto approve: if the joiner could not add themself, the request is saved with auto:true and any owner's app approves it while auto approve is ON */
@@ -1311,7 +1314,8 @@ window.ctxAction=async action=>{
   else if(action==='star')await upd(item,{starred:!item.starred});
   else if(action==='share'&&item.kind!=='folder'){openShareLink(item)}
   else if(action==='share'){
-    if(item.uid!==currentUser.uid)return toast('Only the folder owner can create a share link','error');
+    const fo=organizations.find(o=>o.id===item.orgId);
+    if(item.uid!==currentUser.uid&&!(fo&&isOwner(fo)))return toast('Only the folder owner or an organization owner can create a share link','error');
     openFolderLink(item);
   }
   else if(action==='copytext'){await navigator.clipboard.writeText(item.ntype==='link'?item.url:item.content||'');toast('Copied!','success')}
@@ -1370,13 +1374,13 @@ window.doMove=async()=>{
 /* Folder Share Link */
 function openFolderLink(item){
   shareItem=item;
-  openModal('Share folder link',`<p style="margin-bottom:12px">Anyone with this link (after logging in) gets access to <b>${esc(item.name)}</b> and everything inside it.</p><div class="field"><label>Access level</label><select id="sl-role"><option value="reader">Viewer</option><option value="commenter">Commenter</option><option value="writer">Editor</option></select></div><div class="field"><input id="sl-link" readonly></div><small style="color:var(--muted)">Access is applied by the owner's app, so it appears once the owner is online.</small>`,`<button class="btn" onclick="closeModal()">Close</button><button class="btn btn-primary" onclick="copyFolderLink()">Copy link</button>`);
+  openModal('Share folder link',`<p style="margin-bottom:12px">Anyone with this link (after logging in) gets access to <b>${esc(item.name)}</b> and everything inside it.</p><div class="field"><label>Access level</label><select id="sl-role"><option value="reader">Viewer</option><option value="commenter">Commenter</option><option value="writer">Editor</option></select></div><div class="field"><input id="sl-link" readonly></div><small style="color:var(--muted)">Access is applied by the folder owner's or an organization owner's app, so it appears once one of them is online.</small>`,`<button class="btn" onclick="closeModal()">Close</button><button class="btn btn-primary" onclick="copyFolderLink()">Copy link</button>`);
   const set=()=>{$('sl-link').value=`${location.origin}${location.pathname}?fshare=${item.id}_${$('sl-role').value}`};$('sl-role').onchange=set;set();
 }
 window.copyFolderLink=async()=>{
   const it=shareItem,r=$('sl-role').value;
   try{
-    await setDoc(doc(db,'folderLinks',`${it.id}_${r}`),{folderId:it.id,name:it.name,ownerUid:it.uid,ownerEmail:it.by||'',role:r,createdBy:me()},{merge:true});
+    await setDoc(doc(db,'folderLinks',`${it.id}_${r}`),{folderId:it.id,name:it.name,ownerUid:it.uid,ownerEmail:it.by||'',orgId:it.orgId||null,role:r,createdBy:me()},{merge:true});
     const t=$('sl-link').value;try{await navigator.clipboard.writeText(t)}catch{$('sl-link').select();document.execCommand('copy')}
     toast('Link copied!','success');
   }catch(e){toast('Failed: '+e.message,'error')}
@@ -1388,7 +1392,7 @@ async function runPendingFshare(){
     const l=s.data();
     if(l.ownerUid===currentUser.uid)return toast('This is your own folder','success');
     if(store.folders.s.some(f=>f.id===l.folderId)){setView('sharedfrom');return openFolder(l.folderId)}
-    await setDoc(doc(db,'folderGrants',`${l.folderId}_${me()}`),{folderId:l.folderId,ownerUid:l.ownerUid,email:me(),role:l.role,name:l.name,createdAt:serverTimestamp()});
+    await setDoc(doc(db,'folderGrants',`${l.folderId}_${me()}`),{folderId:l.folderId,ownerUid:l.ownerUid,orgId:l.orgId||null,email:me(),role:l.role,name:l.name,createdAt:serverTimestamp()});
     toast('Access requested. "'+l.name+'" will appear in Shared from shortly.','success');
   }catch(e){toast('Could not open link: '+e.message,'error')}
 }
@@ -1403,13 +1407,15 @@ async function setFolderAcl(folder,email,role,silent){
   if(silent)return;
   renderAcl();toast(ok?(role?`Access saved (${ok} items)`:'Access removed'):'Failed: check Firestore rules',ok?'success':'error');
 }
+const grantBusy=new Set();
 async function applyGrant(g){
+  if(grantBusy.has(g.id))return;grantBusy.add(g.id);
   try{
     const l=await getDoc(doc(db,'folderLinks',`${g.folderId}_${g.role}`));
     const f=rawWs().find(x=>x.kind==='folder'&&x.id===g.folderId);
     if(l.exists()&&f)await setFolderAcl(f,g.email,g.role,true);
     await deleteDoc(doc(db,'folderGrants',g.id));
-  }catch(e){console.warn('grant',e)}
+  }catch(e){console.warn('grant',e)}finally{grantBusy.delete(g.id)}
 }
 
 /* NOTES & LINKS (with live link preview) */
@@ -1511,4 +1517,4 @@ dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');if(e.dataTransfer.files.length)handleFiles(e.dataTransfer.files)});
 </script>
 </body>
-  </html>
+</html>
