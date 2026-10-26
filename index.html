@@ -56,14 +56,20 @@ body.dark-mode .nav-item.active{background:#2D3133}.nav-item .material-symbols-o
 .progress-bar-fill{height:100%;background:var(--blue);width:0;transition:width .2s}
 .progress-text{font-size:13px;display:flex;justify-content:space-between;margin-bottom:4px}
 .files-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
-.file-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;position:relative;display:flex;flex-direction:column;min-width:0;transition:box-shadow .2s}
+.file-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;position:relative;display:flex;flex-direction:column;min-width:0;transition:box-shadow .2s;user-select:none;-webkit-user-select:none}
 .file-card:hover{box-shadow:var(--shadow-md);border-color:var(--muted)}
+.file-card.selected{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue);background:#E8F0F7}
+body.dark-mode .file-card.selected{background:#2D3133}
 .file-icon-wrap{width:48px;height:48px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;margin-bottom:12px;overflow:hidden;flex:none}
 .file-icon-wrap img{width:100%;height:100%;object-fit:cover}
 .file-name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:4px}
 .file-meta{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .more{position:absolute;top:6px;right:6px;opacity:0;transition:opacity .2s}.file-card:hover .more{opacity:1}
 .star{position:absolute;top:10px;left:10px;font-size:18px;color:#F59E0B;font-variation-settings:'FILL' 1}
+.chk{position:absolute;top:10px;left:10px;font-size:22px;color:var(--muted);z-index:2}
+.file-card.selected .chk{color:var(--blue);font-variation-settings:'FILL' 1}
+.sel-on .star{left:40px}
+.sel-on .more{display:none}
 .note-body{font-size:13px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap;word-break:break-word;margin-bottom:8px}
 .note-card{border-top:4px solid var(--c,var(--border))}
 .lp-img{height:110px;margin:-16px -16px 12px;background:var(--bg) center/cover;border-radius:10px 10px 0 0;overflow:hidden}
@@ -76,8 +82,13 @@ body.dark-mode .nav-item.active{background:#2D3133}.nav-item .material-symbols-o
 .files-grid.list .file-card{flex-direction:row;align-items:center;gap:14px;padding:10px 14px}
 .files-grid.list .file-icon-wrap{margin:0;width:40px;height:40px}.files-grid.list .file-name{margin:0;flex:1}
 .files-grid.list .file-meta{flex:none;max-width:35%}.files-grid.list .more{position:static;opacity:1}
-.files-grid.list .lp-img,.files-grid.list .note-body{display:none}.files-grid.list .star{position:static}
-.chip{display:inline-block;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:0 8px;color:var(--muted)}
+.files-grid.list .lp-img,.files-grid.list .note-body{display:none}.files-grid.list .star,.files-grid.list .chk{position:static}
+.files-grid.list .share-det{flex:1;min-width:0}
+.chip{display:inline-block;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:0 8px;color:var(--muted);white-space:nowrap}
+.share-det{display:flex;flex-direction:column;gap:2px;margin-top:4px}
+.share-row{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted);min-width:0}
+.share-row .em{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.bulkbar{display:none;position:sticky;top:var(--header-h);z-index:25;align-items:center;gap:8px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--blue);border-radius:var(--radius);padding:8px 12px;margin-bottom:16px;box-shadow:var(--shadow-md)}
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-backdrop.open{display:flex}
 .modal{background:var(--surface);border-radius:var(--radius-lg);width:100%;max-width:500px;max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
@@ -207,8 +218,8 @@ document.addEventListener('DOMContentLoaded',function(){
 <div class="ld-card"><span class="material-symbols-outlined">cloud_upload</span><h3>File storage</h3><p>Upload documents, images, videos and PDFs. Files are stored in your own Google Drive, and you can preview them in the app.</p></div>
 <div class="ld-card"><span class="material-symbols-outlined">groups</span><h3>Organizations &amp; teams</h3><p>Create an organization and add members by email. Everyone in it can view, comment on and edit the shared files, notes and links.</p></div>
 <div class="ld-card"><span class="material-symbols-outlined">link</span><h3>Notes &amp; links with preview</h3><p>Save text notes and web links. Links show a live preview with title, description and image so they are easy to recognize.</p></div>
-<div class="ld-card"><span class="material-symbols-outlined">folder</span><h3>Folders &amp; organization</h3><p>Use folders, star important items, move things around, search everything, and restore anything from the trash.</p></div>
-<div class="ld-card"><span class="material-symbols-outlined">lock</span><h3>Access control</h3><p>Share individual files with specific people as viewer, commenter or editor. Personal items stay private to you.</p></div>
+<div class="ld-card"><span class="material-symbols-outlined">folder</span><h3>Folders &amp; organization</h3><p>Use folders, select multiple items at once, star important items, move things around, search everything, and restore anything from the trash.</p></div>
+<div class="ld-card"><span class="material-symbols-outlined">lock</span><h3>Access control</h3><p>Share individual files with specific people as viewer, commenter or editor, and track them in Shared by me and Shared from. Personal items stay private to you.</p></div>
 <div class="ld-card"><span class="material-symbols-outlined">devices</span><h3>Works everywhere</h3><p>A fast, responsive web app for phone, tablet and desktop, with light and dark themes. Nothing to install.</p></div>
 </div></section>
 
@@ -226,7 +237,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <ul>
 <li><b>Your profile:</b> your name, email address and profile photo are used only to sign you in, show who you are, and match you to organizations you belong to.</li>
 <li><b>Google Drive access:</b> MART Drive requests the limited <b>drive.file</b> permission. It can only create and manage files that you upload through MART Drive. It cannot see or change the rest of your Google Drive.</li>
-<li><b>App data:</b> folder names, notes, saved links and organization membership are stored in Google Firebase (Firestore) so they sync across your devices.</li>
+<li><b>App data:</b> folder names, notes, saved links, sharing details and organization membership are stored in Google Firebase (Firestore) so they sync across your devices.</li>
 <li><b>Your control:</b> we never sell your data or use it for advertising. You can delete items in the app and revoke access any time from your Google Account permissions.</li>
 </ul>
 <p class="ld-note" style="margin-top:14px">Read the full <a href="privacy_policy.html">Privacy Policy</a> and <a href="terms_conditions.html">Terms &amp; Conditions</a>.</p>
@@ -248,6 +259,8 @@ document.addEventListener('DOMContentLoaded',function(){
 <li><div class="nav-item" data-v="notes" onclick="setView('notes')"><span class="material-symbols-outlined">sticky_note_2</span> Notes &amp; Links</div></li>
 <li><div class="nav-item" data-v="recent" onclick="setView('recent')"><span class="material-symbols-outlined">schedule</span> Recent</div></li>
 <li><div class="nav-item" data-v="starred" onclick="setView('starred')"><span class="material-symbols-outlined">star</span> Starred</div></li>
+<li><div class="nav-item" data-v="sharedby" onclick="setView('sharedby')"><span class="material-symbols-outlined">person_add</span> Shared by me</div></li>
+<li><div class="nav-item" data-v="sharedfrom" onclick="setView('sharedfrom')"><span class="material-symbols-outlined">folder_shared</span> Shared from</div></li>
 <li><div class="nav-item" data-v="trash" onclick="setView('trash')"><span class="material-symbols-outlined">delete</span> Trash</div></li>
 <li><div class="nav-item" onclick="toggleDarkMode()"><span class="material-symbols-outlined">dark_mode</span> Toggle Theme</div></li>
 <li class="nav-section">Organizations</li>
@@ -268,10 +281,18 @@ document.addEventListener('DOMContentLoaded',function(){
 <div class="toolbar">
 <select id="sort-sel" class="sel" onchange="setSort(this.value)"><option value="name">Name</option><option value="date">Newest</option><option value="size">Size</option></select>
 <button class="btn" id="layout-btn" onclick="toggleLayout()" title="Grid / List"><span class="material-symbols-outlined">view_list</span></button>
+<button class="btn" id="sel-btn" onclick="toggleSelectMode()" title="Select multiple"><span class="material-symbols-outlined">checklist</span> Select</button>
 <button class="btn mk" onclick="openNoteModal(null,'text')"><span class="material-symbols-outlined">sticky_note_2</span> Note</button>
 <button class="btn mk" onclick="openNoteModal(null,'link')"><span class="material-symbols-outlined">link</span> Link</button>
 <button class="btn btn-primary mk" onclick="openNewFolderModal()"><span class="material-symbols-outlined">create_new_folder</span> Folder</button>
 </div></div>
+<div class="bulkbar" id="bulkbar">
+<button class="icon-btn" onclick="clearSel()" title="Cancel selection"><span class="material-symbols-outlined">close</span></button>
+<b id="bulk-count">0 selected</b>
+<span style="flex:1"></span>
+<button class="btn" onclick="selectAll()"><span class="material-symbols-outlined">select_all</span> Select all</button>
+<span id="bulk-actions" style="display:contents"></span>
+</div>
 <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()"><h3>Drag &amp; Drop or Click to Upload</h3><input type="file" id="file-input" hidden multiple onchange="handleFiles(this.files)"></div>
 <div id="upload-progress-container"><div class="progress-text"><span id="progress-filename">Uploading...</span><span id="progress-percent">0%</span></div><div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div></div>
 <div id="breadcrumbs" style="margin-bottom:16px;font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"></div>
@@ -297,6 +318,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <div class="ctx-item" data-a="move"><span class="material-symbols-outlined">drive_file_move</span> Move to…</div>
 <div class="ctx-item" data-a="copy"><span class="material-symbols-outlined">file_copy</span> Make a copy</div>
 <div class="ctx-item" data-a="info"><span class="material-symbols-outlined">info</span> View information</div>
+<div class="ctx-item" data-a="stopall" style="color:var(--error)"><span class="material-symbols-outlined" style="color:var(--error)">person_off</span> Stop sharing</div>
 <div class="ctx-item" data-a="trash" style="color:var(--error)"><span class="material-symbols-outlined" style="color:var(--error)">delete</span> Move to trash</div>
 <div class="ctx-item" data-a="restore"><span class="material-symbols-outlined">restore_from_trash</span> Restore</div>
 <div class="ctx-item" data-a="purge" style="color:var(--error)"><span class="material-symbols-outlined" style="color:var(--error)">delete_forever</span> Delete forever</div>
@@ -311,7 +333,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, indexedDBLocalPersistence } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot, query, where, serverTimestamp, getDocs, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getFirestore, collection, doc, addDoc, setDoc, deleteDoc, updateDoc, onSnapshot, query, where, serverTimestamp, getDocs, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const firebaseConfig={apiKey:"AIzaSyDUcT6hVqLHy3pYzwg1oktI7amTpF9Qj4c",authDomain:"mart-drive.firebaseapp.com",projectId:"mart-drive",storageBucket:"mart-drive.firebasestorage.app",messagingSenderId:"829348083361",appId:"1:829348083361:web:d6e91ccec70c2b9d53e2e0",measurementId:"G-J2ERB07TW0"};
 const app=initializeApp(firebaseConfig), auth=getAuth(app), db=getFirestore(app);
@@ -323,11 +345,15 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const COL={file:'files',folder:'folders',note:'notes'};
 const COLORS=['','#F59E0B','#10B981','#3B82F6','#EC4899'];
 const store={files:{p:[],o:[]},folders:{p:[],o:[]},notes:{p:[],o:[]}};
-let currentUser=null,accessToken=null,organizations=[],currentOrgId=null,currentFolderId=null,currentView='drive',searchTerm='',ctxItem=null;
+let sharedBy=[],sharedFrom=[],unsubS=[];
+let currentUser=null,accessToken=null,organizations=[],currentOrgId=null,currentFolderId=null,currentView='drive',searchTerm='',ctxItem=null,accessItem=null,moveItems=[];
 let unsubP=[],unsubO=[],unsubOrgs=null,firstOrgLoad=true,tokenPromise=null,pendingPreview=null,pvTimer=null,pendingFolder=new URLSearchParams(location.search).get('folder');
 let sortBy=localStorage.getItem('sort')||'name',layout=localStorage.getItem('layout')||'grid';
+let selectMode=false,curList=[];const sel=new Set();
+const keyOf=x=>x.kind+':'+x.id;
 const me=()=>currentUser.email.toLowerCase();
 const myOrg=()=>organizations.find(o=>o.id===currentOrgId);
+const roleLabel=r=>({reader:'Viewer',commenter:'Commenter',writer:'Editor'}[r]||r);
 
 /* THEME */
 if(localStorage.getItem('theme')==='dark')document.body.classList.add('dark-mode');
@@ -356,7 +382,7 @@ onAuthStateChanged(auth,user=>{
     $('sort-sel').value=sortBy;setupListeners();
   }else{
     currentUser=null;accessToken=null;$('app').classList.remove('ready');$('landing').style.display='block';document.documentElement.classList.remove('has-session');try{localStorage.removeItem('mart_has_session')}catch{}
-    [...unsubP,...unsubO,unsubOrgs].forEach(u=>u&&u());
+    [...unsubP,...unsubO,...unsubS,unsubOrgs].forEach(u=>u&&u());
   }
 });
 
@@ -377,6 +403,11 @@ function setupListeners(){
     if(k==='folders'&&pendingFolder&&store.folders.p.some(f=>f.id===pendingFolder)){const f=store.folders.p.find(x=>x.id===pendingFolder);pendingFolder=null;if((f.orgId||null)===currentOrgId)currentFolderId=f.id}
     render();
   },e=>console.warn(k,e)));
+  unsubS.forEach(u=>u&&u());
+  unsubS=[
+    onSnapshot(query(collection(db,'shares'),where('ownerUid','==',uid)),s=>{sharedBy=snapDocs(s);render()},e=>console.warn('sharedBy',e)),
+    onSnapshot(query(collection(db,'shares'),where('email','==',me())),s=>{sharedFrom=snapDocs(s);render()},e=>console.warn('sharedFrom',e))
+  ];
 }
 function listenOrg(){
   unsubO.forEach(u=>u());unsubO=[];Object.values(store).forEach(v=>v.o=[]);
@@ -473,7 +504,7 @@ window.createFolder=async()=>{
   const name=$('folder-name').value.trim();if(!name)return;
   try{await addDoc(collection(db,'folders'),{name,parentId:currentFolderId,orgId:currentOrgId||null,uid:currentUser.uid,by:me(),starred:false,trashed:false,createdAt:serverTimestamp()});toast('Folder created','success');closeModal()}catch(e){toast('Failed: '+e.message,'error')}
 };
-window.openFolder=id=>{currentFolderId=id;if(searchTerm){searchTerm='';$('search-input').value=''}if(currentView!=='drive')currentView='drive';render()};
+window.openFolder=id=>{currentFolderId=id;sel.clear();selectMode=false;if(searchTerm){searchTerm='';$('search-input').value=''}if(currentView!=='drive')currentView='drive';render()};
 function folderPath(f){const p=[];let c=f;while(c){p.unshift(c);c=all('folders').find(x=>x.id===c.parentId)}return p}
 function renderBreadcrumbs(){
   const bc=$('breadcrumbs');
@@ -482,24 +513,69 @@ function renderBreadcrumbs(){
   if(currentFolderId){const cur=all('folders').find(f=>f.id===currentFolderId);folderPath(cur).forEach(f=>h+=`<span style="color:var(--muted)">/</span><span data-f="${f.id}" style="cursor:pointer;color:var(--blue)">${esc(f.name)}</span>`)}
   bc.innerHTML=h;
 }
-$('breadcrumbs').addEventListener('click',e=>{const c=e.target.closest('[data-f]');if(c){currentFolderId=c.dataset.f||null;render()}});
+$('breadcrumbs').addEventListener('click',e=>{const c=e.target.closest('[data-f]');if(c){currentFolderId=c.dataset.f||null;sel.clear();selectMode=false;render()}});
 function subtree(folder){
   const out=[];const walk=id=>ws().forEach(x=>{if((x.kind==='folder'&&x.parentId===id)||((x.kind==='file'||x.kind==='note')&&x.folderId===id)){out.push(x);if(x.kind==='folder')walk(x.id)}});
   walk(folder.id);return out;
 }
 
+/* MULTI SELECT */
+window.toggleSelectMode=()=>{selectMode=!selectMode;if(!selectMode)sel.clear();render()};
+function toggleSel(x){const k=keyOf(x);sel.has(k)?sel.delete(k):sel.add(k);selectMode=true;render()}
+window.clearSel=()=>{sel.clear();selectMode=false;render()};
+window.selectAll=()=>{curList.forEach(x=>sel.add(keyOf(x)));selectMode=true;render()};
+function selItems(){const W=ws();return[...sel].map(k=>W.find(x=>keyOf(x)===k)).filter(Boolean)}
+function topLevel(items){
+  const ids=new Set(items.filter(i=>i.kind==='folder').map(i=>i.id)),fs=all('folders');
+  const inSel=x=>{let p=x.kind==='folder'?x.parentId:x.folderId;while(p){if(ids.has(p))return true;p=fs.find(y=>y.id===p)?.parentId}return false};
+  return items.filter(x=>!inSel(x));
+}
+function updateBulk(){
+  $('bulkbar').style.display=selectMode?'flex':'none';
+  $('sel-btn').classList.toggle('btn-primary',selectMode);
+  const n=sel.size;$('bulk-count').textContent=n+' selected';
+  const tr=currentView==='trash';
+  $('bulk-actions').innerHTML=!n?'':tr
+    ?`<button class="btn" onclick="bulk('restore')"><span class="material-symbols-outlined">restore_from_trash</span> Restore</button><button class="btn" style="color:var(--error);border-color:var(--error)" onclick="bulk('purge')"><span class="material-symbols-outlined">delete_forever</span> Delete forever</button>`
+    :`<button class="btn" onclick="bulk('star')"><span class="material-symbols-outlined">star</span> Star</button><button class="btn" onclick="bulk('move')"><span class="material-symbols-outlined">drive_file_move</span> Move</button><button class="btn" style="color:var(--error);border-color:var(--error)" onclick="bulk('trash')"><span class="material-symbols-outlined">delete</span> Trash</button>`;
+}
+window.bulk=async a=>{
+  const items=selItems();if(!items.length)return;
+  try{
+    if(a==='star'){const v=!items.every(x=>x.starred);await Promise.all(items.map(x=>upd(x,{starred:v})));toast(v?'Starred':'Star removed','success')}
+    else if(a==='move'){openMoveModal(items);return}
+    else if(a==='trash'){for(const x of topLevel(items))await setTrash(x,true);toast(items.length+' moved to trash','success')}
+    else if(a==='restore'){for(const x of items)await setTrash(x,false);toast('Restored','success')}
+    else if(a==='purge'){if(!await purgeItems(items))return}
+    sel.clear();selectMode=false;render();
+  }catch(e){toast((e&&e.message)||'Action failed','error')}
+};
+
 /* RENDER */
-window.setView=v=>{currentView=v;currentFolderId=null;document.getElementById('sidebar').classList.remove('open');render()};
+window.setView=v=>{currentView=v;currentFolderId=null;sel.clear();selectMode=false;document.getElementById('sidebar').classList.remove('open');render()};
 window.handleSearch=v=>{searchTerm=v.toLowerCase().trim();render()};
 window.setSort=v=>{sortBy=v;localStorage.setItem('sort',v);render()};
 window.toggleLayout=()=>{layout=layout==='grid'?'list':'grid';localStorage.setItem('layout',layout);render()};
-const TITLES={drive:'My Files',notes:'Notes & Links',recent:'Recent',starred:'Starred',trash:'Trash'};
+const TITLES={drive:'My Files',notes:'Notes & Links',recent:'Recent',starred:'Starred',trash:'Trash',sharedby:'Shared by me',sharedfrom:'Shared from'};
 const ts=x=>x.createdAt?.toMillis?.()||0;
+function fileIcon(mt,did){
+  mt=mt||'';
+  if(mt.includes('image')&&did)return`<img src="https://drive.google.com/thumbnail?id=${did}&sz=w200&authuser=0" loading="lazy">`;
+  if(mt.includes('video'))return'<span class="material-symbols-outlined" style="color:#EA4335">movie</span>';
+  if(mt.includes('pdf'))return'<span class="material-symbols-outlined" style="color:#D93025">picture_as_pdf</span>';
+  return'<span class="material-symbols-outlined">description</span>';
+}
+const MORE='<button class="icon-btn more"><span class="material-symbols-outlined">more_vert</span></button>';
 
 function render(){
   if(!currentUser)return;
   renderBreadcrumbs();
   document.querySelectorAll('[data-v]').forEach(e=>e.classList.toggle('active',e.dataset.v===currentView));
+  const shareView=currentView==='sharedby'||currentView==='sharedfrom';
+  $('sel-btn').style.display=shareView?'none':'flex';
+  document.querySelectorAll('.mk').forEach(b=>b.style.display=(currentView==='trash'||shareView)?'none':'flex');
+  $('layout-btn').innerHTML=`<span class="material-symbols-outlined">${layout==='grid'?'view_list':'grid_view'}</span>`;
+  if(shareView){$('bulkbar').style.display='none';$('dropzone').style.display='none';return renderShares()}
   const W=ws(),live=W.filter(x=>!x.trashed);let list;
   const match=x=>[x.name,x.content,x.url,x.preview?.title,x.preview?.description].some(v=>v&&String(v).toLowerCase().includes(searchTerm));
   if(searchTerm&&currentView!=='trash')list=live.filter(match);
@@ -509,43 +585,103 @@ function render(){
   else if(currentView==='starred')list=live.filter(x=>x.starred);
   else list=W.filter(x=>x.trashed&&x.trashRoot);
   if(currentView!=='recent')list.sort((a,b)=>(b.kind==='folder')-(a.kind==='folder')||(sortBy==='date'?ts(b)-ts(a):sortBy==='size'?(b.size||0)-(a.size||0):String(a.name).localeCompare(String(b.name))));
+  curList=list;
   const o=myOrg(),total=list.reduce((s,x)=>s+(+x.size||0),0);
   $('page-title').textContent=currentView==='drive'?(o?o.name:'My Files'):TITLES[currentView];
   $('page-meta').textContent=`${list.length} items${total?' · '+fmtSize(total):''}${o?' · '+o.members.length+' members':''}`;
   $('dropzone').style.display=currentView==='drive'&&!searchTerm?'block':'none';
-  document.querySelectorAll('.mk').forEach(b=>b.style.display=currentView==='trash'?'none':'flex');
-  $('layout-btn').innerHTML=`<span class="material-symbols-outlined">${layout==='grid'?'view_list':'grid_view'}</span>`;
-  const grid=$('files-grid');grid.className='files-grid '+(layout==='list'?'list':'');grid.innerHTML='';
+  updateBulk();
+  const grid=$('files-grid');grid.className='files-grid '+(layout==='list'?'list ':'')+(selectMode?'sel-on':'');grid.innerHTML='';
   if(!list.length){grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">${currentView==='trash'?'Trash is empty.':'Nothing here yet.'}</div>`;return}
   list.forEach(x=>{
     const card=document.createElement('div');card.className='file-card';
+    const isSel=sel.has(keyOf(x));if(isSel)card.classList.add('selected');
+    const chk=selectMode?`<span class="material-symbols-outlined chk">${isSel?'check_box':'check_box_outline_blank'}</span>`:'';
     const star=x.starred?'<span class="material-symbols-outlined star">star</span>':'';
-    const more='<button class="icon-btn more"><span class="material-symbols-outlined">more_vert</span></button>';
+    const more=MORE;
     const by=o&&x.by?` · ${esc(x.by.split('@')[0])}`:'';
     if(x.kind==='folder'){
-      card.innerHTML=`${star}<div class="file-icon-wrap"><span class="material-symbols-outlined" style="color:#F59E0B">folder</span></div><div class="file-name">${esc(x.name)}</div><div class="file-meta">Folder${by}</div>${more}`;
-      card.onclick=()=>currentView==='trash'?0:openFolder(x.id);
+      card.innerHTML=`${chk}${star}<div class="file-icon-wrap"><span class="material-symbols-outlined" style="color:#F59E0B">folder</span></div><div class="file-name">${esc(x.name)}</div><div class="file-meta">Folder${by}</div>${more}`;
     }else if(x.kind==='file'){
-      let icon='<span class="material-symbols-outlined">description</span>';const mt=x.mimeType||'';
-      if(mt.includes('image'))icon=`<img src="https://drive.google.com/thumbnail?id=${x.driveFileId}&sz=w200&authuser=0" loading="lazy">`;
-      else if(mt.includes('video'))icon='<span class="material-symbols-outlined" style="color:#EA4335">movie</span>';
-      else if(mt.includes('pdf'))icon='<span class="material-symbols-outlined" style="color:#D93025">picture_as_pdf</span>';
-      card.innerHTML=`${star}<div class="file-icon-wrap">${icon}</div><div class="file-name" title="${esc(x.name)}">${esc(x.name)}</div><div class="file-meta">${fmtSize(x.size)}${by}</div>${more}`;
-      card.onclick=()=>currentView==='trash'?0:previewFile(x);
+      card.innerHTML=`${chk}${star}<div class="file-icon-wrap">${fileIcon(x.mimeType,x.driveFileId)}</div><div class="file-name" title="${esc(x.name)}">${esc(x.name)}</div><div class="file-meta">${fmtSize(x.size)}${by}</div>${more}`;
     }else{
       const p=x.preview||{};card.classList.add('note-card');if(x.color)card.style.setProperty('--c',x.color);
-      if(x.ntype==='link')card.innerHTML=`${star}<div class="lp-img">${p.image?`<img src="${esc(p.image)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:''}</div><div class="file-name" title="${esc(x.name)}">${esc(x.name)}</div><div class="lp-site">${p.logo?`<img src="${esc(p.logo)}" referrerpolicy="no-referrer" onerror="this.remove()">`:''}<span class="file-meta">${esc(p.site||x.url)}${by}</span></div>${more}`;
-      else card.innerHTML=`${star}<div class="file-name">${esc(x.name)}</div><div class="note-body">${esc(x.content)}</div><div class="file-meta"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">sticky_note_2</span> Note${by}</div>${more}`;
-      card.onclick=()=>currentView==='trash'?0:openNote(x);
+      if(x.ntype==='link')card.innerHTML=`${chk}${star}<div class="lp-img">${p.image?`<img src="${esc(p.image)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:''}</div><div class="file-name" title="${esc(x.name)}">${esc(x.name)}</div><div class="lp-site">${p.logo?`<img src="${esc(p.logo)}" referrerpolicy="no-referrer" onerror="this.remove()">`:''}<span class="file-meta">${esc(p.site||x.url)}${by}</span></div>${more}`;
+      else card.innerHTML=`${chk}${star}<div class="file-name">${esc(x.name)}</div><div class="note-body">${esc(x.content)}</div><div class="file-meta"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">sticky_note_2</span> Note${by}</div>${more}`;
+    }
+    let lp=null,lpFired=false;
+    card.onclick=e=>{
+      if(lpFired){lpFired=false;return}
+      if(selectMode||e.ctrlKey||e.metaKey)return toggleSel(x);
+      if(currentView==='trash')return;
+      x.kind==='folder'?openFolder(x.id):x.kind==='file'?previewFile(x):openNote(x);
+    };
+    card.addEventListener('touchstart',()=>{lpFired=false;lp=setTimeout(()=>{lpFired=true;toggleSel(x)},550)},{passive:true});
+    ['touchend','touchmove','touchcancel'].forEach(ev=>card.addEventListener(ev,()=>clearTimeout(lp),{passive:true}));
+    card.addEventListener('contextmenu',e=>{e.preventDefault();if(lpFired)return;openContextMenu(e,x)});
+    card.querySelector('.more').onclick=e=>{e.stopPropagation();openContextMenu(e,x)};
+    grid.appendChild(card);
+  });
+}
+
+/* SHARED BY ME / SHARED FROM */
+function fileItemOf(g){
+  return store.files.p.find(f=>f.id===g.fileId)||{id:g.fileId,driveFileId:g.driveFileId,name:g.name,mimeType:g.mimeType,size:g.size,uid:currentUser.uid,kind:'file',by:me()};
+}
+function renderShares(){
+  const by=currentView==='sharedby';let list;
+  if(by){
+    const m=new Map();
+    sharedBy.forEach(s=>{
+      let g=m.get(s.fileId);
+      if(!g){g={id:s.fileId,kind:'sgroup',fileId:s.fileId,driveFileId:s.driveFileId,name:s.name,mimeType:s.mimeType,size:s.size,entries:[],createdAt:s.createdAt};m.set(s.fileId,g)}
+      g.entries.push(s);if(ts(s)>ts(g))g.createdAt=s.createdAt;
+    });
+    list=[...m.values()];list.forEach(g=>g.entries.sort((a,b)=>String(a.email).localeCompare(String(b.email))));
+    if(searchTerm)list=list.filter(g=>String(g.name).toLowerCase().includes(searchTerm)||g.entries.some(e=>String(e.email).toLowerCase().includes(searchTerm)));
+  }else{
+    list=sharedFrom.map(s=>({...s,kind:'sfrom',by:s.ownerEmail}));
+    if(searchTerm)list=list.filter(s=>String(s.name).toLowerCase().includes(searchTerm)||String(s.ownerEmail).toLowerCase().includes(searchTerm));
+  }
+  list.sort((a,b)=>sortBy==='date'?ts(b)-ts(a):sortBy==='size'?(b.size||0)-(a.size||0):String(a.name).localeCompare(String(b.name)));
+  curList=list;
+  $('page-title').textContent=TITLES[currentView];
+  $('page-meta').textContent=`${list.length} ${list.length===1?'file':'files'}${by?' shared with others':' shared with you'}`;
+  const grid=$('files-grid');grid.className='files-grid '+(layout==='list'?'list':'');grid.innerHTML='';
+  if(!list.length){grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">${by?'You haven\'t shared any file yet. Use “Manage Access” on a file to share it.':'No one has shared a file with you yet.'}</div>`;return}
+  list.forEach(x=>{
+    const card=document.createElement('div');card.className='file-card';
+    const d=x.createdAt?.toDate?.().toLocaleDateString()||'';
+    if(x.kind==='sgroup'){
+      const n=x.entries.length;
+      const rows=x.entries.slice(0,3).map(e=>`<div class="share-row"><span class="material-symbols-outlined" style="font-size:14px">person</span><span class="em">${esc(e.email)}</span><span class="chip">${roleLabel(e.role)}</span></div>`).join('')+(n>3?`<div class="share-row">+${n-3} more</div>`:'');
+      card.innerHTML=`<div class="file-icon-wrap">${fileIcon(x.mimeType,x.driveFileId)}</div><div class="file-name" title="${esc(x.name)}">${esc(x.name)}</div><div class="file-meta">Shared with ${n} ${n>1?'people':'person'}${x.size?' · '+fmtSize(x.size):''}${d?' · '+d:''}</div><div class="share-det">${rows}</div>${MORE}`;
+      card.onclick=()=>openAccessModal(fileItemOf(x));
+    }else{
+      card.innerHTML=`<div class="file-icon-wrap">${fileIcon(x.mimeType,x.driveFileId)}</div><div class="file-name" title="${esc(x.name)}">${esc(x.name)}</div><div class="file-meta">From: ${esc(x.ownerEmail||'—')}</div><div class="share-det"><div class="share-row"><span class="chip">${roleLabel(x.role)}</span><span>${x.size?fmtSize(x.size):''}${d?' · '+d:''}</span></div></div>${MORE}`;
+      card.onclick=()=>previewFile(x);
     }
     card.addEventListener('contextmenu',e=>{e.preventDefault();openContextMenu(e,x)});
     card.querySelector('.more').onclick=e=>{e.stopPropagation();openContextMenu(e,x)};
     grid.appendChild(card);
   });
 }
+async function syncShare(item,email,role,permId){
+  const id=`${item.id}_${email}`,data={fileId:item.id,driveFileId:item.driveFileId,name:item.name,mimeType:item.mimeType||'',size:+item.size||0,ownerUid:currentUser.uid,ownerEmail:me(),ownerName:currentUser.displayName||'',email,role,permId:permId||null};
+  if(!sharedBy.some(s=>s.id===id))data.createdAt=serverTimestamp();
+  await setDoc(doc(db,'shares',id),data,{merge:true});
+}
+async function stopSharing(g){
+  if(!confirm('Stop sharing “'+g.name+'” with everyone?'))return;
+  try{
+    await ensureToken();
+    for(const e of g.entries){try{await revokeDrive(g.driveFileId,e.email)}catch{}await deleteDoc(doc(db,'shares',e.id))}
+    toast('Sharing stopped','success');
+  }catch(e){toast('Failed: '+e.message,'error')}
+}
 
 /* CONTEXT MENU */
-const MENUS={file:['open','star','share','access','download','rename','move','copy','info','trash'],folder:['open','star','share','rename','move','info','trash'],note:['open','star','copytext','move','copy','info','trash']};
+const MENUS={file:['open','star','share','access','download','rename','move','copy','info','trash'],folder:['open','star','share','rename','move','info','trash'],note:['open','star','copytext','move','copy','info','trash'],sgroup:['open','access','stopall'],sfrom:['open','share','download','info']};
 function openContextMenu(e,item){
   e.preventDefault();ctxItem=item;const m=$('context-menu');
   const allow=currentView==='trash'?['restore','purge']:MENUS[item.kind];
@@ -558,7 +694,7 @@ function openContextMenu(e,item){
 $('context-menu').addEventListener('click',e=>{const a=e.target.closest('.ctx-item')?.dataset.a;if(a)ctxAction(a)});
 document.addEventListener('click',e=>{if(!e.target.closest('#context-menu'))$('context-menu').classList.remove('open')});
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeModal();$('context-menu').classList.remove('open')}
+  if(e.key==='Escape'){closeModal();$('context-menu').classList.remove('open');if(selectMode)clearSel()}
   if(e.key==='/'&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){e.preventDefault();$('search-input').focus()}
 });
 const upd=(x,data)=>updateDoc(doc(db,COL[x.kind],x.id),data);
@@ -566,20 +702,33 @@ async function setTrash(item,val){
   const arr=[item,...(item.kind==='folder'?subtree(item):[])];
   await Promise.all(arr.map(x=>upd(x,x===item?{trashed:val,trashRoot:val}:{trashed:val})));
 }
+async function purgeItems(items){
+  if(!confirm('Delete forever? This cannot be undone.'))return false;
+  const m=new Map();items.forEach(x=>{[x,...(x.kind==='folder'?subtree(x):[])].forEach(y=>m.set(keyOf(y),y))});
+  for(const x of m.values()){
+    if(x.kind==='file'&&x.driveFileId&&x.uid===currentUser.uid){
+      try{await ensureToken();await fetch(`https://www.googleapis.com/drive/v3/files/${x.driveFileId}`,{method:'DELETE',headers:dh()})}catch{}
+      for(const s of sharedBy.filter(s=>s.fileId===x.id))await deleteDoc(doc(db,'shares',s.id)).catch(()=>{});
+    }
+    await deleteDoc(doc(db,COL[x.kind],x.id));
+  }
+  toast('Deleted','success');return true;
+}
 window.ctxAction=async action=>{
   $('context-menu').classList.remove('open');if(!ctxItem)return;const item=ctxItem;
   try{
-  if(action==='open'){item.kind==='folder'?openFolder(item.id):item.kind==='file'?previewFile(item):openNote(item)}
+  if(action==='open'){item.kind==='folder'?openFolder(item.id):(item.kind==='file'||item.kind==='sgroup'||item.kind==='sfrom')?previewFile(item):openNote(item)}
   else if(action==='star')await upd(item,{starred:!item.starred});
   else if(action==='share'){
     const link=item.kind==='folder'?`${location.origin}${location.pathname}?folder=${item.id}`:`https://drive.google.com/file/d/${item.driveFileId}/view`;
     await navigator.clipboard.writeText(link);toast('Link copied!','success');
   }
   else if(action==='copytext'){await navigator.clipboard.writeText(item.ntype==='link'?item.url:item.content||'');toast('Copied!','success')}
-  else if(action==='access')openAccessModal(item);
+  else if(action==='access')openAccessModal(item.kind==='sgroup'?fileItemOf(item):item);
+  else if(action==='stopall')await stopSharing(item);
   else if(action==='download')window.open(`https://drive.google.com/uc?export=download&id=${item.driveFileId}`,'_blank');
   else if(action==='rename')openModal('Rename',`<div class="field"><label>New Name</label><input id="rename-input" value="${esc(item.name)}"></div>`,`<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="renameItem()">Save</button>`);
-  else if(action==='move')openMoveModal(item);
+  else if(action==='move')openMoveModal([item]);
   else if(action==='copy'){
     const {id:_i,kind:_k,...rest}=item;
     if(item.kind==='note'){await addDoc(collection(db,'notes'),{...rest,name:'Copy of '+item.name,uid:currentUser.uid,by:me(),starred:false,createdAt:serverTimestamp()});toast('Copy created!','success')}
@@ -593,66 +742,105 @@ window.ctxAction=async action=>{
   }
   else if(action==='info'){
     const d=item.createdAt?.toDate?.().toLocaleString()||'—';
-    openModal('Item Information',`<div style="padding:12px;background:var(--bg);border-radius:8px;line-height:1.9"><b>Name:</b> ${esc(item.name)}<br><b>Type:</b> ${esc(item.kind==='note'?(item.ntype==='link'?'Link':'Note'):item.mimeType||'Folder')}<br>${item.size?`<b>Size:</b> ${fmtSize(item.size)}<br>`:''}${item.url?`<b>URL:</b> ${esc(item.url)}<br>`:''}<b>Added by:</b> ${esc(item.by||'—')}<br><b>Created:</b> ${esc(d)}<br>${item.driveFileId?`<b>Drive ID:</b> ${esc(item.driveFileId)}`:''}</div>`,`<button class="btn btn-primary" onclick="closeModal()">Close</button>`);
+    openModal('Item Information',`<div style="padding:12px;background:var(--bg);border-radius:8px;line-height:1.9"><b>Name:</b> ${esc(item.name)}<br><b>Type:</b> ${esc(item.kind==='note'?(item.ntype==='link'?'Link':'Note'):item.mimeType||'Folder')}<br>${item.size?`<b>Size:</b> ${fmtSize(item.size)}<br>`:''}${item.url?`<b>URL:</b> ${esc(item.url)}<br>`:''}${item.kind==='sfrom'?`<b>Your access:</b> ${esc(roleLabel(item.role))}<br>`:''}<b>${item.kind==='sfrom'?'Shared by':'Added by'}:</b> ${esc(item.by||'—')}<br><b>${item.kind==='sfrom'?'Shared on':'Created'}:</b> ${esc(d)}<br>${item.driveFileId?`<b>Drive ID:</b> ${esc(item.driveFileId)}`:''}</div>`,`<button class="btn btn-primary" onclick="closeModal()">Close</button>`);
   }
   else if(action==='trash'){await setTrash(item,true);toast('Moved to trash','success')}
   else if(action==='restore'){await setTrash(item,false);toast('Restored','success')}
-  else if(action==='purge'){
-    if(!confirm('Delete forever? This cannot be undone.'))return;
-    const arr=[item,...(item.kind==='folder'?subtree(item):[])];
-    for(const x of arr){
-      if(x.kind==='file'&&x.driveFileId&&x.uid===currentUser.uid){try{await ensureToken();await fetch(`https://www.googleapis.com/drive/v3/files/${x.driveFileId}`,{method:'DELETE',headers:dh()})}catch{}}
-      await deleteDoc(doc(db,COL[x.kind],x.id));
-    }
-    toast('Deleted','success');
-  }
+  else if(action==='purge')await purgeItems([item]);
   }catch(e){toast((e&&e.message)||'Action failed','error')}
 };
 window.renameItem=async()=>{
   const n=$('rename-input').value.trim(),item=ctxItem;if(!n)return;
   try{
-    if(item.kind==='file'&&item.uid===currentUser.uid){try{await ensureToken();await fetch(`https://www.googleapis.com/drive/v3/files/${item.driveFileId}`,{method:'PATCH',headers:dh(),body:JSON.stringify({name:n})})}catch{}}
+    if(item.kind==='file'&&item.uid===currentUser.uid){
+      try{await ensureToken();await fetch(`https://www.googleapis.com/drive/v3/files/${item.driveFileId}`,{method:'PATCH',headers:dh(),body:JSON.stringify({name:n})})}catch{}
+      sharedBy.filter(s=>s.fileId===item.id).forEach(s=>updateDoc(doc(db,'shares',s.id),{name:n}).catch(()=>{}));
+    }
     await upd(item,{name:n});toast('Renamed','success');closeModal();
   }catch{toast('Rename failed','error')}
 };
-function openMoveModal(item){
-  const fs=all('folders').filter(f=>!f.trashed&&f.id!==item.id&&!(item.kind==='folder'&&subtree(item).some(s=>s.id===f.id)));
+function openMoveModal(items){
+  moveItems=items;
+  const blocked=new Set();
+  items.forEach(i=>{blocked.add(i.id);if(i.kind==='folder')subtree(i).forEach(s=>blocked.add(s.id))});
+  const fs=all('folders').filter(f=>!f.trashed&&!blocked.has(f.id));
   const opts=`<option value="">Root</option>`+fs.map(f=>`<option value="${f.id}">${esc(folderPath(f).map(p=>p.name).join(' / '))}</option>`).join('');
-  openModal('Move to…',`<div class="field"><label>Destination folder</label><select id="move-sel">${opts}</select></div>`,`<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="doMove()">Move</button>`);
+  openModal(items.length>1?`Move ${items.length} items to…`:'Move to…',`<div class="field"><label>Destination folder</label><select id="move-sel">${opts}</select></div>`,`<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="doMove()">Move</button>`);
 }
 window.doMove=async()=>{
   const v=$('move-sel').value||null;
-  try{await upd(ctxItem,ctxItem.kind==='folder'?{parentId:v}:{folderId:v});toast('Moved','success');closeModal()}catch(e){toast('Move failed','error')}
+  try{
+    await Promise.all(topLevel(moveItems).map(x=>upd(x,x.kind==='folder'?{parentId:v}:{folderId:v})));
+    toast('Moved','success');closeModal();sel.clear();selectMode=false;render();
+  }catch(e){toast('Move failed','error')}
 };
 
-/* DRIVE ACCESS (per-file permissions) */
+/* DRIVE ACCESS (per-file permissions, tracked in Shared by me / Shared from) */
 function openAccessModal(item){
+  accessItem=item;
   if(item.uid!==currentUser.uid)return openModal('Manage Access',`<p>Only <b>${esc(item.by||'the uploader')}</b> can manage Google Drive permissions for this file. In an organization, all members already have edit access.</p>`,`<button class="btn" onclick="closeModal()">Close</button>`);
-  openModal('Manage Access',`<p style="margin-bottom:12px">Share this file with specific people.</p><div id="permissions-list" style="margin-bottom:16px;min-height:50px">Loading...</div>
+  openModal('Manage Access',`<p style="margin-bottom:12px">Share <b>${esc(item.name)}</b> with specific people. Shared files appear under <b>Shared by me</b> for you and <b>Shared from</b> for them.</p><div id="permissions-list" style="margin-bottom:16px;min-height:50px">Loading...</div>
   <div class="field"><label>Add people (email)</label><div style="display:flex;gap:8px"><input id="share-email" type="email" placeholder="user@example.com" style="flex:1;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><select id="share-role" class="sel"><option value="reader">Viewer</option><option value="commenter">Commenter</option><option value="writer">Editor</option></select><button class="btn btn-primary" onclick="addPermission('${item.driveFileId}')">Add</button></div></div>`,`<button class="btn" onclick="closeModal()">Close</button>`);
   loadPermissions(item.driveFileId);
 }
 async function loadPermissions(fid){
-  const c=$('permissions-list');if(!c)return;
+  const c=$('permissions-list'),item=accessItem;if(!c||!item)return;
   try{
     await ensureToken();
     const d=await(await fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions?fields=permissions(id,emailAddress,role,type)`,{headers:dh()})).json();
     if(d.error)throw new Error(d.error.message);
-    if(!d.permissions?.length){c.innerHTML='<p style="color:var(--muted)">No additional permissions yet.</p>';return}
+    if(!$('permissions-list'))return;
+    const org=organizations.find(o=>o.id===item.orgId);
+    const people=(d.permissions||[]).filter(p=>p.type==='user'&&p.emailAddress&&p.role!=='owner'&&p.emailAddress.toLowerCase()!==me()&&!(org&&org.members.includes(p.emailAddress.toLowerCase())));
+    /* keep Shared by me / Shared from in sync with Drive */
+    try{
+      const em=new Set(people.map(p=>p.emailAddress.toLowerCase()));
+      for(const p of people){const e=p.emailAddress.toLowerCase();if(!sharedBy.some(s=>s.id===`${item.id}_${e}`))await syncShare(item,e,p.role,p.id)}
+      for(const s of sharedBy.filter(s=>s.fileId===item.id&&!em.has(s.email)))await deleteDoc(doc(db,'shares',s.id));
+    }catch(e){console.warn('share sync',e)}
+    if(!people.length){c.innerHTML='<p style="color:var(--muted)">No additional permissions yet.</p>';return}
     c.innerHTML='';
-    d.permissions.forEach(p=>{
+    people.forEach(p=>{
+      const email=p.emailAddress.toLowerCase();
       const r=document.createElement('div');r.className='access-row';
-      r.innerHTML=`<span style="flex:1;overflow:hidden;text-overflow:ellipsis">${esc(p.emailAddress||p.type)}</span><select onchange="updatePermission('${fid}','${p.id}',this.value)">${[['reader','Viewer'],['commenter','Commenter'],['writer','Editor']].map(([v,l])=>`<option value="${v}" ${p.role===v?'selected':''}>${l}</option>`).join('')}</select><button class="icon-btn" onclick="removePermission('${fid}','${p.id}')"><span class="material-symbols-outlined" style="font-size:18px">delete</span></button>`;
+      r.innerHTML=`<span style="flex:1;overflow:hidden;text-overflow:ellipsis"></span><select>${[['reader','Viewer'],['commenter','Commenter'],['writer','Editor']].map(([v,l])=>`<option value="${v}" ${p.role===v?'selected':''}>${l}</option>`).join('')}</select><button class="icon-btn" title="Remove access"><span class="material-symbols-outlined" style="font-size:18px">delete</span></button>`;
+      r.querySelector('span').textContent=p.emailAddress;
+      r.querySelector('select').onchange=ev=>updatePermission(fid,p.id,ev.target.value,email);
+      r.querySelector('button').onclick=()=>removePermission(fid,p.id,email);
       c.appendChild(r);
     });
   }catch(e){c.innerHTML=`<p style="color:var(--error)">Could not load permissions: ${esc(e.message)}</p>`}
 }
 window.addPermission=async fid=>{
-  const email=$('share-email').value.trim(),role=$('share-role').value;if(!email)return toast('Email required','error');
-  try{await ensureToken();const r=await fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions`,{method:'POST',headers:dh(),body:JSON.stringify({role,type:'user',emailAddress:email})});if(!r.ok)throw new Error((await r.json()).error.message);toast('Permission added','success');loadPermissions(fid);$('share-email').value=''}catch(e){toast('Failed: '+e.message,'error')}
+  const email=$('share-email').value.trim().toLowerCase(),role=$('share-role').value;if(!email)return toast('Email required','error');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return toast('Enter a valid email','error');
+  if(email===me())return toast('You already own this file','error');
+  try{
+    await ensureToken();
+    const r=await fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions`,{method:'POST',headers:dh(),body:JSON.stringify({role,type:'user',emailAddress:email})});
+    const j=await r.json();if(!r.ok)throw new Error(j.error?.message||'Failed');
+    await syncShare(accessItem,email,role,j.id);
+    toast('Permission added','success');loadPermissions(fid);$('share-email').value='';
+  }catch(e){toast('Failed: '+e.message,'error')}
 };
-window.updatePermission=async(fid,pid,role)=>{try{await ensureToken();await fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions/${pid}`,{method:'PATCH',headers:dh(),body:JSON.stringify({role})});toast('Permission updated','success')}catch{toast('Update failed','error')}};
-window.removePermission=async(fid,pid)=>{try{await ensureToken();await fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions/${pid}`,{method:'DELETE',headers:dh()});toast('Permission removed','success');loadPermissions(fid)}catch{toast('Remove failed','error')}};
+window.updatePermission=async(fid,pid,role,email)=>{
+  try{
+    await ensureToken();
+    const r=await fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions/${pid}`,{method:'PATCH',headers:dh(),body:JSON.stringify({role})});
+    if(!r.ok)throw new Error('Update failed');
+    await syncShare(accessItem,email,role,pid);
+    toast('Permission updated','success');
+  }catch{toast('Update failed','error')}
+};
+window.removePermission=async(fid,pid,email)=>{
+  try{
+    await ensureToken();
+    const r=await fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions/${pid}`,{method:'DELETE',headers:dh()});
+    if(!r.ok&&r.status!==404)throw new Error('Remove failed');
+    await deleteDoc(doc(db,'shares',`${accessItem.id}_${email}`)).catch(()=>{});
+    toast('Permission removed','success');loadPermissions(fid);
+  }catch{toast('Remove failed','error')}
+};
 
 /* NOTES & LINKS (with live link preview) */
 const normUrl=u=>{u=(u||'').trim();if(!u)return null;if(!/^https?:\/\//i.test(u))u='https://'+u;try{return new URL(u).href}catch{return null}};
