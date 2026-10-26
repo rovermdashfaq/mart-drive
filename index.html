@@ -397,7 +397,8 @@ const RANK={reader:1,commenter:2,writer:3};
 let cmtUnsub=null,shareItem=null,thumbBusy=false;const thumbTried=new Set();
 let pendingFile=null;
 let extMode=false,pendingFshare=null;
-let joins=[],unsubL={},pendingExt=null;
+let joins=[],unsubL={},pendingExt=null,fileJoins=[],accUnsub=null,accJoins=[];
+const liveJoins=()=>joins.filter(j=>j.role!=='none');
 const aclS={files:[],folders:[],notes:[]},linkS={files:{},folders:{},notes:{}};
 
 {const fp=new URLSearchParams(location.search).get('file');
@@ -415,7 +416,7 @@ function roleOf(x){
   if(x.kind==='sfrom')return x.role||'reader';
   if(x.uid===currentUser.uid)return'writer';
   const o=organizations.find(o=>o.id===x.orgId);if(o&&isOwner(o))return'writer';
-  const c=[(x.acl||[]).find(a=>a.e===me())?.r,...joins.filter(j=>j.rootId===x.linkRoot).map(j=>j.role)].filter(Boolean).sort((p,q)=>RANK[q]-RANK[p]);return c[0]||'reader';
+  const c=[(x.acl||[]).find(a=>a.e===me())?.r,...joins.filter(j=>j.rootId===x.linkRoot&&j.role!=='none').map(j=>j.role)].filter(Boolean).sort((p,q)=>RANK[q]-RANK[p]);return c[0]||'reader';
 }
 function menuFor(item){
   const a=MENUS[item.kind];if(item.kind==='sgroup'||item.kind==='sfrom')return a;
@@ -498,6 +499,14 @@ async function runPendingFile(){
     const s=await getDoc(doc(db,'fileLinks',c));if(!s.exists())return toast('This file link is invalid or was removed','error');
     const l=s.data(),own=[...store.files.p,...store.files.o].find(f=>f.id===l.fileId);
     const x={...l,id:l.fileId,kind:'file',...(own||{})};let r=l.role;if(own&&RANK[roleOf(own)]>RANK[r])r=roleOf(own);
+    if(!own){
+      /* record the access (shows in the owner's Manage Access; owners can change or remove it any time) */
+      const jid=`${l.fileId}_${me()}`;let jd=null;
+      try{const d=await getDoc(doc(db,'fileJoins',jid));if(d.exists())jd=d.data()}catch{}
+      if(!jd){jd={fileId:l.fileId,driveFileId:l.driveFileId,name:l.name,mimeType:l.mimeType||'',size:+l.size||0,thumb:l.thumb||'',ownerEmail:l.ownerEmail||'',email:me(),role:l.role};await setDoc(doc(db,'fileJoins',jid),{...jd,createdAt:serverTimestamp()})}
+      if(jd.role==='none')return toast('The owner has removed your access to this file','error');
+      r=jd.role;
+    }
     openViewer(x,r,l.fileId);
   }catch(e){toast('Could not open link: '+e.message,'error')}
 }
@@ -505,9 +514,32 @@ async function runPendingFile(){
 window.openAccessModal=item=>{
   accessItem=item;const o=organizations.find(x=>x.id===item.orgId);
   if(!(item.uid===currentUser.uid||(o&&isOwner(o))))return openModal('Manage Access',`<p>Only <b>${esc(item.by||'the uploader')}</b> or an organization owner can manage access to this file.</p>`,`<button class="btn" onclick="closeModal()">Close</button>`);
-  openModal('Manage Access',`<p style="margin-bottom:12px">${o?'Organization members can already view and download. ':''}Give <b>${esc(item.name)}</b>${item.kind==='folder'?' and everything inside it':''} extra access (view, comment or edit) to any member, or to anyone outside the team by email.</p><div id="permissions-list" style="margin-bottom:16px"></div><div class="field"><label>Add people (email)</label><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="share-email" type="email" placeholder="user@example.com" style="flex:1;min-width:160px;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><select id="share-role" class="sel"><option value="reader">Viewer</option><option value="commenter">Commenter</option><option value="writer">Editor</option></select><button class="btn btn-primary" onclick="addPermission()">Add</button></div></div>`,`<button class="btn" onclick="closeModal()">Close</button>`);
-  renderAcl();
+  openModal('Manage Access',`<p style="margin-bottom:12px">${o?'Organization members can already view and download. ':''}Give <b>${esc(item.name)}</b>${item.kind==='folder'?' and everything inside it':''} extra access (view, comment or edit) to any member, or to anyone outside the team by email.</p><div id="permissions-list" style="margin-bottom:16px"></div><div id="join-list" style="margin-bottom:16px"></div><div class="field"><label>Add people (email)</label><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="share-email" type="email" placeholder="user@example.com" style="flex:1;min-width:160px;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><select id="share-role" class="sel"><option value="reader">Viewer</option><option value="commenter">Commenter</option><option value="writer">Editor</option></select><button class="btn btn-primary" onclick="addPermission()">Add</button></div></div>`,`<button class="btn" onclick="closeModal()">Close</button>`);
+  renderAcl();watchJoins(item);
 };
+function watchJoins(item){
+  if(accUnsub){accUnsub();accUnsub=null}accJoins=[];
+  const fol=item.kind==='folder',col=fol?'folderJoins':'fileJoins';
+  const q=fol?query(collection(db,col),where('rootId','==',item.linkRoot||item.id)):query(collection(db,col),where('fileId','==',item.id));
+  accUnsub=onSnapshot(q,s=>{accJoins=snapDocs(s).map(j=>({...j,_col:col}));renderJoins()},e=>console.warn('joins',e));
+}
+function renderJoins(){
+  const c=$('join-list');if(!c)return;
+  if(!accJoins.length){c.innerHTML='';return}
+  c.innerHTML='<div class="step-t">Joined via share link</div>';
+  [...accJoins].sort((a,b)=>String(a.email).localeCompare(String(b.email))).forEach(j=>{
+    const r=document.createElement('div');r.className='access-row';
+    r.innerHTML=`<span style="flex:1;overflow:hidden;text-overflow:ellipsis"></span><select>${[['reader','Viewer'],['commenter','Commenter'],['writer','Editor'],['none','No access']].map(([v,t])=>`<option value="${v}" ${j.role===v?'selected':''}>${t}</option>`).join('')}</select><button class="icon-btn" title="Remove access"><span class="material-symbols-outlined" style="font-size:18px">person_remove</span></button>`;
+    r.querySelector('span').textContent=j.email;
+    r.querySelector('select').onchange=ev=>setJoinRole(j,ev.target.value);
+    r.querySelector('button').onclick=()=>setJoinRole(j,'none');
+    c.appendChild(r);
+  });
+}
+async function setJoinRole(j,role){
+  try{await updateDoc(doc(db,j._col,j.id),{role});toast(role==='none'?'Access removed':'Access updated','success')}
+  catch(e){toast('Failed: '+e.message,'error')}
+}
 function renderAcl(){
   const c=$('permissions-list');if(!c)return;const l=accessItem.acl||[];
   if(!l.length){c.innerHTML='<p style="color:var(--muted)">No extra access given yet.</p>';return}
@@ -589,14 +621,14 @@ onAuthStateChanged(auth,user=>{
   }else{
     currentUser=null;accessToken=null;quota=null;$('app').classList.remove('ready');$('landing').style.display='block';document.documentElement.classList.remove('has-session');try{localStorage.removeItem('mart_has_session')}catch{}
     [...unsubP,...unsubO,...unsubS,unsubOrgs,unsubR,unsubG,unsubQ].forEach(u=>u&&u());unsubR=null;unsubG=null;reqKey='';joinReqs=[];unsubQ=null;memberQ=[];
-    Object.values(unsubL).flat().forEach(u=>u());unsubL={};joins=[];
+    Object.values(unsubL).flat().forEach(u=>u());unsubL={};joins=[];fileJoins=[];if(accUnsub){accUnsub();accUnsub=null}
   }
 });
 
 const snapDocs=s=>s.docs.map(d=>({id:d.id,...d.data()}));
 function mergeS(k){const m=new Map();[...aclS[k],...Object.values(linkS[k]).flat()].forEach(x=>m.set(x.id,x));store[k].s=[...m.values()].filter(x=>x.uid!==currentUser.uid);openPendingExt();render()}
 function syncLinkListeners(){
-  const roots=new Set(joins.map(j=>j.rootId));
+  const roots=new Set(liveJoins().map(j=>j.rootId));
   Object.keys(unsubL).forEach(r=>{if(!roots.has(r)){unsubL[r].forEach(u=>u());delete unsubL[r];['files','folders','notes'].forEach(k=>{delete linkS[k][r];mergeS(k)})}});
   roots.forEach(r=>{if(unsubL[r])return;unsubL[r]=['files','folders','notes'].map(k=>onSnapshot(query(collection(db,k),where('linkRoot','==',r)),s=>{linkS[k][r]=snapDocs(s);mergeS(k)},e=>console.warn('link-'+k,e)))});
 }
@@ -631,6 +663,7 @@ function setupListeners(){
     onSnapshot(query(collection(db,'shares'),where('email','==',me())),s=>{sharedFrom=snapDocs(s);render()},e=>console.warn('sharedFrom',e)),
     ...['files','folders','notes'].map(k=>onSnapshot(query(collection(db,k),where('aclEmails','array-contains',me())),s=>{aclS[k]=snapDocs(s);mergeS(k)},e=>console.warn('acl-'+k,e))),
     onSnapshot(query(collection(db,'folderJoins'),where('email','==',me())),s=>{joins=snapDocs(s);syncLinkListeners();render()},e=>console.warn('joins',e)),
+    onSnapshot(query(collection(db,'fileJoins'),where('email','==',me())),s=>{fileJoins=snapDocs(s);render()},e=>console.warn('fileJoins',e)),
     onSnapshot(query(collection(db,'folderGrants'),where('ownerUid','==',uid)),s=>snapDocs(s).forEach(applyGrant),e=>console.warn('grants',e))
   ];
 }
@@ -661,7 +694,7 @@ async function autoApprovePending(){
 const all=k=>{if(extMode)return store[k].s;const m=new Map();[...store[k].p,...store[k].o].forEach(x=>m.set(x.id,x));return[...m.values()].filter(x=>(x.orgId||null)===currentOrgId)};
 const rawWs=()=>{const m=new Map();[['folders','folder'],['files','file'],['notes','note']].forEach(([k,kind])=>[...store[k].p,...store[k].o].forEach(x=>m.set(kind+x.id,{...x,kind})));return[...m.values()]};
 const inh=()=>{const f=all('folders').find(x=>x.id===currentFolderId);if(!f)return{};const o={};if(f.acl&&f.acl.length){o.acl=f.acl;o.aclEmails=f.acl.map(a=>a.e)}if(f.linkRoot)o.linkRoot=f.linkRoot;return o};
-const topExt=()=>{const ids=new Set(store.folders.s.map(f=>f.id)),jf=new Set(joins.map(j=>j.folderId));return store.folders.s.filter(f=>!f.trashed&&(jf.has(f.id)||(!ids.has(f.parentId)&&!joins.some(j=>j.rootId===f.linkRoot&&j.folderId!==j.rootId)))).map(f=>{const k={...f,kind:'folder'};return{...k,ext:true,role:roleOf(k)}})};
+const topExt=()=>{const ids=new Set(store.folders.s.map(f=>f.id)),jf=new Set(liveJoins().map(j=>j.folderId));return store.folders.s.filter(f=>!f.trashed&&(jf.has(f.id)||(!ids.has(f.parentId)&&!liveJoins().some(j=>j.rootId===f.linkRoot&&j.folderId!==j.rootId)))).map(f=>{const k={...f,kind:'folder'};return{...k,ext:true,role:roleOf(k)}})};
 const ws=()=>[...all('folders').map(x=>({...x,kind:'folder'})),...all('files').map(x=>({...x,kind:'file'})),...all('notes').map(x=>({...x,kind:'note'}))];
 
 async function publishQuota(){
@@ -1211,7 +1244,9 @@ function renderShares(){
     list=[...m.values()];list.forEach(g=>g.entries.sort((a,b)=>String(a.email).localeCompare(String(b.email))));
     if(searchTerm)list=list.filter(g=>String(g.name).toLowerCase().includes(searchTerm)||g.entries.some(e=>String(e.email).toLowerCase().includes(searchTerm)));
   }else{
-    list=[...topExt(),...sharedFrom.map(s=>({...s,kind:'sfrom',by:s.ownerEmail}))];
+    const sfl=sharedFrom.map(s=>({...s,kind:'sfrom',by:s.ownerEmail}));
+    fileJoins.filter(j=>j.role!=='none').forEach(j=>{const i=sfl.findIndex(s=>s.fileId===j.fileId),nj={...j,kind:'sfrom',by:j.ownerEmail};if(i<0)sfl.push(nj);else if(RANK[j.role]>RANK[sfl[i].role])sfl[i]=nj});
+    list=[...topExt(),...sfl];
     if(searchTerm)list=list.filter(s=>String(s.name).toLowerCase().includes(searchTerm)||String(s.ownerEmail||s.by||'').toLowerCase().includes(searchTerm));
   }
   list.sort((a,b)=>sortBy==='date'?ts(b)-ts(a):sortBy==='size'?(b.size||0)-(a.size||0):String(a.name).localeCompare(String(b.name)));
@@ -1378,8 +1413,10 @@ async function runPendingFshare(){
     const s=await getDoc(doc(db,'folderLinks',c));if(!s.exists())return toast('This folder link is invalid or was removed','error');
     const l=s.data(),root=l.rootId||l.folderId;
     if(l.ownerUid===currentUser.uid)return toast('This is your own folder','success');
-    const ex=joins.find(j=>j.rootId===root);
-    if(!ex||RANK[l.role]>RANK[ex.role])await setDoc(doc(db,'folderJoins',`${root}_${me()}`),{rootId:root,folderId:l.folderId,role:l.role,name:l.name,ownerUid:l.ownerUid,email:me(),createdAt:serverTimestamp()});
+    const jid=`${root}_${me()}`;let ex=null;
+    try{const d=await getDoc(doc(db,'folderJoins',jid));if(d.exists())ex=d.data()}catch{}
+    if(ex&&ex.role==='none')return toast('The owner has removed your access to this folder','error');
+    if(!ex)await setDoc(doc(db,'folderJoins',jid),{rootId:root,folderId:l.folderId,role:l.role,name:l.name,ownerUid:l.ownerUid,ownerEmail:l.ownerEmail||'',email:me(),createdAt:serverTimestamp()});
     pendingExt=l.folderId;toast('"'+l.name+'" added to Shared from','success');openPendingExt();
   }catch(e){toast('Could not open link: '+e.message,'error')}
 }
@@ -1490,7 +1527,7 @@ function openModal(title,body,foot,wide){
   $('modal-title').textContent=title;$('modal-body').innerHTML=body;$('modal-foot').innerHTML=foot||'';
   $('modal-box').classList.toggle('wide',!!wide);$('modal-backdrop').classList.add('open');
 }
-window.closeModal=()=>{if(cmtUnsub){cmtUnsub();cmtUnsub=null}$('modal-backdrop').classList.remove('open');$('modal-body').innerHTML='';$('modal-body').onclick=null;$('modal-foot').onclick=null};
+window.closeModal=()=>{if(cmtUnsub){cmtUnsub();cmtUnsub=null}if(accUnsub){accUnsub();accUnsub=null}$('modal-backdrop').classList.remove('open');$('modal-body').innerHTML='';$('modal-body').onclick=null;$('modal-foot').onclick=null};
 $('modal-backdrop').addEventListener('mousedown',e=>{if(e.target.id==='modal-backdrop')closeModal()});
 function toast(msg,type=''){const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;$('toast-stack').appendChild(t);setTimeout(()=>t.remove(),3500)}
 function fmtSize(b){b=+b;if(!b)return '0 B';if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';if(b<1073741824)return(b/1048576).toFixed(1)+' MB';return(b/1073741824).toFixed(2)+' GB'}
