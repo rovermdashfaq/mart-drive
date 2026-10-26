@@ -183,6 +183,19 @@ html.has-session #landing{display:none}
 .nav-logout{display:none}
 .mn-ic{display:flex;align-items:center;height:24px}
 @media(max-width:900px){.nav-logout{display:block}.user-btn{display:none}}
+/* auto-approve toggle */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-row .toggle-info{flex:1;min-width:0}
+.toggle-row .toggle-info b{display:block;font-size:14px;margin-bottom:2px}
+.toggle-row .toggle-info small{color:var(--muted);font-size:12px}
+.switch{position:relative;display:inline-block;width:44px;height:24px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.switch .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:var(--border);border-radius:24px;transition:.2s}
+.switch .slider:before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:var(--surface);border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch input:checked+.slider{background:var(--success)}
+.switch input:checked+.slider:before{transform:translateX(20px)}
+.switch input:disabled+.slider{opacity:.5;cursor:not-allowed}
 </style>
 <script>
 (function(){
@@ -840,8 +853,8 @@ window.createOrg=async()=>{
     const logoUrl=await resolveLogo();
     const owners=[...new Set([me(),...own.list])],members=[...new Set([me(),...mem.list,...own.list])];
     const ref=doc(collection(db,'organizations')),code=genCode();
-    await setDoc(ref,{teamName:team,name,logoUrl,owner:currentUser.uid,ownerEmail:me(),owners,members,inviteCode:code,createdAt:serverTimestamp()});
-    await setDoc(doc(db,'invites',code),{orgId:ref.id,orgName:name,teamName:team,logoUrl,createdBy:me()}).catch(e=>console.warn('invite',e));
+    await setDoc(ref,{teamName:team,name,logoUrl,owner:currentUser.uid,ownerEmail:me(),owners,members,inviteCode:code,autoApprove:false,createdAt:serverTimestamp()});
+    await setDoc(doc(db,'invites',code),{orgId:ref.id,orgName:name,teamName:team,logoUrl,createdBy:me(),autoApprove:false}).catch(e=>console.warn('invite',e));
     toast('Organization created!','success');closeModal();
   }catch(e){toast('Failed: '+e.message,'error');btn.disabled=false;btn.textContent='Create'}
 };
@@ -873,11 +886,23 @@ window.deleteOrg=async id=>{
   }catch(e){toast('Failed: '+e.message,'error')}
 };
 
+/* AUTO-APPROVE TOGGLE (owners only) */
+window.toggleAutoApprove=async(on=>{
+  const o=myOrg();
+  if(!o||!isOwner(o))return toast('Only owners can change this setting','error');
+  try{
+    await updateDoc(doc(db,'organizations',o.id),{autoApprove:!!on});
+    if(o.inviteCode)await setDoc(doc(db,'invites',o.inviteCode),{autoApprove:!!on},{merge:true}).catch(()=>{});
+    o.autoApprove=!!on;
+    toast(on?'Auto-approve enabled':'Auto-approve disabled','success');
+  }catch(e){toast('Failed: '+e.message,'error')}
+};
+
 /* MEMBERS, OWNERS & INVITE LINK */
 async function ensureInvite(o,force){
   if(o.inviteCode&&!force)return o.inviteCode;
   const old=o.inviteCode,code=genCode();
-  await setDoc(doc(db,'invites',code),{orgId:o.id,orgName:o.name,teamName:o.teamName||'',logoUrl:o.logoUrl||null,createdBy:me()});
+  await setDoc(doc(db,'invites',code),{orgId:o.id,orgName:o.name,teamName:o.teamName||'',logoUrl:o.logoUrl||null,createdBy:me(),autoApprove:!!o.autoApprove});
   await updateDoc(doc(db,'organizations',o.id),{inviteCode:code});
   if(old)await deleteDoc(doc(db,'invites',old)).catch(()=>{});
   o.inviteCode=code;return code;
@@ -893,8 +918,9 @@ window.openMembersModal=async id=>{
     return`<div class="access-row"><span class="material-symbols-outlined" style="color:var(--muted)">account_circle</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis">${esc(m)}${self?' (you)':''}</span>${ow?'<span class="chip own">Owner</span>':'<span class="chip">Member</span>'}${btns}</div>`;
   }).join('');
   const inv=o.inviteCode?`<div class="field" style="margin-top:16px"><label>Invite link</label><div style="display:flex;gap:8px"><input id="inv-link" readonly value="${esc(inviteLink(o.inviteCode))}" style="flex:1;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><button class="btn" data-act="copyinv" title="Copy link"><span class="material-symbols-outlined">content_copy</span></button>${own?`<button class="btn" data-act="resetinv" title="Create a new link (old link stops working)"><span class="material-symbols-outlined">autorenew</span></button>`:''}</div><small style="color:var(--muted);font-size:12px">Anyone with this link can log in / sign up and request to join. An owner must approve every request.</small></div>`:`<p style="font-size:13px;color:var(--muted);margin-top:16px">No invite link yet. Ask an owner to open this window to create one.</p>`;
+  const autoRow=own?`<div class="toggle-row"><div class="toggle-info"><b>Auto-approve join requests</b><small>${o.autoApprove?'New members who use the invite link are added automatically.':'New members must be approved by an owner before they can join.'}</small></div><label class="switch"><input type="checkbox" ${o.autoApprove?'checked':''} onchange="toggleAutoApprove(this.checked)"><span class="slider"></span></label></div>`:'';
   openModal(`${o.name} · Members (${o.members.length})`,
-   `<p style="font-size:13px;color:var(--muted);margin-bottom:12px">All members can view, comment and edit files, notes and links in this organization. Owners can also manage people and approve join requests.</p>${rows}${inv}
+   `<p style="font-size:13px;color:var(--muted);margin-bottom:12px">All members can view, comment and edit files, notes and links in this organization. Owners can also manage people and approve join requests.</p>${autoRow}<div class="step-t" style="margin-top:12px">Members</div>${rows}${inv}
    ${own?`<div class="field" style="margin-top:16px"><label>Add people (Google emails, separated by comma)</label><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="member-email" placeholder="name@gmail.com" style="flex:1;min-width:160px;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><select id="member-role" class="sel"><option value="member">Member</option><option value="owner">Owner</option></select><button class="btn btn-primary" data-act="add">Add</button></div></div>`:''}`,
    `${!own||owners.length>1?`<button class="btn" style="color:var(--error);border-color:var(--error)" data-act="leave">Leave</button>`:''}<button class="btn" onclick="closeModal()">Close</button>`);
   const handler=ev=>{
@@ -975,7 +1001,7 @@ async function revokeDrive(fid,email){
 }
 async function shareWithMembers(fid){const o=myOrg(),done=[];if(!o)return done;for(const m of o.members)if(m!==me()){const r=await grantDrive(fid,m,ownersOf(o).includes(m)?'writer':'reader');if(r&&r.ok)done.push(m)}return done}
 
-/* JOIN via invite link + approval by owners */
+/* JOIN via invite link + approval by owners (auto-approve if enabled) */
 async function runPendingJoin(){
   const code=pendingJoin;if(!code||!currentUser)return;
   pendingJoin=null;try{localStorage.removeItem('mart_join')}catch{}
@@ -984,6 +1010,19 @@ async function runPendingJoin(){
     if(!snap.exists())return toast('This invite link is invalid or has expired','error');
     const inv=snap.data();joinInv={code,...inv};
     if(organizations.some(o=>o.id===inv.orgId)){switchOrg(inv.orgId);return toast('You are already a member of '+inv.orgName,'success')}
+    /* Auto-approve: add member directly if the organization has it enabled */
+    if(inv.autoApprove){
+      try{
+        await updateDoc(doc(db,'organizations',inv.orgId),{members:arrayUnion(me())});
+        await setDoc(doc(db,'invites',code),{autoApprove:inv.autoApprove},{merge:true}).catch(()=>{});
+        toast('Joined '+inv.orgName+'! You now have access to the organization.','success');
+        /* the organizations listener will pick up the new membership and switch */
+        return;
+      }catch(e){
+        console.warn('auto-approve join failed',e);
+        /* Fall through to request modal if auto-approve fails */
+      }
+    }
     let pending=false;
     try{const ex=await getDoc(doc(db,'joinRequests',`${inv.orgId}_${me()}`));pending=ex.exists()&&ex.data().status==='pending'}catch{}
     const head=`<div style="text-align:center"><img src="${esc(inv.logoUrl||LOGO)}" style="width:72px;height:72px;border-radius:14px;object-fit:cover"><h3 style="margin:10px 0 2px">${esc(inv.orgName)}</h3><div class="file-meta">Team: ${esc(inv.teamName||'—')}</div>`;
