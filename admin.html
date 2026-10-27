@@ -37,6 +37,7 @@ input,select,textarea{font:inherit;color:inherit}
 .ib{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--muted)}
 .ib:hover{background:var(--soft);color:var(--text)}
 .ib.red:hover{color:var(--error)}
+.ib:disabled{opacity:.35;cursor:not-allowed}
 
 /* layout */
 #app{display:none;min-height:100%}
@@ -128,6 +129,7 @@ textarea.inp{resize:vertical;min-height:200px;line-height:1.6}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
 .modal-bg.on{display:flex}
 .modal{background:var(--surface);border-radius:var(--radius-lg);width:100%;max-width:480px;max-height:90vh;overflow:auto;box-shadow:var(--shadow-lg);padding:22px}
+.modal.wide{max-width:680px}
 .modal h3{font-size:17px;margin-bottom:10px}
 .modal .row{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;flex-wrap:wrap}
 .modal p{margin-bottom:8px}
@@ -143,6 +145,17 @@ textarea.inp{resize:vertical;min-height:200px;line-height:1.6}
 .log{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
 .log:last-child{border:0}
 .log .t{color:var(--muted);font-size:12px;white-space:nowrap;min-width:110px}
+
+/* org members manager */
+.mm-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.mm-row:last-child{border:0}
+.mm-row .u{flex:1;min-width:180px}
+.mm-row .u b,.mm-row .u span{max-width:200px}
+.rsel{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);font-weight:600;font-size:12px}
+.rsel:disabled{opacity:.6}
+.mm-list{max-height:48vh;overflow:auto;border-top:1px solid var(--border);margin-top:8px}
+.mm-add{display:flex;gap:8px;flex-wrap:wrap;padding:10px;background:var(--bg);border-radius:var(--radius)}
+.mm-legend{font-size:12px;color:var(--muted);margin:8px 0 4px;line-height:1.6}
 
 @media(max-width:860px){
   aside{transform:translateX(-100%);box-shadow:var(--shadow-lg)}
@@ -311,7 +324,7 @@ textarea.inp{resize:vertical;min-height:200px;line-height:1.6}
       <!-- ORGS -->
       <section class="tab" id="tab-orgs">
         <div class="bar"><div class="search"><span class="ms">search</span><input class="inp" id="o-q" placeholder="Search organizations…"></div></div>
-        <div class="tw"><table><thead><tr><th>Name</th><th>Team</th><th>Members</th><th>Owner</th><th>Auto-approve</th><th></th></tr></thead><tbody id="o-body"></tbody></table><div class="empty" id="o-empty" style="display:none">No organizations found</div></div>
+        <div class="tw"><table><thead><tr><th>Name</th><th>Team</th><th>Super Admins</th><th>Admins</th><th>Members</th><th>Creator</th><th>Auto-approve</th><th></th></tr></thead><tbody id="o-body"></tbody></table><div class="empty" id="o-empty" style="display:none">No organizations found</div></div>
       </section>
 
       <!-- ACTIVITY -->
@@ -370,6 +383,7 @@ let me=null, isSuper=false;
 let users=[], blocked=new Map(), admins=new Map(), orgs=[], unsubs=[];
 let selected=new Set(), page=0; const PER=25;
 let counts={files:0,folders:0,notes:0,bytes:0};
+let membersOpen=null; // organization id whose member manager is open
 
 /* ---------------- auth ---------------- */
 $('btn-login').onclick=async()=>{
@@ -442,13 +456,13 @@ $('btn-theme').onclick=()=>{document.body.classList.toggle('dark');try{localStor
 try{if(localStorage.getItem('admin_theme')==='dark'||(!localStorage.getItem('admin_theme')&&matchMedia('(prefers-color-scheme:dark)').matches))document.body.classList.add('dark')}catch{}
 
 /* ---------------- modal ---------------- */
-function modal(html,wire){$('modal').innerHTML=html;$('modal-bg').classList.add('on');wire&&wire($('modal'))}
-const closeModal=()=>$('modal-bg').classList.remove('on');
+function modal(html,wire,wide){$('modal').className='modal'+(wide?' wide':'');$('modal').innerHTML=html;$('modal-bg').classList.add('on');wire&&wire($('modal'))}
+const closeModal=()=>{membersOpen=null;$('modal-bg').classList.remove('on')};
 $('modal-bg').onclick=e=>{if(e.target===$('modal-bg'))closeModal()};
 function confirmBox(title,msg,okLabel,danger,extra=''){
   return new Promise(res=>modal(`<h3>${esc(title)}</h3><p>${msg}</p>${extra}<div class="row"><button class="btn" id="cb-no">Cancel</button><button class="btn ${danger?'dng':'pri'}" id="cb-ok">${esc(okLabel)}</button></div>`,m=>{
     m.querySelector('#cb-no').onclick=()=>{closeModal();res(null)};
-    m.querySelector('#cb-ok').onclick=()=>{const x=m.querySelector('#cb-x');closeModal();res({x:x?x.checked:false})};
+    m.querySelector('#cb-ok').onclick=()=>{const x=m.querySelector('#cb-x');const b=m.querySelector('#cb-b');const out={x:x?x.checked:false,b:b?b.checked:false};closeModal();res(out)};
   }));
 }
 
@@ -457,6 +471,7 @@ function renderAll(){
   $('c-users').textContent=users.length;$('c-admins').textContent=admins.size+1;$('c-blocked').textContent=blocked.size;$('c-orgs').textContent=orgs.length;
   renderDash();renderUsers();renderAdmins();renderBlocked();renderOrgs();
   if($('tab-mail').classList.contains('on'))renderMail();
+  if(membersOpen&&$('modal-bg').classList.contains('on'))renderMembers();
 }
 
 /* ---------------- dashboard ---------------- */
@@ -547,10 +562,11 @@ $('sel-del').onclick=()=>deleteUsers(selUsers());
 
 async function userInfo(u){
   const e=low(u.email);
+  const myOrgs=orgs.filter(o=>(o.members||[]).map(low).includes(e)).map(o=>`${esc(o.name)} <span class="pill ${roleOf(o,e)==='super'?'sup':roleOf(o,e)==='admin'?'adm':'gray'}">${ROLE_LABEL[roleOf(o,e)]}</span>`).join('<br>')||'—';
   modal(`<h3>User Details</h3><div class="u" style="margin-bottom:14px">${avatar(u)}<div><b>${esc(u.name||'Unnamed')}</b><span>${esc(u.email)}</span></div></div>
    <div class="kv"><b>Status</b><span>${statusPills(u)}</span><b>UID</b><span>${esc(u.id)}</span><b>Joined</b><span>${fmtDT(u.createdAt)}</span><b>Last Login</b><span>${fmtDT(u.lastLogin)}</span><b>Login Count</b><span>${u.loginCount||0}</span>
    ${isBlocked(u)?`<b>Block Reason</b><span>${esc(blocked.get(e)?.reason||'—')}</span>`:''}
-   <b>Files</b><span id="ui-f">…</span><b>Folders</b><span id="ui-d">…</span><b>Notes/Links</b><span id="ui-n">…</span><b>Storage</b><span id="ui-s">…</span><b>Organizations</b><span>${esc(orgs.filter(o=>(o.members||[]).includes(e)).map(o=>o.name).join(', ')||'—')}</span></div>
+   <b>Files</b><span id="ui-f">…</span><b>Folders</b><span id="ui-d">…</span><b>Notes/Links</b><span id="ui-n">…</span><b>Storage</b><span id="ui-s">…</span><b>Organizations</b><span>${myOrgs}</span></div>
    <div class="row"><button class="btn" id="ui-x">Close</button></div>`,m=>m.querySelector('#ui-x').onclick=closeModal);
   try{
     const c=n=>getCountFromServer(query(collection(db,n),where('uid','==',u.id)));
@@ -560,7 +576,7 @@ async function userInfo(u){
 }
 
 /* block / unblock */
-async function blockUsers(list,reasonPre){
+async function blockUsers(list){
   list=list.filter(u=>!isAdminEmail(u.email)&&!isBlocked(u));
   if(!list.length)return toast('No users to block');
   const r=await confirmBox('Block these users?',`<b>${list.length}</b> user(s) will be blocked. They won't be able to use the app after the next load. Data is not deleted—unblocking restores access.<br><br><input class="inp" id="bk-r" style="width:100%" placeholder="Reason (optional)">`,'Block',true);
@@ -598,8 +614,7 @@ async function deleteUsers(list){
     <label class="chk"><input type="checkbox" id="cb-b" checked><span><b>Block them as well</b><br><small style="color:var(--muted)">Without blocking, the user could sign in again and re-register.</small></span></label>`;
   const r=await confirmBox('Delete users?',`<b>${list.length}</b> user(s) will be deleted. This cannot be undone.`,'Delete',true,extra);
   if(!r)return;
-  const alsoBlock=$('cb-b')?.checked!==false;
-  const wipe=r.x;
+  const alsoBlock=r.b,wipe=r.x;
   const total=list.length;let done=0;
   const note=document.createElement('div');note.className='toast';$('toasts').appendChild(note);
   try{
@@ -622,9 +637,10 @@ async function wipeUserData(u){
   await delQuery(query(collection(db,'shares'),where('email','==',e))).catch(()=>0);
   for(const c of['memberQuotas','joinRequests','folderJoins','fileJoins'])await delQuery(query(collection(db,c),where('email','==',e))).catch(()=>0);
   for(const o of orgs){
-    if((o.members||[]).includes(e)||(o.owners||[]).includes(e)){
-      const upd={members:arrayRemove(e),owners:arrayRemove(e)};
-      try{await updateDoc(doc(db,'organizations',o.id),upd)}catch(err){console.warn('org',o.id,err)}
+    const inAny=[...(o.members||[]),...(o.owners||[]),...(o.founders||[])].map(low).includes(e);
+    if(inAny&&low(o.ownerEmail)!==e){
+      // remove from members, owners AND founders so "Super Admin ⊆ Admin ⊆ Member" always holds
+      try{await updateDoc(doc(db,'organizations',o.id),{members:arrayRemove(e),owners:arrayRemove(e),founders:arrayRemove(e)})}catch(err){console.warn('org',o.id,err)}
     }
   }
 }
@@ -666,17 +682,31 @@ $('a-body').addEventListener('click',async e=>{
   try{await deleteDoc(doc(db,'admins',b.dataset.e));toast('Removed','success')}catch(err){toast('Failed: '+(err.code||err.message),'error')}
 });
 
-/* ---------------- orgs ---------------- */
+/* ---------------- organizations ---------------- */
+/* Roles inside an organization (same model as the main app):
+     Member       → in `members`
+     Admin        → in `members` + `owners`
+     Super Admin  → in `members` + `owners` + `founders`
+   The organization's creator (`ownerEmail`) is always a Super Admin and is locked. */
+const ROLE_LABEL={super:'Super Admin',admin:'Admin',member:'Member'};
+const creatorOf=o=>low(o.ownerEmail||'');
+const founderList=o=>[...new Set([...(o.founders||[]).map(low),...(creatorOf(o)?[creatorOf(o)]:[])])];
+const ownerList=o=>[...new Set([...(o.owners||[]).map(low),...(creatorOf(o)&&!(o.owners||[]).length?[creatorOf(o)]:[])])];
+function roleOf(o,e){e=low(e);if(founderList(o).includes(e))return 'super';if(ownerList(o).includes(e))return 'admin';return 'member'}
+
 function renderOrgs(){
   const q=low($('o-q').value);
   const l=orgs.filter(o=>!q||low(o.name).includes(q)||low(o.teamName).includes(q)).sort((a,b)=>low(a.name).localeCompare(low(b.name)));
   $('o-empty').style.display=l.length?'none':'block';
-  $('o-body').innerHTML=l.map(o=>`<tr><td><b>${esc(o.name||'—')}</b></td><td>${esc(o.teamName||'—')}</td><td>${(o.members||[]).length}</td><td>${esc(o.ownerEmail||(o.owners||[])[0]||'—')}</td><td>${o.autoApprove?'<span class="pill ok">On</span>':'<span class="pill gray">Off</span>'}</td><td class="acts"><button class="ib" data-a="m" data-id="${esc(o.id)}" title="View members"><span class="ms">groups</span></button><button class="ib" data-a="mail" data-id="${esc(o.id)}" title="Email members"><span class="ms">mail</span></button><button class="ib red" data-a="d" data-id="${esc(o.id)}" title="Delete"><span class="ms">delete</span></button></td></tr>`).join('');
+  $('o-body').innerHTML=l.map(o=>{
+    const mem=(o.members||[]).map(low);
+    const sup=mem.filter(e=>roleOf(o,e)==='super').length,adm=mem.filter(e=>roleOf(o,e)==='admin').length,mb=mem.filter(e=>roleOf(o,e)==='member').length;
+    return `<tr><td><b>${esc(o.name||'—')}</b></td><td>${esc(o.teamName||'—')}</td><td><span class="pill sup">${sup}</span></td><td><span class="pill adm">${adm}</span></td><td><span class="pill gray">${mb}</span></td><td>${esc(o.ownerEmail||'—')}</td><td>${o.autoApprove?'<span class="pill ok">On</span>':'<span class="pill gray">Off</span>'}</td><td class="acts"><button class="btn sm" data-a="m" data-id="${esc(o.id)}"><span class="ms" style="font-size:16px">manage_accounts</span>Manage roles</button><button class="ib" data-a="mail" data-id="${esc(o.id)}" title="Email members"><span class="ms">mail</span></button><button class="ib red" data-a="d" data-id="${esc(o.id)}" title="Delete organization"><span class="ms">delete</span></button></td></tr>`}).join('');
 }
 $('o-q').oninput=renderOrgs;
 $('o-body').addEventListener('click',async e=>{
   const b=e.target.closest('[data-a]');if(!b)return;const o=orgs.find(x=>x.id===b.dataset.id);if(!o)return;
-  if(b.dataset.a==='m')return modal(`<h3>${esc(o.name)} · Members (${(o.members||[]).length})</h3><div style="max-height:50vh;overflow:auto">${(o.members||[]).map(m=>`<div class="log"><span style="flex:1">${esc(m)}</span>${(o.owners||[]).includes(m)?'<span class="pill adm">Owner</span>':''}</div>`).join('')}</div><div class="row"><button class="btn" id="x">Close</button></div>`,m=>m.querySelector('#x').onclick=closeModal);
+  if(b.dataset.a==='m')return openMembers(o.id);
   if(b.dataset.a==='mail')return mailTo(o.members||[]);
   const r=await confirmBox('Delete organization?',`<b>${esc(o.name)}</b> and all its file/folder/note records will be deleted.`,'Delete',true);if(!r)return;
   try{
@@ -685,6 +715,79 @@ $('o-body').addEventListener('click',async e=>{
     await deleteDoc(doc(db,'organizations',o.id));toast('Deleted','success');loadCounts();
   }catch(err){toast('Failed: '+(err.code||err.message),'error')}
 });
+
+/* member / role manager */
+function openMembers(id){membersOpen=id;modal('','',true);renderMembers()}
+function renderMembers(){
+  const o=orgs.find(x=>x.id===membersOpen);
+  if(!o){closeModal();return}
+  const cr=creatorOf(o);
+  const rank={super:0,admin:1,member:2};
+  const list=[...new Set((o.members||[]).map(low))].sort((a,b)=>rank[roleOf(o,a)]-rank[roleOf(o,b)]||a.localeCompare(b));
+  const row=e=>{
+    const u=users.find(x=>low(x.email)===e)||{email:e,name:''};
+    const locked=e===cr, r=roleOf(o,e);
+    return `<div class="mm-row" data-e="${esc(e)}">
+      <div class="u">${avatar(u)}<div style="min-width:0"><b>${esc(u.name||e.split('@')[0])}</b><span>${esc(e)}</span></div></div>
+      ${locked?'<span class="pill sup">Creator · Super Admin</span>':`<select class="rsel" data-role>
+        <option value="member"${r==='member'?' selected':''}>Member</option>
+        <option value="admin"${r==='admin'?' selected':''}>Admin</option>
+        <option value="super"${r==='super'?' selected':''}>Super Admin</option></select>`}
+      <button class="ib red" data-rm title="${locked?'The creator cannot be removed':'Remove from organization'}" ${locked?'disabled':''}><span class="ms">person_remove</span></button>
+    </div>`};
+  $('modal').innerHTML=`<h3>${esc(o.name||'Organization')} · Roles (${list.length})</h3>
+    <div class="mm-legend"><span class="pill sup">Super Admin</span> full control; can promote/demote others; only they can remove other Super Admins<br>
+      <span class="pill adm">Admin</span> manages members, requests and settings<br>
+      <span class="pill gray">Member</span> normal access</div>
+    <div class="mm-add">
+      <input class="inp" id="mm-email" type="email" placeholder="Add member by email" style="flex:1;min-width:180px" list="mm-users">
+      <datalist id="mm-users">${users.filter(u=>!list.includes(low(u.email))).map(u=>`<option value="${esc(u.email)}">${esc(u.name||'')}</option>`).join('')}</datalist>
+      <select class="rsel" id="mm-role"><option value="member">Member</option><option value="admin">Admin</option><option value="super">Super Admin</option></select>
+      <button class="btn pri sm" id="mm-add"><span class="ms" style="font-size:16px">add</span>Add</button>
+    </div>
+    <div class="mm-list">${list.map(row).join('')||'<div class="empty">No members</div>'}</div>
+    <div class="row"><button class="btn" id="mm-close">Close</button></div>`;
+  $('mm-close').onclick=closeModal;
+  $('mm-add').onclick=async()=>{
+    const e=low($('mm-email').value);
+    if(!isEmail(e))return toast('Enter a valid email','error');
+    if(blocked.has(e))return toast('This user is blocked. Unblock first.','error');
+    if(list.includes(e))return toast('Already a member — change the role in the list','error');
+    await saveRoles(o,e,$('mm-role').value,'add');
+  };
+  $('modal').querySelectorAll('.mm-row').forEach(r=>{
+    const e=r.dataset.e;
+    const sel=r.querySelector('[data-role]');
+    if(sel)sel.onchange=()=>saveRoles(o,e,sel.value,'role');
+    r.querySelector('[data-rm]').onclick=async()=>{
+      if(e===cr)return;
+      const c=await confirmBox('Remove from organization?',`<b>${esc(e)}</b> will lose access to <b>${esc(o.name)}</b>.`,'Remove',true);
+      if(c)await saveRoles(o,e,null,'remove');
+      openMembers(o.id);
+    };
+  });
+}
+async function saveRoles(o,email,role,kind){
+  const cr=creatorOf(o);
+  const members=new Set((o.members||[]).map(low));
+  const owners=new Set(ownerList(o));
+  const founders=new Set((o.founders||[]).map(low));
+  if(cr){members.add(cr);owners.add(cr)}
+  if(role===null){members.delete(email);owners.delete(email);founders.delete(email)}
+  else{
+    members.add(email);
+    if(role==='member'){owners.delete(email);founders.delete(email)}
+    if(role==='admin'){owners.add(email);founders.delete(email)}
+    if(role==='super'){owners.add(email);founders.add(email)}
+  }
+  if(!owners.size)return toast('An organization needs at least one Admin or Super Admin','error');
+  try{
+    await updateDoc(doc(db,'organizations',o.id),{members:[...members],owners:[...owners],founders:[...founders]});
+    o.members=[...members];o.owners=[...owners];o.founders=[...founders];
+    toast(kind==='add'?'Member added':kind==='remove'?'Member removed':'Role changed to '+ROLE_LABEL[role],'success');
+  }catch(e){toast('Failed: '+(e.code||e.message),'error')}
+  if(membersOpen===o.id)renderMembers();
+}
 
 /* ---------------- activity ---------------- */
 async function loadActivity(){
@@ -704,8 +807,7 @@ const TPL={
   warn:['Important message about your account','Hello,\n\nWe noticed that activity on your account does not comply with our terms of use. Please correct this, otherwise your account may be restricted.\n\nThank you,\nThe MART Drive Team']
 };
 $('m-tpl').onchange=e=>{const t=TPL[e.target.value];if(t){$('m-sub').value=t[0];$('m-body').value=t[1]}};
-let mailOverride=null;
-function mailTo(list){mailOverride=[...new Set(list.map(low).filter(isEmail))];$('m-mode').querySelector('[value=custom]').checked=true;$('m-custom').value=mailOverride.join('\n');go('mail')}
+function mailTo(list){const l=[...new Set(list.map(low).filter(isEmail))];$('m-mode').querySelector('[value=custom]').checked=true;$('m-custom').value=l.join('\n');go('mail')}
 document.querySelectorAll('#m-mode input').forEach(i=>i.onchange=renderMail);
 $('m-custom').oninput=renderMail;
 function recipients(){
