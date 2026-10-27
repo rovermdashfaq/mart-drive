@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>MART Drive · এডমিন প্যানেল</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#163A5F;--blue:#245B88;--bg:#F5F7FA;--surface:#fff;--text:#1F2937;--muted:#64748B;--border:#E2E8F0;--success:#15803D;--error:#B91C1C;--warn:#B45309;--soft:#E8F0F7;--radius:10px;--radius-lg:14px;--shadow:0 4px 12px rgba(15,23,42,.08);--shadow-lg:0 12px 32px rgba(15,23,42,.18)}
+body.dark{--navy:#A8C7FA;--blue:#8AB4F8;--bg:#131314;--surface:#1E1F20;--text:#E3E3E3;--muted:#A1A1A1;--border:#444746;--success:#34A853;--error:#F28B82;--warn:#FBBC04;--soft:#2D3133}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Inter','Noto Sans Bengali',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;padding-top:env(safe-area-inset-top,0px)}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select,textarea{font:inherit;color:inherit}
+.ms{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;font-size:20px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;vertical-align:middle;-webkit-font-smoothing:antialiased}
+
+/* gate */
+#gate{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
+.gate-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px 28px;max-width:400px;width:100%;text-align:center;box-shadow:var(--shadow)}
+.gate-card .logo{width:60px;height:60px;border-radius:16px;background:var(--navy);color:var(--surface);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.gate-card .logo .ms{font-size:32px}
+.gate-card h1{font-size:20px;margin-bottom:6px}
+.gate-card p{color:var(--muted);margin-bottom:20px}
+#gate-msg{margin-top:14px;color:var(--error);font-weight:500;min-height:20px}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:22px;font-weight:600;font-size:13px;border:1px solid var(--border);background:var(--surface);transition:background .15s}
+.btn:hover{background:var(--soft)}
+.btn.pri{background:var(--navy);color:var(--surface);border-color:var(--navy)}
+.btn.pri:hover{opacity:.9;background:var(--navy)}
+.btn.dng{background:var(--error);color:#fff;border-color:var(--error)}
+.btn.dng:hover{opacity:.9;background:var(--error)}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.ib{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--muted)}
+.ib:hover{background:var(--soft);color:var(--text)}
+.ib.red:hover{color:var(--error)}
+
+/* layout */
+#app{display:none;min-height:100%}
+#app.on{display:flex}
+aside{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:40;transition:transform .2s;padding-top:env(safe-area-inset-top,0px)}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 18px 12px;font-weight:700;font-size:16px}
+.brand .logo{width:34px;height:34px;border-radius:10px;background:var(--navy);color:var(--surface);display:flex;align-items:center;justify-content:center}
+.brand small{display:block;font-weight:500;font-size:11px;color:var(--muted)}
+nav{flex:1;padding:8px 12px;overflow-y:auto}
+.nv{display:flex;align-items:center;gap:12px;width:100%;padding:10px 14px;border-radius:24px;font-weight:500;margin-bottom:3px;text-align:left}
+.nv:hover{background:var(--bg)}
+.nv.on{background:var(--soft);color:var(--blue);font-weight:600}
+.nv .cnt{margin-left:auto;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:0 7px;color:var(--muted)}
+.me{border-top:1px solid var(--border);padding:12px 14px;display:flex;align-items:center;gap:10px}
+.me img{width:34px;height:34px;border-radius:50%;object-fit:cover}
+.me .who{flex:1;min-width:0;font-size:12px}
+.me .who b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.me .who span{color:var(--muted)}
+main{flex:1;margin-left:240px;min-width:0}
+.top{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--border);height:58px;display:flex;align-items:center;gap:10px;padding:0 20px;padding-top:env(safe-area-inset-top,0px);box-sizing:content-box}
+.top h2{font-size:17px;flex:1}
+#menu{display:none}
+.page{padding:20px;max-width:1200px;margin:0 auto}
+.tab{display:none}.tab.on{display:block}
+.scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:35}
+
+/* cards */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px}
+.stat .l{color:var(--muted);font-size:12px;display:flex;align-items:center;gap:6px}
+.stat .l .ms{font-size:18px}
+.stat .v{font-size:26px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.stat .s{font-size:11px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:16px}
+.card h3{font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* toolbar */
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.inp{padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);outline:none;min-width:0}
+.inp:focus{border-color:var(--blue)}
+.search{flex:1;min-width:180px;position:relative}
+.search .ms{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:19px}
+.search input{width:100%;padding-left:36px}
+.selbar{display:none;align-items:center;gap:8px;flex-wrap:wrap;background:var(--soft);padding:8px 12px;border-radius:var(--radius);margin-bottom:12px;font-weight:600;color:var(--blue)}
+.selbar.on{display:flex}
+
+/* table */
+.tw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:720px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tr:hover td{background:color-mix(in srgb,var(--soft) 55%,transparent)}
+tr.blk td{opacity:.65}
+.u{display:flex;align-items:center;gap:10px;min-width:200px}
+.av{width:38px;height:38px;border-radius:50%;object-fit:cover;background:var(--soft);flex:none;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--blue);overflow:hidden}
+.av img{width:100%;height:100%;object-fit:cover}
+.u b{display:block;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.u span{display:block;color:var(--muted);font-size:12px;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{display:inline-block;padding:1px 9px;border-radius:10px;font-size:11px;font-weight:700;margin-right:4px}
+.pill.ok{background:#DCFCE7;color:#166534}
+.pill.bad{background:#FEE2E2;color:#991B1B}
+.pill.adm{background:#DBEAFE;color:#1E40AF}
+.pill.sup{background:#FEF3C7;color:#92400E}
+.pill.gray{background:var(--bg);color:var(--muted);border:1px solid var(--border)}
+body.dark .pill.ok{background:#14532D;color:#BBF7D0}body.dark .pill.bad{background:#7F1D1D;color:#FECACA}body.dark .pill.adm{background:#1E3A8A;color:#BFDBFE}body.dark .pill.sup{background:#78350F;color:#FDE68A}
+.acts{white-space:nowrap;text-align:right}
+input[type=checkbox]{width:17px;height:17px;accent-color:var(--navy);cursor:pointer}
+.empty{padding:40px 20px;text-align:center;color:var(--muted)}
+.pager{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;color:var(--muted);font-size:12px}
+
+/* mail */
+.mrow{display:grid;grid-template-columns:130px 1fr;gap:10px;align-items:start;margin-bottom:12px}
+.mrow label{font-weight:600;padding-top:9px;font-size:13px}
+.mrow .inp,.mrow textarea{width:100%}
+textarea.inp{resize:vertical;min-height:200px;line-height:1.6}
+.radios{display:flex;flex-wrap:wrap;gap:8px}
+.radios label{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-weight:500;padding-top:7px}
+.radios input{display:none}
+.radios label:has(input:checked){background:var(--soft);border-color:var(--blue);color:var(--blue);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;max-height:110px;overflow-y:auto;margin-top:8px}
+.chip{background:var(--soft);color:var(--blue);border-radius:14px;padding:2px 10px;font-size:12px}
+.hint{color:var(--muted);font-size:12px;margin-top:6px}
+.batch{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;flex-wrap:wrap}
+.batch span{flex:1;min-width:140px}
+
+/* modal / toast */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-bg.on{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius-lg);width:100%;max-width:480px;max-height:90vh;overflow:auto;box-shadow:var(--shadow-lg);padding:22px}
+.modal h3{font-size:17px;margin-bottom:10px}
+.modal .row{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;flex-wrap:wrap}
+.modal p{margin-bottom:8px}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:6px 10px;font-size:13px}
+.kv b{color:var(--muted);font-weight:500}
+.kv span{word-break:break-all}
+.chk{display:flex;gap:8px;align-items:flex-start;margin-top:12px;padding:10px;background:var(--bg);border-radius:var(--radius)}
+#toasts{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;width:calc(100% - 32px);pointer-events:none}
+.toast{background:#1F2937;color:#fff;padding:10px 18px;border-radius:24px;font-weight:500;box-shadow:var(--shadow-lg);max-width:520px;pointer-events:auto}
+.toast.success{background:#15803D}.toast.error{background:#B91C1C}
+.prog{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:10px}
+.prog i{display:block;height:100%;background:var(--blue);width:0;transition:width .2s}
+.log{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.log:last-child{border:0}
+.log .t{color:var(--muted);font-size:12px;white-space:nowrap;min-width:110px}
+
+@media(max-width:860px){
+  aside{transform:translateX(-100%);box-shadow:var(--shadow-lg)}
+  aside.on{transform:none}
+  .scrim.on{display:block}
+  main{margin-left:0}
+  #menu{display:inline-flex}
+  .grid2{grid-template-columns:1fr}
+  .mrow{grid-template-columns:1fr}.mrow label{padding-top:0}
+  .page{padding:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN GATE ============ -->
+<div id="gate">
+  <div class="gate-card">
+    <div class="logo"><span class="ms">admin_panel_settings</span></div>
+    <h1>MART Drive এডমিন প্যানেল</h1>
+    <p>শুধুমাত্র অনুমোদিত এডমিনরা প্রবেশ করতে পারবেন।</p>
+    <button class="btn pri" id="btn-login"><span class="ms">login</span> Google দিয়ে লগইন করুন</button>
+    <div id="gate-msg"></div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+  <aside id="side">
+    <div class="brand"><div class="logo"><span class="ms">shield_person</span></div><div>MART Drive<small>এডমিন প্যানেল</small></div></div>
+    <nav>
+      <button class="nv on" data-tab="dash"><span class="ms">dashboard</span>ড্যাশবোর্ড</button>
+      <button class="nv" data-tab="users"><span class="ms">group</span>ইউজার<span class="cnt" id="c-users">0</span></button>
+      <button class="nv" data-tab="mail"><span class="ms">forward_to_inbox</span>ইমেইল পাঠান</button>
+      <button class="nv" data-tab="admins"><span class="ms">admin_panel_settings</span>এডমিন<span class="cnt" id="c-admins">0</span></button>
+      <button class="nv" data-tab="blocked"><span class="ms">block</span>ব্লক তালিকা<span class="cnt" id="c-blocked">0</span></button>
+      <button class="nv" data-tab="orgs"><span class="ms">apartment</span>অর্গানাইজেশন<span class="cnt" id="c-orgs">0</span></button>
+      <button class="nv" data-tab="activity"><span class="ms">history</span>অ্যাক্টিভিটি লগ</button>
+      <button class="nv" data-tab="tools"><span class="ms">build</span>টুলস</button>
+    </nav>
+    <div class="me">
+      <img id="me-img" alt="" referrerpolicy="no-referrer">
+      <div class="who"><b id="me-name"></b><span id="me-role"></span></div>
+      <button class="ib" id="btn-theme" title="ডার্ক মোড"><span class="ms">dark_mode</span></button>
+      <button class="ib" id="btn-out" title="লগআউট"><span class="ms">logout</span></button>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <main>
+    <div class="top">
+      <button class="ib" id="menu"><span class="ms">menu</span></button>
+      <h2 id="title">ড্যাশবোর্ড</h2>
+      <a class="btn sm" href="./" title="মূল সাইটে যান"><span class="ms" style="font-size:16px">open_in_new</span> MART Drive</a>
+    </div>
+
+    <div class="page">
+
+      <!-- DASHBOARD -->
+      <section class="tab on" id="tab-dash">
+        <div class="stats" id="stats"></div>
+        <div class="grid2">
+          <div class="card"><h3><span class="ms">person_add</span>সাম্প্রতিক নতুন ইউজার</h3><div id="d-new"></div></div>
+          <div class="card"><h3><span class="ms">schedule</span>সাম্প্রতিক লগইন</h3><div id="d-last"></div></div>
+        </div>
+        <div class="card" id="legacy-note" style="display:none">
+          <h3><span class="ms">info</span>পুরনো ইউজার যুক্ত করুন</h3>
+          <p style="color:var(--muted)">ইউজার তালিকা এখন প্রায় খালি। যারা আগে থেকেই MART Drive ব্যবহার করছে তাদের ফাইল/ফোল্ডার থেকে খুঁজে তালিকায় আনতে <b>টুলস</b> ট্যাবে “পুরনো ইউজার ইম্পোর্ট” চালান।</p>
+        </div>
+      </section>
+
+      <!-- USERS -->
+      <section class="tab" id="tab-users">
+        <div class="bar">
+          <div class="search"><span class="ms">search</span><input class="inp" id="u-q" placeholder="নাম বা ইমেইল দিয়ে খুঁজুন…"></div>
+          <select class="inp" id="u-f">
+            <option value="all">সবাই</option><option value="active">অ্যাক্টিভ</option><option value="blocked">ব্লকড</option><option value="admins">এডমিন</option><option value="new7">শেষ ৭ দিনে নতুন</option><option value="idle30">৩০ দিন লগইন করেনি</option>
+          </select>
+          <select class="inp" id="u-s">
+            <option value="login">সর্টঃ শেষ লগইন</option><option value="join">সর্টঃ যোগদান (নতুন)</option><option value="name">সর্টঃ নাম</option><option value="email">সর্টঃ ইমেইল</option><option value="count">সর্টঃ লগইন সংখ্যা</option>
+          </select>
+          <button class="btn" id="u-csv"><span class="ms">download</span>CSV</button>
+        </div>
+        <div class="selbar" id="selbar">
+          <span id="sel-n">0 জন নির্বাচিত</span>
+          <button class="btn sm pri" id="sel-mail"><span class="ms" style="font-size:16px">mail</span>ইমেইল</button>
+          <button class="btn sm" id="sel-block"><span class="ms" style="font-size:16px">block</span>ব্লক</button>
+          <button class="btn sm" id="sel-unblock"><span class="ms" style="font-size:16px">lock_open</span>আনব্লক</button>
+          <button class="btn sm dng" id="sel-del"><span class="ms" style="font-size:16px">delete</span>ডিলিট</button>
+          <button class="btn sm" id="sel-clear">বাতিল</button>
+        </div>
+        <div class="tw">
+          <table>
+            <thead><tr><th style="width:36px"><input type="checkbox" id="u-all"></th><th>ইউজার</th><th>স্ট্যাটাস</th><th>যোগদান</th><th>শেষ লগইন</th><th style="text-align:right">লগইন</th><th></th></tr></thead>
+            <tbody id="u-body"></tbody>
+          </table>
+          <div class="empty" id="u-empty" style="display:none">কোনো ইউজার পাওয়া যায়নি</div>
+          <div class="pager"><span id="u-info"></span><span><button class="btn sm" id="u-prev">‹ আগে</button> <button class="btn sm" id="u-next">পরে ›</button></span></div>
+        </div>
+      </section>
+
+      <!-- MAIL -->
+      <section class="tab" id="tab-mail">
+        <div class="card">
+          <h3><span class="ms">edit_note</span>ইমেইল লিখুন</h3>
+          <div class="mrow"><label>প্রাপক</label>
+            <div>
+              <div class="radios" id="m-mode">
+                <label><input type="radio" name="mm" value="all" checked>সব ইউজার</label>
+                <label><input type="radio" name="mm" value="selected">নির্বাচিত ইউজার</label>
+                <label><input type="radio" name="mm" value="active">অ্যাক্টিভ (ব্লক ছাড়া)</label>
+                <label><input type="radio" name="mm" value="custom">নিজে লিখব</label>
+              </div>
+              <textarea class="inp" id="m-custom" style="display:none;min-height:70px;margin-top:8px" placeholder="ইমেইলগুলো কমা, স্পেস বা নতুন লাইন দিয়ে আলাদা করুন"></textarea>
+              <div class="hint" id="m-count"></div>
+              <div class="chips" id="m-chips"></div>
+            </div>
+          </div>
+          <div class="mrow"><label>পাঠানোর ধরন</label>
+            <div class="radios" id="m-field">
+              <label><input type="radio" name="mf" value="bcc" checked>BCC (গোপন, প্রস্তাবিত)</label>
+              <label><input type="radio" name="mf" value="to">To (সবাই সবার ইমেইল দেখবে)</label>
+            </div>
+          </div>
+          <div class="mrow"><label>বিষয় (Subject)</label><input class="inp" id="m-sub" placeholder="ইমেইলের বিষয়"></div>
+          <div class="mrow"><label>বার্তা</label><textarea class="inp" id="m-body" placeholder="এখানে ইমেইল লিখুন…"></textarea></div>
+          <div class="mrow"><label>টেমপ্লেট</label>
+            <select class="inp" id="m-tpl"><option value="">— বেছে নিন —</option><option value="welcome">স্বাগত বার্তা</option><option value="update">নতুন আপডেট</option><option value="maint">রক্ষণাবেক্ষণ নোটিশ</option><option value="warn">সতর্কবার্তা</option></select>
+          </div>
+          <div class="bar" style="margin-top:6px">
+            <button class="btn pri" id="m-send"><span class="ms">send</span>ইমেইল সেন্ড (Gmail এ খুলুন)</button>
+            <button class="btn" id="m-copy"><span class="ms">content_copy</span>ইমেইল ঠিকানা কপি</button>
+          </div>
+          <div class="hint">“সেন্ড” চাপলে আপনার Gmail (ফোনে Gmail অ্যাপ, কম্পিউটারে Gmail ওয়েব) প্রস্তুত করা ইমেইলসহ খুলবে। সেখানে আপনি শুধু Send চাপবেন। সাধারণ Gmail অ্যাকাউন্টে দিনে প্রায় ৫০০ জনের বেশি প্রাপককে পাঠানো যায় না।</div>
+          <div id="m-batches" style="margin-top:14px"></div>
+        </div>
+      </section>
+
+      <!-- ADMINS -->
+      <section class="tab" id="tab-admins">
+        <div class="card">
+          <h3><span class="ms">person_add</span>নতুন এডমিন যোগ করুন</h3>
+          <div class="bar">
+            <input class="inp" id="a-email" type="email" placeholder="Gmail ঠিকানা" style="flex:1;min-width:220px" list="a-list">
+            <datalist id="a-list"></datalist>
+            <button class="btn pri" id="a-add"><span class="ms">add</span>এডমিন করুন</button>
+          </div>
+          <div class="hint" id="a-hint"></div>
+        </div>
+        <div class="tw"><table><thead><tr><th>এডমিন</th><th>ভূমিকা</th><th>যুক্ত করেছেন</th><th></th></tr></thead><tbody id="a-body"></tbody></table></div>
+      </section>
+
+      <!-- BLOCKED -->
+      <section class="tab" id="tab-blocked">
+        <div class="card">
+          <h3><span class="ms">block</span>ইমেইল দিয়ে ব্লক করুন</h3>
+          <div class="bar">
+            <input class="inp" id="b-email" type="email" placeholder="ইমেইল ঠিকানা" style="flex:1;min-width:220px">
+            <input class="inp" id="b-reason" placeholder="কারণ (ঐচ্ছিক)" style="flex:1;min-width:160px">
+            <button class="btn dng" id="b-add"><span class="ms">block</span>ব্লক</button>
+          </div>
+        </div>
+        <div class="tw"><table><thead><tr><th>ইউজার</th><th>কারণ</th><th>ব্লকের সময়</th><th>ব্লক করেছেন</th><th></th></tr></thead><tbody id="b-body"></tbody></table><div class="empty" id="b-empty" style="display:none">কেউ ব্লকড নেই</div></div>
+      </section>
+
+      <!-- ORGS -->
+      <section class="tab" id="tab-orgs">
+        <div class="bar"><div class="search"><span class="ms">search</span><input class="inp" id="o-q" placeholder="অর্গানাইজেশন খুঁজুন…"></div></div>
+        <div class="tw"><table><thead><tr><th>নাম</th><th>টিম</th><th>সদস্য</th><th>মালিক</th><th>অটো-অ্যাপ্রুভ</th><th></th></tr></thead><tbody id="o-body"></tbody></table><div class="empty" id="o-empty" style="display:none">কোনো অর্গানাইজেশন নেই</div></div>
+      </section>
+
+      <!-- ACTIVITY -->
+      <section class="tab" id="tab-activity">
+        <div class="card"><h3><span class="ms">history</span>সাম্প্রতিক অ্যাক্টিভিটি (সর্বশেষ ১০০)</h3><div id="act"></div></div>
+      </section>
+
+      <!-- TOOLS -->
+      <section class="tab" id="tab-tools">
+        <div class="card">
+          <h3><span class="ms">cloud_download</span>পুরনো ইউজার ইম্পোর্ট</h3>
+          <p style="color:var(--muted);margin-bottom:12px">যারা এই প্যানেল চালুর আগে থেকেই অ্যাপ ব্যবহার করছে, তাদের ফাইল, ফোল্ডার ও নোট থেকে ইউজার খুঁজে ইউজার তালিকায় যোগ করে। বর্তমান ইউজারদের কোনো তথ্য মোছা হয় না।</p>
+          <button class="btn pri" id="t-import"><span class="ms">sync</span>ইম্পোর্ট শুরু করুন</button>
+          <div class="prog" id="t-prog" style="display:none"><i id="t-bar"></i></div>
+          <div class="hint" id="t-msg"></div>
+        </div>
+        <div class="card">
+          <h3><span class="ms">ios_share</span>সব ইউজারের ডেটা এক্সপোর্ট</h3>
+          <p style="color:var(--muted);margin-bottom:12px">সকল ইউজারের নাম, ইমেইল, ছবির লিংক, যোগদান ও শেষ লগইনসহ CSV ডাউনলোড।</p>
+          <button class="btn" id="t-csv"><span class="ms">download</span>CSV ডাউনলোড</button>
+        </div>
+        <div class="card">
+          <h3><span class="ms">info</span>সিস্টেম তথ্য</h3>
+          <div class="kv" id="t-info"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="modal-bg" id="modal-bg"><div class="modal" id="modal"></div></div>
+<div id="toasts"></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc, updateDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp, arrayRemove, getCountFromServer, getAggregateFromServer, sum, writeBatch } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+const firebaseConfig={apiKey:"AIzaSyDUcT6hVqLHy3pYzwg1oktI7amTpF9Qj4c",authDomain:"mart-drive.firebaseapp.com",projectId:"mart-drive",storageBucket:"mart-drive.firebasestorage.app",messagingSenderId:"829348083361",appId:"1:829348083361:web:d6e91ccec70c2b9d53e2e0",measurementId:"G-J2ERB07TW0"};
+const SUPER='rovermdashfaq@gmail.com';
+const app=initializeApp(firebaseConfig), auth=getAuth(app), db=getFirestore(app);
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const low=s=>String(s||'').trim().toLowerCase();
+const isEmail=s=>/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(s);
+const toDate=t=>t?.toDate?t.toDate():(t?new Date(t):null);
+const fmtD=t=>{const d=toDate(t);return d?d.toLocaleDateString('bn-BD',{year:'numeric',month:'short',day:'numeric'}):'—'};
+const fmtDT=t=>{const d=toDate(t);return d?d.toLocaleString('bn-BD',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'—'};
+const ago=t=>{const d=toDate(t);if(!d)return '—';const s=(Date.now()-d)/1000;if(s<60)return 'এইমাত্র';if(s<3600)return Math.floor(s/60)+' মিনিট আগে';if(s<86400)return Math.floor(s/3600)+' ঘণ্টা আগে';if(s<86400*30)return Math.floor(s/86400)+' দিন আগে';return fmtD(t)};
+const bytes=n=>{n=+n||0;if(n<1024)return n+' B';const u=['KB','MB','GB','TB'];let i=-1;do{n/=1024;i++}while(n>=1024&&i<3);return n.toFixed(1)+' '+u[i]};
+const toast=(m,t='')=>{const d=document.createElement('div');d.className='toast '+t;d.textContent=m;$('toasts').appendChild(d);setTimeout(()=>d.remove(),3800)};
+const avatar=u=>u.photoURL?`<div class="av"><img src="${esc(u.photoURL)}" referrerpolicy="no-referrer" alt="" onerror="this.parentNode.textContent='${esc((u.name||u.email||'?')[0].toUpperCase())}'"></div>`:`<div class="av">${esc((u.name||u.email||'?')[0].toUpperCase())}</div>`;
+
+let me=null, isSuper=false;
+let users=[], blocked=new Map(), admins=new Map(), orgs=[], unsubs=[];
+let selected=new Set(), page=0; const PER=25;
+let counts={files:0,folders:0,notes:0,bytes:0};
+
+/* ---------------- auth ---------------- */
+$('btn-login').onclick=async()=>{
+  $('gate-msg').textContent='';
+  try{await signInWithPopup(auth,new GoogleAuthProvider())}catch(e){$('gate-msg').textContent='লগইন ব্যর্থ: '+(e.code||e.message)}
+};
+$('btn-out').onclick=async()=>{await signOut(auth);location.reload()};
+
+async function checkAdmin(user){
+  const email=low(user.email);
+  if(email===SUPER) return {ok:true,sup:true};
+  try{const s=await getDoc(doc(db,'admins',email));if(s.exists())return {ok:true,sup:false}}catch(e){console.warn(e)}
+  return {ok:false};
+}
+onAuthStateChanged(auth,async user=>{
+  stopAll();
+  if(!user){me=null;$('app').classList.remove('on');$('gate').style.display='flex';return}
+  const r=await checkAdmin(user);
+  if(!r.ok){
+    $('gate-msg').innerHTML=`<b>${esc(user.email)}</b> এডমিন নন। প্রবেশাধিকার নেই।<br><button class="btn sm" id="g-out" style="margin-top:10px">অন্য অ্যাকাউন্টে লগইন</button>`;
+    $('g-out').onclick=async()=>{await signOut(auth)};
+    $('gate').style.display='flex';$('app').classList.remove('on');return;
+  }
+  me=user;isSuper=r.sup;
+  $('gate').style.display='none';$('app').classList.add('on');
+  $('me-img').src=user.photoURL||'';$('me-img').style.display=user.photoURL?'block':'none';
+  $('me-name').textContent=user.displayName||user.email;
+  $('me-role').textContent=isSuper?'সুপার এডমিন':'এডমিন';
+  startListeners();loadCounts();
+});
+function stopAll(){unsubs.forEach(u=>u());unsubs=[]}
+function startListeners(){
+  const err=n=>e=>{console.warn(n,e);toast(n+' লোড হয়নি: '+(e.code||e.message),'error')};
+  unsubs.push(onSnapshot(collection(db,'users'),s=>{users=s.docs.map(d=>({id:d.id,...d.data()}));renderAll()},err('ইউজার')));
+  unsubs.push(onSnapshot(collection(db,'blockedUsers'),s=>{blocked=new Map(s.docs.map(d=>[d.id,{id:d.id,...d.data()}]));renderAll()},err('ব্লক তালিকা')));
+  unsubs.push(onSnapshot(collection(db,'admins'),s=>{admins=new Map(s.docs.map(d=>[d.id,{id:d.id,...d.data()}]));renderAll()},err('এডমিন তালিকা')));
+  unsubs.push(onSnapshot(collection(db,'organizations'),s=>{orgs=s.docs.map(d=>({id:d.id,...d.data()}));renderAll()},err('অর্গানাইজেশন')));
+}
+async function loadCounts(){
+  try{
+    const [f,d,n,sz]=await Promise.all([
+      getCountFromServer(collection(db,'files')),getCountFromServer(collection(db,'folders')),getCountFromServer(collection(db,'notes')),
+      getAggregateFromServer(collection(db,'files'),{total:sum('size')})]);
+    counts={files:f.data().count,folders:d.data().count,notes:n.data().count,bytes:sz.data().total||0};
+    renderDash();
+  }catch(e){console.warn('counts',e)}
+}
+
+/* ---------------- helpers ---------------- */
+const isBlocked=u=>blocked.has(low(u.email));
+const isAdminEmail=e=>low(e)===SUPER||admins.has(low(e));
+const lastLogin=u=>toDate(u.lastLogin)?.getTime()||0;
+const joined=u=>toDate(u.createdAt)?.getTime()||0;
+
+/* ---------------- tabs ---------------- */
+const TITLES={dash:'ড্যাশবোর্ড',users:'ইউজার',mail:'ইমেইল পাঠান',admins:'এডমিন ম্যানেজমেন্ট',blocked:'ব্লক তালিকা',orgs:'অর্গানাইজেশন',activity:'অ্যাক্টিভিটি লগ',tools:'টুলস'};
+function go(t){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='tab-'+t));
+  document.querySelectorAll('.nv').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));
+  $('title').textContent=TITLES[t];closeSide();
+  if(t==='activity')loadActivity();
+  if(t==='mail')renderMail();
+  if(t==='tools')renderTools();
+}
+document.querySelectorAll('.nv').forEach(b=>b.onclick=()=>go(b.dataset.tab));
+const closeSide=()=>{$('side').classList.remove('on');$('scrim').classList.remove('on')};
+$('menu').onclick=()=>{$('side').classList.add('on');$('scrim').classList.add('on')};
+$('scrim').onclick=closeSide;
+$('btn-theme').onclick=()=>{document.body.classList.toggle('dark');try{localStorage.setItem('admin_theme',document.body.classList.contains('dark')?'dark':'light')}catch{}};
+try{if(localStorage.getItem('admin_theme')==='dark'||(!localStorage.getItem('admin_theme')&&matchMedia('(prefers-color-scheme:dark)').matches))document.body.classList.add('dark')}catch{}
+
+/* ---------------- modal ---------------- */
+function modal(html,wire){$('modal').innerHTML=html;$('modal-bg').classList.add('on');wire&&wire($('modal'))}
+const closeModal=()=>$('modal-bg').classList.remove('on');
+$('modal-bg').onclick=e=>{if(e.target===$('modal-bg'))closeModal()};
+function confirmBox(title,msg,okLabel,danger,extra=''){
+  return new Promise(res=>modal(`<h3>${esc(title)}</h3><p>${msg}</p>${extra}<div class="row"><button class="btn" id="cb-no">বাতিল</button><button class="btn ${danger?'dng':'pri'}" id="cb-ok">${esc(okLabel)}</button></div>`,m=>{
+    m.querySelector('#cb-no').onclick=()=>{closeModal();res(null)};
+    m.querySelector('#cb-ok').onclick=()=>{const x=m.querySelector('#cb-x');closeModal();res({x:x?x.checked:false})};
+  }));
+}
+
+/* ---------------- render all ---------------- */
+function renderAll(){
+  $('c-users').textContent=users.length;$('c-admins').textContent=admins.size+1;$('c-blocked').textContent=blocked.size;$('c-orgs').textContent=orgs.length;
+  renderDash();renderUsers();renderAdmins();renderBlocked();renderOrgs();
+  if($('tab-mail').classList.contains('on'))renderMail();
+}
+
+/* ---------------- dashboard ---------------- */
+function renderDash(){
+  const now=Date.now(),day=86400000;
+  const n7=users.filter(u=>now-joined(u)<7*day&&joined(u)).length;
+  const a1=users.filter(u=>now-lastLogin(u)<day).length;
+  const a7=users.filter(u=>now-lastLogin(u)<7*day).length;
+  const S=(ic,l,v,s='')=>`<div class="stat"><div class="l"><span class="ms">${ic}</span>${l}</div><div class="v">${v}</div><div class="s">${s}&nbsp;</div></div>`;
+  $('stats').innerHTML=
+    S('group','মোট ইউজার',users.length,'রেজিস্টার্ড / লগইন করা')+
+    S('person_add','নতুন (৭ দিন)',n7)+
+    S('bolt','আজ অ্যাক্টিভ',a1,'গত ২৪ ঘণ্টায় লগইন')+
+    S('calendar_month','সাপ্তাহিক অ্যাক্টিভ',a7)+
+    S('block','ব্লকড',blocked.size)+
+    S('admin_panel_settings','এডমিন',admins.size+1)+
+    S('apartment','অর্গানাইজেশন',orgs.length)+
+    S('description','মোট ফাইল',counts.files,bytes(counts.bytes)+' ব্যবহৃত')+
+    S('folder','ফোল্ডার',counts.folders)+
+    S('sticky_note_2','নোট ও লিংক',counts.notes);
+  const row=(u,t)=>`<div class="log" style="align-items:center"><div class="u" style="min-width:0;flex:1">${avatar(u)}<div style="min-width:0"><b>${esc(u.name||'—')}</b><span>${esc(u.email)}</span></div></div><span class="t" style="min-width:0">${t}</span></div>`;
+  const nw=[...users].sort((a,b)=>joined(b)-joined(a)).slice(0,6);
+  const ll=[...users].sort((a,b)=>lastLogin(b)-lastLogin(a)).slice(0,6);
+  $('d-new').innerHTML=nw.length?nw.map(u=>row(u,fmtD(u.createdAt))).join(''):'<div class="empty">কোনো ইউজার নেই</div>';
+  $('d-last').innerHTML=ll.length?ll.map(u=>row(u,ago(u.lastLogin))).join(''):'<div class="empty">কোনো ইউজার নেই</div>';
+  $('legacy-note').style.display=users.length<3?'block':'none';
+}
+
+/* ---------------- users ---------------- */
+function filtered(){
+  const q=low($('u-q').value),f=$('u-f').value,now=Date.now(),day=86400000;
+  let l=users.filter(u=>{
+    if(q&&!(low(u.email).includes(q)||low(u.name).includes(q)))return false;
+    if(f==='active')return !isBlocked(u);
+    if(f==='blocked')return isBlocked(u);
+    if(f==='admins')return isAdminEmail(u.email);
+    if(f==='new7')return joined(u)&&now-joined(u)<7*day;
+    if(f==='idle30')return !lastLogin(u)||now-lastLogin(u)>30*day;
+    return true;
+  });
+  const s=$('u-s').value;
+  l.sort((a,b)=>s==='name'?low(a.name).localeCompare(low(b.name)):s==='email'?low(a.email).localeCompare(low(b.email)):s==='join'?joined(b)-joined(a):s==='count'?(b.loginCount||0)-(a.loginCount||0):lastLogin(b)-lastLogin(a));
+  return l;
+}
+function statusPills(u){
+  const e=low(u.email);
+  return (e===SUPER?'<span class="pill sup">সুপার এডমিন</span>':admins.has(e)?'<span class="pill adm">এডমিন</span>':'')+(isBlocked(u)?'<span class="pill bad">ব্লকড</span>':'<span class="pill ok">অ্যাক্টিভ</span>');
+}
+function renderUsers(){
+  const l=filtered(),pages=Math.max(1,Math.ceil(l.length/PER));if(page>=pages)page=pages-1;
+  const sl=l.slice(page*PER,page*PER+PER);
+  $('u-empty').style.display=l.length?'none':'block';
+  $('u-body').innerHTML=sl.map(u=>{
+    const prot=isAdminEmail(u.email);
+    return `<tr class="${isBlocked(u)?'blk':''}" data-id="${esc(u.id)}">
+      <td><input type="checkbox" class="u-chk" ${selected.has(u.id)?'checked':''}></td>
+      <td><div class="u">${avatar(u)}<div style="min-width:0"><b>${esc(u.name||'নামহীন')}</b><span>${esc(u.email)}</span></div></div></td>
+      <td>${statusPills(u)}${u.imported?'<span class="pill gray">ইম্পোর্টেড</span>':''}</td>
+      <td>${fmtD(u.createdAt)}</td>
+      <td title="${esc(fmtDT(u.lastLogin))}">${ago(u.lastLogin)}</td>
+      <td style="text-align:right">${u.loginCount||0}</td>
+      <td class="acts">
+        <button class="ib" data-a="info" title="বিস্তারিত"><span class="ms">info</span></button>
+        <button class="ib" data-a="mail" title="ইমেইল পাঠান"><span class="ms">mail</span></button>
+        ${prot?'':isBlocked(u)?'<button class="ib" data-a="unblock" title="আনব্লক"><span class="ms">lock_open</span></button>':'<button class="ib" data-a="block" title="ব্লক"><span class="ms">block</span></button>'}
+        ${prot?'':'<button class="ib red" data-a="del" title="ডিলিট"><span class="ms">delete</span></button>'}
+      </td></tr>`}).join('');
+  $('u-info').textContent=`${l.length} জনের মধ্যে ${l.length?page*PER+1:0}–${Math.min(l.length,page*PER+PER)}`;
+  $('u-prev').disabled=page===0;$('u-next').disabled=page>=pages-1;
+  $('u-all').checked=sl.length>0&&sl.every(u=>selected.has(u.id));
+  const n=selected.size;$('selbar').classList.toggle('on',n>0);$('sel-n').textContent=n+' জন নির্বাচিত';
+}
+['u-q','u-f','u-s'].forEach(i=>$(i).addEventListener('input',()=>{page=0;renderUsers()}));
+$('u-prev').onclick=()=>{page--;renderUsers()};$('u-next').onclick=()=>{page++;renderUsers()};
+$('u-all').onchange=e=>{const l=filtered().slice(page*PER,page*PER+PER);l.forEach(u=>e.target.checked?selected.add(u.id):selected.delete(u.id));renderUsers()};
+$('u-body').addEventListener('click',e=>{
+  const tr=e.target.closest('tr');if(!tr)return;const u=users.find(x=>x.id===tr.dataset.id);if(!u)return;
+  if(e.target.classList.contains('u-chk')){e.target.checked?selected.add(u.id):selected.delete(u.id);renderUsers();return}
+  const b=e.target.closest('[data-a]');if(!b)return;
+  ({info:()=>userInfo(u),mail:()=>{mailTo([u.email])},block:()=>blockUsers([u]),unblock:()=>unblockUsers([u]),del:()=>deleteUsers([u])})[b.dataset.a]();
+});
+const selUsers=()=>users.filter(u=>selected.has(u.id));
+$('sel-clear').onclick=()=>{selected.clear();renderUsers()};
+$('sel-mail').onclick=()=>{$('m-mode').querySelector('[value=selected]').checked=true;go('mail')};
+$('sel-block').onclick=()=>blockUsers(selUsers());
+$('sel-unblock').onclick=()=>unblockUsers(selUsers());
+$('sel-del').onclick=()=>deleteUsers(selUsers());
+
+async function userInfo(u){
+  const e=low(u.email);
+  modal(`<h3>ইউজারের বিস্তারিত</h3><div class="u" style="margin-bottom:14px">${avatar(u)}<div><b>${esc(u.name||'নামহীন')}</b><span>${esc(u.email)}</span></div></div>
+   <div class="kv"><b>স্ট্যাটাস</b><span>${statusPills(u)}</span><b>UID</b><span>${esc(u.id)}</span><b>যোগদান</b><span>${fmtDT(u.createdAt)}</span><b>শেষ লগইন</b><span>${fmtDT(u.lastLogin)}</span><b>লগইন সংখ্যা</b><span>${u.loginCount||0}</span>
+   ${isBlocked(u)?`<b>ব্লকের কারণ</b><span>${esc(blocked.get(e)?.reason||'—')}</span>`:''}
+   <b>ফাইল</b><span id="ui-f">…</span><b>ফোল্ডার</b><span id="ui-d">…</span><b>নোট/লিংক</b><span id="ui-n">…</span><b>স্টোরেজ</b><span id="ui-s">…</span><b>অর্গানাইজেশন</b><span>${esc(orgs.filter(o=>(o.members||[]).includes(e)).map(o=>o.name).join(', ')||'—')}</span></div>
+   <div class="row"><button class="btn" id="ui-x">বন্ধ</button></div>`,m=>m.querySelector('#ui-x').onclick=closeModal);
+  try{
+    const c=n=>getCountFromServer(query(collection(db,n),where('uid','==',u.id)));
+    const [f,d,n,s]=await Promise.all([c('files'),c('folders'),c('notes'),getAggregateFromServer(query(collection(db,'files'),where('uid','==',u.id)),{t:sum('size')})]);
+    $('ui-f').textContent=f.data().count;$('ui-d').textContent=d.data().count;$('ui-n').textContent=n.data().count;$('ui-s').textContent=bytes(s.data().t);
+  }catch(err){['ui-f','ui-d','ui-n','ui-s'].forEach(i=>{const x=$(i);if(x)x.textContent='—'})}
+}
+
+/* block / unblock */
+async function blockUsers(list,reasonPre){
+  list=list.filter(u=>!isAdminEmail(u.email)&&!isBlocked(u));
+  if(!list.length)return toast('ব্লক করার মতো কোনো ইউজার নেই');
+  const r=await confirmBox('ব্লক করবেন?',`<b>${list.length}</b> জন ইউজার ব্লক হবে। তারা পরবর্তী লোডে আর অ্যাপ ব্যবহার করতে পারবে না। ডেটা মুছবে না, আনব্লক করলেই আবার ফিরে পাবে।<br><br><input class="inp" id="bk-r" style="width:100%" placeholder="কারণ (ঐচ্ছিক)">`,'ব্লক করুন',true);
+  if(!r)return;
+  const reason=($('bk-r')?.value||'').slice(0,200);
+  try{
+    for(const u of list)await setDoc(doc(db,'blockedUsers',low(u.email)),{email:low(u.email),uid:u.id||null,name:u.name||'',photoURL:u.photoURL||'',reason,blockedBy:low(me.email),blockedAt:serverTimestamp()});
+    selected.clear();toast(list.length+' জন ব্লক হয়েছে','success');
+  }catch(e){toast('ব্লক ব্যর্থ: '+(e.code||e.message),'error')}
+}
+async function unblockUsers(list){
+  list=list.filter(isBlocked);if(!list.length)return toast('কেউ ব্লকড নন');
+  try{for(const u of list)await deleteDoc(doc(db,'blockedUsers',low(u.email)));selected.clear();toast(list.length+' জন আনব্লক হয়েছে','success')}
+  catch(e){toast('ব্যর্থ: '+(e.code||e.message),'error')}
+}
+$('b-add').onclick=async()=>{
+  const e=low($('b-email').value);if(!isEmail(e))return toast('সঠিক ইমেইল দিন','error');
+  if(isAdminEmail(e))return toast('এডমিনকে ব্লক করা যায় না','error');
+  const u=users.find(x=>low(x.email)===e);
+  try{await setDoc(doc(db,'blockedUsers',e),{email:e,uid:u?.id||null,name:u?.name||'',photoURL:u?.photoURL||'',reason:$('b-reason').value.trim().slice(0,200),blockedBy:low(me.email),blockedAt:serverTimestamp()});$('b-email').value='';$('b-reason').value='';toast('ব্লক হয়েছে','success')}
+  catch(err){toast('ব্যর্থ: '+(err.code||err.message),'error')}
+};
+function renderBlocked(){
+  const l=[...blocked.values()].sort((a,b)=>(toDate(b.blockedAt)||0)-(toDate(a.blockedAt)||0));
+  $('b-empty').style.display=l.length?'none':'block';
+  $('b-body').innerHTML=l.map(b=>`<tr><td><div class="u">${avatar(b)}<div style="min-width:0"><b>${esc(b.name||'—')}</b><span>${esc(b.email)}</span></div></div></td><td>${esc(b.reason||'—')}</td><td>${fmtDT(b.blockedAt)}</td><td>${esc(b.blockedBy||'')}</td><td class="acts"><button class="btn sm" data-e="${esc(b.id)}"><span class="ms" style="font-size:16px">lock_open</span>আনব্লক</button></td></tr>`).join('');
+}
+$('b-body').addEventListener('click',async e=>{const b=e.target.closest('[data-e]');if(!b)return;try{await deleteDoc(doc(db,'blockedUsers',b.dataset.e));toast('আনব্লক হয়েছে','success')}catch(err){toast('ব্যর্থ: '+(err.code||err.message),'error')}});
+
+/* delete */
+async function deleteUsers(list){
+  list=list.filter(u=>!isAdminEmail(u.email));
+  if(!list.length)return toast('ডিলিট করার মতো ইউজার নেই');
+  const extra=`<label class="chk"><input type="checkbox" id="cb-x" checked><span><b>তাদের সব ডেটাও মুছুন</b><br><small style="color:var(--muted)">ফাইলের রেকর্ড, ফোল্ডার, নোট, শেয়ার, স্টোরেজ রেকর্ড ও অর্গানাইজেশন সদস্যপদ। (ইউজারের নিজের Google Drive এর আসল ফাইল মোছা যায় না।)</small></span></label>
+    <label class="chk"><input type="checkbox" id="cb-b" checked><span><b>একইসাথে ব্লক করুন</b><br><small style="color:var(--muted)">ব্লক না করলে ইউজার আবার লগইন করে নতুন করে যুক্ত হতে পারে।</small></span></label>`;
+  const r=await confirmBox('ইউজার ডিলিট করবেন?',`<b>${list.length}</b> জন ইউজার ডিলিট হবে। এটি ফেরানো যাবে না।`,'ডিলিট করুন',true,extra);
+  if(!r)return;
+  const alsoBlock=$('cb-b')?.checked!==false;
+  const wipe=r.x;
+  const total=list.length;let done=0;
+  const note=document.createElement('div');note.className='toast';$('toasts').appendChild(note);
+  try{
+    for(const u of list){
+      note.textContent=`ডিলিট হচ্ছে ${++done}/${total}…`;
+      if(alsoBlock)await setDoc(doc(db,'blockedUsers',low(u.email)),{email:low(u.email),uid:u.id,name:u.name||'',photoURL:u.photoURL||'',reason:'এডমিন কর্তৃক ডিলিট',blockedBy:low(me.email),blockedAt:serverTimestamp()});
+      if(wipe)await wipeUserData(u);
+      await deleteDoc(doc(db,'users',u.id));
+      selected.delete(u.id);
+    }
+    toast(total+' জন ডিলিট হয়েছে','success');
+  }catch(e){toast('ডিলিট ব্যর্থ: '+(e.code||e.message),'error')}
+  note.remove();loadCounts();
+}
+async function delQuery(q){const s=await getDocs(q);for(let i=0;i<s.docs.length;i+=400){const b=writeBatch(db);s.docs.slice(i,i+400).forEach(d=>b.delete(d.ref));await b.commit()}}
+async function wipeUserData(u){
+  const e=low(u.email),uid=u.id;
+  for(const c of['files','folders','notes','fcmTokens','folderGrants'])await delQuery(query(collection(db,c),where('uid','==',uid))).catch(err=>console.warn(c,err));
+  await delQuery(query(collection(db,'shares'),where('ownerUid','==',uid))).catch(()=>0);
+  await delQuery(query(collection(db,'shares'),where('email','==',e))).catch(()=>0);
+  for(const c of['memberQuotas','joinRequests','folderJoins','fileJoins'])await delQuery(query(collection(db,c),where('email','==',e))).catch(()=>0);
+  for(const o of orgs){
+    if((o.members||[]).includes(e)||(o.owners||[]).includes(e)){
+      const upd={members:arrayRemove(e),owners:arrayRemove(e)};
+      try{await updateDoc(doc(db,'organizations',o.id),upd)}catch(err){console.warn('org',o.id,err)}
+    }
+  }
+}
+
+/* csv */
+function csv(list){
+  const h=['name','email','photoURL','uid','status','role','joined','lastLogin','loginCount'];
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const rows=list.map(u=>[u.name,u.email,u.photoURL,u.id,isBlocked(u)?'blocked':'active',low(u.email)===SUPER?'super-admin':admins.has(low(u.email))?'admin':'user',toDate(u.createdAt)?.toISOString()||'',toDate(u.lastLogin)?.toISOString()||'',u.loginCount||0].map(q).join(','));
+  const blob=new Blob(['\ufeff'+[h.join(','),...rows].join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mart-drive-users-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+$('u-csv').onclick=()=>csv(filtered());$('t-csv').onclick=()=>csv(users);
+
+/* ---------------- admins ---------------- */
+function renderAdmins(){
+  $('a-hint').textContent=isSuper?'নতুন এডমিন ইউজার ও ব্লক ম্যানেজ করতে পারবে, কিন্তু অন্য এডমিন যোগ/বাদ দিতে পারবে না। শুধু সুপার এডমিন (আপনি) তা পারবেন।':'শুধু সুপার এডমিন নতুন এডমিন যোগ বা বাদ দিতে পারেন।';
+  $('a-add').disabled=!isSuper;$('a-email').disabled=!isSuper;
+  $('a-list').innerHTML=users.filter(u=>!isAdminEmail(u.email)).map(u=>`<option value="${esc(u.email)}">${esc(u.name||'')}</option>`).join('');
+  const rows=[{id:SUPER,sup:true},...[...admins.values()].sort((a,b)=>(toDate(a.addedAt)||0)-(toDate(b.addedAt)||0))];
+  $('a-body').innerHTML=rows.map(a=>{
+    const u=users.find(x=>low(x.email)===a.id)||{email:a.id,name:a.name||'',photoURL:a.photoURL||''};
+    return `<tr><td><div class="u">${avatar(u)}<div style="min-width:0"><b>${esc(u.name||'—')}</b><span>${esc(a.id)}</span></div></div></td><td>${a.sup?'<span class="pill sup">সুপার এডমিন</span>':'<span class="pill adm">এডমিন</span>'}</td><td>${a.sup?'—':esc(a.addedBy||'')+' · '+fmtD(a.addedAt)}</td><td class="acts">${a.sup||!isSuper?'':`<button class="btn sm dng" data-e="${esc(a.id)}"><span class="ms" style="font-size:16px">person_remove</span>বাদ দিন</button>`}</td></tr>`}).join('');
+}
+$('a-add').onclick=async()=>{
+  const e=low($('a-email').value);
+  if(!isEmail(e))return toast('সঠিক Gmail ঠিকানা দিন','error');
+  if(e===SUPER||admins.has(e))return toast('ইনি আগে থেকেই এডমিন','error');
+  if(blocked.has(e))return toast('ব্লকড ইউজারকে এডমিন করা যায় না, আগে আনব্লক করুন','error');
+  const u=users.find(x=>low(x.email)===e);
+  const r=await confirmBox('এডমিন বানাবেন?',`<b>${esc(e)}</b> কে এডমিন করলে সে সব ইউজারের তথ্য দেখতে, ব্লক/ডিলিট করতে ও ইমেইল পাঠাতে পারবে।`,'এডমিন করুন',false);
+  if(!r)return;
+  try{await setDoc(doc(db,'admins',e),{email:e,name:u?.name||'',photoURL:u?.photoURL||'',addedBy:low(me.email),addedAt:serverTimestamp()});$('a-email').value='';toast('এডমিন যোগ হয়েছে','success')}
+  catch(err){toast('ব্যর্থ: '+(err.code||err.message),'error')}
+};
+$('a-body').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-e]');if(!b)return;
+  const r=await confirmBox('এডমিন বাদ দেবেন?',`<b>${esc(b.dataset.e)}</b> আর এডমিন থাকবে না।`,'বাদ দিন',true);if(!r)return;
+  try{await deleteDoc(doc(db,'admins',b.dataset.e));toast('বাদ দেওয়া হয়েছে','success')}catch(err){toast('ব্যর্থ: '+(err.code||err.message),'error')}
+});
+
+/* ---------------- orgs ---------------- */
+function renderOrgs(){
+  const q=low($('o-q').value);
+  const l=orgs.filter(o=>!q||low(o.name).includes(q)||low(o.teamName).includes(q)).sort((a,b)=>low(a.name).localeCompare(low(b.name)));
+  $('o-empty').style.display=l.length?'none':'block';
+  $('o-body').innerHTML=l.map(o=>`<tr><td><b>${esc(o.name||'—')}</b></td><td>${esc(o.teamName||'—')}</td><td>${(o.members||[]).length} জন</td><td>${esc(o.ownerEmail||(o.owners||[])[0]||'—')}</td><td>${o.autoApprove?'<span class="pill ok">চালু</span>':'<span class="pill gray">বন্ধ</span>'}</td><td class="acts"><button class="ib" data-a="m" data-id="${esc(o.id)}" title="সদস্য দেখুন"><span class="ms">groups</span></button><button class="ib" data-a="mail" data-id="${esc(o.id)}" title="সদস্যদের ইমেইল"><span class="ms">mail</span></button><button class="ib red" data-a="d" data-id="${esc(o.id)}" title="ডিলিট"><span class="ms">delete</span></button></td></tr>`).join('');
+}
+$('o-q').oninput=renderOrgs;
+$('o-body').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;const o=orgs.find(x=>x.id===b.dataset.id);if(!o)return;
+  if(b.dataset.a==='m')return modal(`<h3>${esc(o.name)} · সদস্য (${(o.members||[]).length})</h3><div style="max-height:50vh;overflow:auto">${(o.members||[]).map(m=>`<div class="log"><span style="flex:1">${esc(m)}</span>${(o.owners||[]).includes(m)?'<span class="pill adm">মালিক</span>':''}</div>`).join('')}</div><div class="row"><button class="btn" id="x">বন্ধ</button></div>`,m=>m.querySelector('#x').onclick=closeModal);
+  if(b.dataset.a==='mail')return mailTo(o.members||[]);
+  const r=await confirmBox('অর্গানাইজেশন ডিলিট?',`<b>${esc(o.name)}</b> এবং এর সব ফাইল/ফোল্ডার/নোট রেকর্ড মুছে যাবে।`,'ডিলিট করুন',true);if(!r)return;
+  try{
+    for(const c of['files','folders','notes','joinRequests','memberQuotas'])await delQuery(query(collection(db,c),where('orgId','==',o.id))).catch(()=>0);
+    if(o.inviteCode)await deleteDoc(doc(db,'invites',o.inviteCode)).catch(()=>0);
+    await deleteDoc(doc(db,'organizations',o.id));toast('ডিলিট হয়েছে','success');loadCounts();
+  }catch(err){toast('ব্যর্থ: '+(err.code||err.message),'error')}
+});
+
+/* ---------------- activity ---------------- */
+async function loadActivity(){
+  $('act').innerHTML='<div class="empty">লোড হচ্ছে…</div>';
+  try{
+    const s=await getDocs(query(collection(db,'activity'),orderBy('createdAt','desc'),limit(100)));
+    const l=s.docs.map(d=>d.data());
+    $('act').innerHTML=l.length?l.map(a=>`<div class="log"><span class="t">${fmtDT(a.createdAt)}</span><span style="flex:1;min-width:0"><b>${esc(a.email)}</b> · ${esc(a.action)}${a.name?' · '+esc(a.name):''}</span></div>`).join(''):'<div class="empty">কোনো অ্যাক্টিভিটি নেই</div>';
+  }catch(e){$('act').innerHTML=`<div class="empty">লোড হয়নি: ${esc(e.code||e.message)}</div>`}
+}
+
+/* ---------------- email ---------------- */
+const TPL={
+  welcome:['MART Drive এ স্বাগতম!','আসসালামু আলাইকুম,\n\nMART Drive ব্যবহার করার জন্য ধন্যবাদ। এখানে আপনি ফাইল, নোট ও লিংক এক জায়গায় গুছিয়ে রাখতে পারবেন এবং টিমের সাথে শেয়ার করতে পারবেন।\n\nকোনো সাহায্য লাগলে এই ইমেইলের উত্তর দিন।\n\nশুভেচ্ছান্তে,\nMART Drive টিম'],
+  update:['MART Drive এ নতুন আপডেট','আসসালামু আলাইকুম,\n\nআমরা MART Drive এ নতুন কিছু ফিচার যুক্ত করেছি:\n\n• …\n• …\n\nসর্বশেষ সংস্করণ পেতে পেজটি একবার রিফ্রেশ করুন।\n\nধন্যবাদ,\nMART Drive টিম'],
+  maint:['রক্ষণাবেক্ষণ নোটিশ','আসসালামু আলাইকুম,\n\n[তারিখ ও সময়] এ MART Drive সাময়িকভাবে রক্ষণাবেক্ষণের জন্য বন্ধ থাকতে পারে। এ সময় অ্যাপ ব্যবহারে সমস্যা হলে আমরা দুঃখিত।\n\nধন্যবাদ,\nMART Drive টিম'],
+  warn:['আপনার অ্যাকাউন্ট সম্পর্কে গুরুত্বপূর্ণ বার্তা','আসসালামু আলাইকুম,\n\nআপনার অ্যাকাউন্টের কার্যক্রম আমাদের ব্যবহারের শর্তাবলির সাথে সামঞ্জস্যপূর্ণ নয় বলে আমরা লক্ষ্য করেছি। অনুগ্রহ করে এটি সংশোধন করুন, নতুবা অ্যাকাউন্ট সীমিত করা হতে পারে।\n\nধন্যবাদ,\nMART Drive টিম']
+};
+$('m-tpl').onchange=e=>{const t=TPL[e.target.value];if(t){$('m-sub').value=t[0];$('m-body').value=t[1]}};
+let mailOverride=null;
+function mailTo(list){mailOverride=[...new Set(list.map(low).filter(isEmail))];$('m-mode').querySelector('[value=custom]').checked=true;$('m-custom').value=mailOverride.join('\n');go('mail')}
+document.querySelectorAll('#m-mode input').forEach(i=>i.onchange=renderMail);
+$('m-custom').oninput=renderMail;
+function recipients(){
+  const m=document.querySelector('#m-mode input:checked').value;
+  let l;
+  if(m==='all')l=users.map(u=>u.email);
+  else if(m==='active')l=users.filter(u=>!isBlocked(u)).map(u=>u.email);
+  else if(m==='selected')l=selUsers().map(u=>u.email);
+  else l=($('m-custom').value||'').split(/[\s,;]+/);
+  return [...new Set(l.map(low).filter(isEmail))].filter(e=>e!==low(me?.email));
+}
+function renderMail(){
+  const m=document.querySelector('#m-mode input:checked').value;
+  $('m-custom').style.display=m==='custom'?'block':'none';
+  const l=recipients();
+  $('m-count').textContent=m==='selected'&&!l.length?'ইউজার ট্যাবে গিয়ে ইউজার সিলেক্ট করুন।':`মোট প্রাপক: ${l.length} জন`;
+  $('m-chips').innerHTML=l.slice(0,60).map(e=>`<span class="chip">${esc(e)}</span>`).join('')+(l.length>60?`<span class="chip">+${l.length-60} আরও</span>`:'');
+  $('m-batches').innerHTML='';
+}
+const isMobile=()=>/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+function buildLink(to,bcc,sub,body){
+  if(isMobile()){
+    const p=[];if(bcc.length)p.push('bcc='+encodeURIComponent(bcc.join(',')));if(sub)p.push('subject='+encodeURIComponent(sub));if(body)p.push('body='+encodeURIComponent(body));
+    return 'mailto:'+encodeURIComponent(to.join(','))+(p.length?'?'+p.join('&'):'');
+  }
+  const p=['view=cm','fs=1'];
+  if(to.length)p.push('to='+encodeURIComponent(to.join(',')));if(bcc.length)p.push('bcc='+encodeURIComponent(bcc.join(',')));
+  if(sub)p.push('su='+encodeURIComponent(sub));if(body)p.push('body='+encodeURIComponent(body));
+  return 'https://mail.google.com/mail/?'+p.join('&');
+}
+$('m-send').onclick=()=>{
+  const l=recipients(),sub=$('m-sub').value.trim(),body=$('m-body').value,useBcc=document.querySelector('#m-field input:checked').value==='bcc';
+  if(!l.length)return toast('কোনো প্রাপক নেই','error');
+  if(!sub&&!body)return toast('বিষয় বা বার্তা লিখুন','error');
+  const MAX=isMobile()?1700:1900, base=buildLink(useBcc?[low(me.email)]:[],[],sub,body).length;
+  const room=Math.max(200,MAX-base-200);
+  // split recipients so every link stays under the browser / Gmail URL limit
+  const batches=[];let cur=[],len=0;
+  for(const e of l){const add=encodeURIComponent(e).length+3;if(cur.length&&len+add>room){batches.push(cur);cur=[];len=0}cur.push(e);len+=add}
+  if(cur.length)batches.push(cur);
+  const open=b=>{const href=useBcc?buildLink([low(me.email)],b,sub,body):buildLink(b,[],sub,body);if(isMobile())location.href=href;else window.open(href,'_blank','noopener')};
+  if(batches.length===1){open(batches[0]);toast('Gmail খুলছে…','success');return}
+  $('m-batches').innerHTML=`<div class="hint" style="margin-bottom:8px">প্রাপক বেশি হওয়ায় ${batches.length}টি ব্যাচে ভাগ করা হয়েছে। প্রতিটি ব্যাচ আলাদা Gmail খসড়ায় খুলবে। একটি পাঠিয়ে পরেরটি চাপুন।</div>`+batches.map((b,i)=>`<div class="batch"><span><b>ব্যাচ ${i+1}</b> · ${b.length} জন</span><button class="btn pri sm" data-i="${i}"><span class="ms" style="font-size:16px">send</span>Gmail এ খুলুন</button></div>`).join('');
+  $('m-batches').onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;open(batches[+b.dataset.i]);b.closest('.batch').style.opacity='.55'};
+  $('m-batches').scrollIntoView({behavior:'smooth',block:'nearest'});
+};
+$('m-copy').onclick=async()=>{const l=recipients();if(!l.length)return toast('কোনো প্রাপক নেই','error');try{await navigator.clipboard.writeText(l.join(', '));toast(l.length+'টি ইমেইল কপি হয়েছে','success')}catch{toast('কপি করা যায়নি','error')}};
+
+/* ---------------- tools ---------------- */
+function renderTools(){
+  $('t-info').innerHTML=`<b>প্রজেক্ট</b><span>${esc(firebaseConfig.projectId)}</span><b>আপনি</b><span>${esc(me.email)} (${isSuper?'সুপার এডমিন':'এডমিন'})</span><b>ইউজার ডকুমেন্ট</b><span>${users.length}</span><b>ব্লকড</b><span>${blocked.size}</span>`;
+}
+$('t-import').onclick=async()=>{
+  const btn=$('t-import');btn.disabled=true;$('t-prog').style.display='block';
+  const set=(p,t)=>{$('t-bar').style.width=p+'%';$('t-msg').textContent=t};
+  try{
+    const found=new Map(); // uid -> {email, firstSeen}
+    const cols=['files','folders','notes'];
+    for(let i=0;i<cols.length;i++){
+      set(Math.round(i/cols.length*70),cols[i]+' স্ক্যান হচ্ছে…');
+      const s=await getDocs(collection(db,cols[i]));
+      s.forEach(d=>{const x=d.data();if(!x.uid||!x.by)return;const e=low(x.by);if(!isEmail(e))return;const t=toDate(x.createdAt);const f=found.get(x.uid);if(!f)found.set(x.uid,{email:e,first:t});else if(t&&(!f.first||t<f.first))f.first=t});
+    }
+    set(75,'প্রোফাইল ছবি ও নাম মেলানো হচ্ছে…');
+    const prof=new Map();
+    try{(await getDocs(collection(db,'memberQuotas'))).forEach(d=>{const x=d.data();if(x.email)prof.set(low(x.email),{name:x.name||'',photoURL:x.photoURL||''})})}catch{}
+    try{(await getDocs(collection(db,'joinRequests'))).forEach(d=>{const x=d.data();if(x.email&&!prof.has(low(x.email)))prof.set(low(x.email),{name:x.name||'',photoURL:x.photo||''})})}catch{}
+    const have=new Set(users.map(u=>u.id));
+    let add=0,i=0;const todo=[...found].filter(([uid])=>!have.has(uid));
+    for(const [uid,f] of todo){
+      const p=prof.get(f.email)||{};
+      const data={uid,email:f.email,name:p.name||'',photoURL:p.photoURL||'',imported:true};
+      if(f.first)data.createdAt=f.first;
+      await setDoc(doc(db,'users',uid),data,{merge:true});add++;
+      if(++i%10===0)set(75+Math.round(i/todo.length*24),`যুক্ত হচ্ছে ${i}/${todo.length}…`);
+    }
+    set(100,`সম্পন্ন। ${add} জন নতুন ইউজার যুক্ত হয়েছে। (সংগঠনের শুধু-ইমেইল সদস্যরা লগইন করলেই তালিকায় আসবেন।)`);
+    toast('ইম্পোর্ট সম্পন্ন','success');
+  }catch(e){set(0,'ব্যর্থ: '+(e.code||e.message));toast('ইম্পোর্ট ব্যর্থ','error')}
+  btn.disabled=false;
+};
+</script>
+</body>
+</html>
