@@ -1162,31 +1162,31 @@ function renderOrgSidebar(){
       <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(o.name)}</span>
       <span class="org-btns"><span class="material-symbols-outlined" title="Members &amp; invite" onclick="event.stopPropagation();openMembersModal('${o.id}')">group</span>${own?`<span class="material-symbols-outlined" title="Edit" onclick="event.stopPropagation();openEditOrgModal('${o.id}')">edit</span>`:''}</span></div>`;
   });
-  h+=`<div class="nav-item" style="color:var(--blue)" onclick="openOrgModal()"><span class="material-symbols-outlined">add_circle</span> Create Org</div>`;
+  h+=`<div class="nav-item" style="color:var(--blue)" onclick="openOrgModal()"><span class="material-symbols-outlined">add_circle</span> Create Org. Team</div>`;
   $('org-list-container').innerHTML=h;
   const f0=[...organizations].sort((a,b)=>ts(a)-ts(b))[0],mi=$('mn-org')?.querySelector('.mn-ic');
   if(mi)mi.innerHTML=f0&&f0.logoUrl?`<img src="${esc(f0.logoUrl)}" style="width:24px;height:24px;border-radius:6px;object-fit:cover">`:'<span class="material-symbols-outlined">corporate_fare</span>';
 }
 window.openOrgList=()=>{
   const row=(id,name,logo)=>`<div class="nav-item ${currentOrgId===id?'active':''}" onclick="closeModal();switchOrg(${id?`'${id}'`:'null'})"><img src="${esc(logo||LOGO)}" style="width:24px;height:24px;border-radius:6px;object-fit:cover"><span>${esc(name)}</span></div>`;
-  openModal('Organizations',row(null,'Personal Drive',LOGO)+organizations.map(o=>row(o.id,o.name,o.logoUrl)).join('')+`<div class="nav-item" style="color:var(--blue)" onclick="closeModal();openOrgModal()"><span class="material-symbols-outlined">add_circle</span> Create Org</div>`,`<button class="btn" onclick="closeModal()">Close</button>`);
+  openModal('Organizations',row(null,'Personal Drive',LOGO)+organizations.map(o=>row(o.id,o.name,o.logoUrl)).join('')+`<div class="nav-item" style="color:var(--blue)" onclick="closeModal();openOrgModal()"><span class="material-symbols-outlined">add_circle</span> Create Org. Team</div>`,`<button class="btn" onclick="closeModal()">Close</button>`);
 };
 
 function orgFormHTML(o,isNew){
   logoFile=null;logoMode='upload';logoExisting=o?.logoUrl||null;
-  return`<div class="field"><label>1. Team Name</label><input id="of-team" value="${esc(o?.teamName||'')}" placeholder="e.g. Core Team"></div>
-  <div class="field"><label>2. Organization Name</label><input id="of-name" value="${esc(o?.name||'')}" placeholder="e.g. Bangladesh Scouts"></div>
+  return`<div class="field"><label>1. Team Name</label><input id="of-team" value="${esc(o?.teamName||'')}" placeholder="e.g. PRM Team"></div>
+  <div class="field"><label>2. Organization Name</label><input id="of-name" value="${esc(o?.name||'')}" placeholder="e.g. MART Initiative"></div>
   <div class="field"><label>3. Logo (optional)</label>
     <div class="seg"><button type="button" class="btn on" id="lm-upload" onclick="setLogoMode('upload')"><span class="material-symbols-outlined">upload</span> Upload image</button><button type="button" class="btn" id="lm-url" onclick="setLogoMode('url')"><span class="material-symbols-outlined">link</span> Paste link</button></div>
     <div id="lg-upload"><input type="file" id="of-file" accept="image/*" onchange="pickLogo(this)"></div>
     <div id="lg-url" style="display:none"><input id="of-url" value="${esc(o?.logoUrl||'')}" placeholder="https://example.com/logo.png" oninput="refreshLogoPrev()"></div>
     <img id="logo-prev" class="logo-prev" alt="Logo preview">
-    <small>Uploaded logos are saved on ImgBB and the link is stored in your organization.</small>
+    <small>Upload your Organization or Team's Logo.</small>
   </div>
-  <div class="field"><label>Trash auto-delete after</label><select id="of-trash">${[7,30,90].map(d=>`<option value="${d}"${(+(o?.trashDays)||30)===d?' selected':''}>${d} days</option>`).join('')}</select></div><div class="field"><label class="aa-row"><input type="checkbox" id="of-auto" ${o?.autoApprove?'checked':''}><span><b>Auto approve join requests</b><small>ON: anyone who joins with the invite link is added instantly. OFF: the request stays pending until an owner approves it. Only owners can change this.</small></span></label></div>
+  <div class="field"><label>Trash auto-delete after</label><select id="of-trash">${[7,30,90].map(d=>`<option value="${d}"${(+(o?.trashDays)||30)===d?' selected':''}>${d} days</option>`).join('')}</select></div><div class="field"><label class="aa-row"><input type="checkbox" id="of-auto" ${o?.autoApprove?'checked':''}><span><b>Auto approve join requests</b><small>ON: anyone who joins with the invite link is added instantly. OFF: the request stays pending until an admin approves it. Only admins can change this.</small></span></label></div>
   ${isNew?`<div class="step-t">4. Add people (optional)</div>
   <div class="field"><label>Team members (emails)</label><textarea id="of-members" class="sm" placeholder="member1@gmail.com, member2@gmail.com"></textarea></div>
-  <div class="field"><label>Owners (emails)</label><textarea id="of-owners" class="sm" placeholder="owner@gmail.com"></textarea><small>Owners can edit the organization, add/remove members, make other owners and approve join requests. You are an owner automatically.</small></div>`:''}`;
+  <div class="field"><label>Admins (emails)</label><textarea id="of-owners" class="sm" placeholder="admin01@gmail.com"></textarea><small>Admins can edit the organization, add/remove members, make other admins and approve join requests. Organization or Team creator will be automatically granted as Super Admin</small></div>`:''}`;
 }
 window.setLogoMode=m=>{
   logoMode=m;
@@ -1291,8 +1291,8 @@ window.openMembersModal=async id=>{
   }).join('');
   const inv=o.inviteCode?`<div class="field" style="margin-top:16px"><label>Invite link</label><div style="display:flex;gap:8px"><input id="inv-link" readonly value="${esc(inviteLink(o.inviteCode))}" style="flex:1;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><button class="btn" data-act="copyinv" title="Copy link"><span class="material-symbols-outlined">content_copy</span></button>${own?`<button class="btn" data-act="resetinv" title="Create a new link (old link stops working)"><span class="material-symbols-outlined">autorenew</span></button>`:''}</div><small style="color:var(--muted);font-size:12px">${o.autoApprove===true?'Anyone with this link can log in / sign up and join instantly (auto approve is ON).':'Anyone with this link can log in / sign up and request to join. An owner must approve every request (auto approve is OFF).'}</small></div>`:`<p style="font-size:13px;color:var(--muted);margin-top:16px">No invite link yet. Ask an owner to open this window to create one.</p>`;
   openModal(`${o.name} · Members (${o.members.length})`,
-   `<p style="font-size:13px;color:var(--muted);margin-bottom:12px">All members can view, comment and edit files, notes and links in this organization. Owners can also manage people and approve join requests.</p>${rows}${inv}
-   ${own?`<div class="aa-box"><label class="aa-row"><input type="checkbox" data-act="autoapp" ${o.autoApprove===true?'checked':''}><span><b>Auto approve join requests</b><small>ON: people joining with the invite link are added instantly. OFF: they stay pending until an owner approves them.</small></span></label></div>`:`<div class="aa-box aa-state">Auto approve join requests: <b class="${o.autoApprove===true?'on':'off'}">${o.autoApprove===true?'ON':'OFF'}</b><small style="display:block;color:var(--muted);font-size:12px;margin-top:4px">Only owners can change this.</small></div>`}
+   `<p style="font-size:13px;color:var(--muted);margin-bottom:12px">All members can view, comment and edit files, notes and links in this organization. Admins can also manage people and approve join requests.</p>${rows}${inv}
+   ${own?`<div class="aa-box"><label class="aa-row"><input type="checkbox" data-act="autoapp" ${o.autoApprove===true?'checked':''}><span><b>Auto approve join requests</b><small>ON: people joining with the invite link are added instantly. OFF: they stay pending until an admin approves them.</small></span></label></div>`:`<div class="aa-box aa-state">Auto approve join requests: <b class="${o.autoApprove===true?'on':'off'}">${o.autoApprove===true?'ON':'OFF'}</b><small style="display:block;color:var(--muted);font-size:12px;margin-top:4px">Only admins can change this.</small></div>`}
    ${own?`<div class="field" style="margin-top:16px"><label>Add people (Google emails, separated by comma)</label><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="member-email" placeholder="name@gmail.com" style="flex:1;min-width:160px;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><select id="member-role" class="sel"><option value="member">Member</option><option value="owner">Admin</option></select><button class="btn btn-primary" data-act="add">Add</button></div></div>`:''}`,
    `${!own||owners.length>1?`<button class="btn" style="color:var(--error);border-color:var(--error)" data-act="leave">Leave</button>`:''}<button class="btn" onclick="closeModal()">Close</button>`);
   const handler=ev=>{
