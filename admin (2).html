@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>MART Drive · Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#163A5F;--blue:#245B88;--bg:#F5F7FA;--surface:#fff;--text:#1F2937;--muted:#64748B;--border:#E2E8F0;--success:#15803D;--error:#B91C1C;--warn:#B45309;--soft:#E8F0F7;--radius:10px;--radius-lg:14px;--shadow:0 4px 12px rgba(15,23,42,.08);--shadow-lg:0 12px 32px rgba(15,23,42,.18)}
+body.dark{--navy:#A8C7FA;--blue:#8AB4F8;--bg:#131314;--surface:#1E1F20;--text:#E3E3E3;--muted:#A1A1A1;--border:#444746;--success:#34A853;--error:#F28B82;--warn:#FBBC04;--soft:#2D3133}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;padding-top:env(safe-area-inset-top,0px)}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select,textarea{font:inherit;color:inherit}
+.ms{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;font-size:20px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;vertical-align:middle;-webkit-font-smoothing:antialiased}
+
+/* gate */
+#gate{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
+.gate-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px 28px;max-width:400px;width:100%;text-align:center;box-shadow:var(--shadow)}
+.gate-card .logo{width:60px;height:60px;border-radius:16px;background:var(--navy);color:var(--surface);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.gate-card .logo .ms{font-size:32px}
+.gate-card h1{font-size:20px;margin-bottom:6px}
+.gate-card p{color:var(--muted);margin-bottom:20px}
+#gate-msg{margin-top:14px;color:var(--error);font-weight:500;min-height:20px}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:22px;font-weight:600;font-size:13px;border:1px solid var(--border);background:var(--surface);transition:background .15s}
+.btn:hover{background:var(--soft)}
+.btn.pri{background:var(--navy);color:var(--surface);border-color:var(--navy)}
+.btn.pri:hover{opacity:.9;background:var(--navy)}
+.btn.dng{background:var(--error);color:#fff;border-color:var(--error)}
+.btn.dng:hover{opacity:.9;background:var(--error)}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.ib{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--muted)}
+.ib:hover{background:var(--soft);color:var(--text)}
+.ib.red:hover{color:var(--error)}
+.ib:disabled{opacity:.35;cursor:not-allowed}
+
+/* layout */
+#app{display:none;min-height:100%}
+#app.on{display:flex}
+aside{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:40;transition:transform .2s;padding-top:env(safe-area-inset-top,0px)}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 18px 12px;font-weight:700;font-size:16px}
+.brand .logo{width:34px;height:34px;border-radius:10px;background:var(--navy);color:var(--surface);display:flex;align-items:center;justify-content:center}
+.brand small{display:block;font-weight:500;font-size:11px;color:var(--muted)}
+nav{flex:1;padding:8px 12px;overflow-y:auto}
+.nv{display:flex;align-items:center;gap:12px;width:100%;padding:10px 14px;border-radius:24px;font-weight:500;margin-bottom:3px;text-align:left}
+.nv:hover{background:var(--bg)}
+.nv.on{background:var(--soft);color:var(--blue);font-weight:600}
+.nv .cnt{margin-left:auto;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:0 7px;color:var(--muted)}
+.me{border-top:1px solid var(--border);padding:12px 14px;display:flex;align-items:center;gap:10px}
+.me img{width:34px;height:34px;border-radius:50%;object-fit:cover}
+.me .who{flex:1;min-width:0;font-size:12px}
+.me .who b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.me .who span{color:var(--muted)}
+main{flex:1;margin-left:240px;min-width:0}
+.top{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--border);height:58px;display:flex;align-items:center;gap:10px;padding:0 20px;padding-top:env(safe-area-inset-top,0px);box-sizing:content-box}
+.top h2{font-size:17px;flex:1}
+#menu{display:none}
+.page{padding:20px;max-width:1200px;margin:0 auto}
+.tab{display:none}.tab.on{display:block}
+.scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:35}
+
+/* cards */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px}
+.stat .l{color:var(--muted);font-size:12px;display:flex;align-items:center;gap:6px}
+.stat .l .ms{font-size:18px}
+.stat .v{font-size:26px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.stat .s{font-size:11px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:16px}
+.card h3{font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* toolbar */
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.inp{padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);outline:none;min-width:0}
+.inp:focus{border-color:var(--blue)}
+.search{flex:1;min-width:180px;position:relative}
+.search .ms{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:19px}
+.search input{width:100%;padding-left:36px}
+.selbar{display:none;align-items:center;gap:8px;flex-wrap:wrap;background:var(--soft);padding:8px 12px;border-radius:var(--radius);margin-bottom:12px;font-weight:600;color:var(--blue)}
+.selbar.on{display:flex}
+
+/* table */
+.tw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:720px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tr:hover td{background:color-mix(in srgb,var(--soft) 55%,transparent)}
+tr.blk td{opacity:.65}
+.u{display:flex;align-items:center;gap:10px;min-width:200px}
+.av{width:38px;height:38px;border-radius:50%;object-fit:cover;background:var(--soft);flex:none;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--blue);overflow:hidden}
+.av img{width:100%;height:100%;object-fit:cover}
+.u b{display:block;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.u span{display:block;color:var(--muted);font-size:12px;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{display:inline-block;padding:1px 9px;border-radius:10px;font-size:11px;font-weight:700;margin-right:4px}
+.pill.ok{background:#DCFCE7;color:#166534}
+.pill.bad{background:#FEE2E2;color:#991B1B}
+.pill.adm{background:#DBEAFE;color:#1E40AF}
+.pill.sup{background:#FEF3C7;color:#92400E}
+.pill.gray{background:var(--bg);color:var(--muted);border:1px solid var(--border)}
+body.dark .pill.ok{background:#14532D;color:#BBF7D0}body.dark .pill.bad{background:#7F1D1D;color:#FECACA}body.dark .pill.adm{background:#1E3A8A;color:#BFDBFE}body.dark .pill.sup{background:#78350F;color:#FDE68A}
+.acts{white-space:nowrap;text-align:right}
+input[type=checkbox]{width:17px;height:17px;accent-color:var(--navy);cursor:pointer}
+.empty{padding:40px 20px;text-align:center;color:var(--muted)}
+.pager{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;color:var(--muted);font-size:12px}
+
+/* mail */
+.mrow{display:grid;grid-template-columns:130px 1fr;gap:10px;align-items:start;margin-bottom:12px}
+.mrow label{font-weight:600;padding-top:9px;font-size:13px}
+.mrow .inp,.mrow textarea{width:100%}
+textarea.inp{resize:vertical;min-height:200px;line-height:1.6}
+.radios{display:flex;flex-wrap:wrap;gap:8px}
+.radios label{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-weight:500;padding-top:7px}
+.radios input{display:none}
+.radios label:has(input:checked){background:var(--soft);border-color:var(--blue);color:var(--blue);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;max-height:110px;overflow-y:auto;margin-top:8px}
+.chip{background:var(--soft);color:var(--blue);border-radius:14px;padding:2px 10px;font-size:12px}
+.hint{color:var(--muted);font-size:12px;margin-top:6px}
+.batch{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;flex-wrap:wrap}
+.batch span{flex:1;min-width:140px}
+
+/* modal / toast */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-bg.on{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius-lg);width:100%;max-width:480px;max-height:90vh;overflow:auto;box-shadow:var(--shadow-lg);padding:22px}
+.modal.wide{max-width:680px}
+.modal h3{font-size:17px;margin-bottom:10px}
+.modal .row{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;flex-wrap:wrap}
+.modal p{margin-bottom:8px}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:6px 10px;font-size:13px}
+.kv b{color:var(--muted);font-weight:500}
+.kv span{word-break:break-all}
+.chk{display:flex;gap:8px;align-items:flex-start;margin-top:12px;padding:10px;background:var(--bg);border-radius:var(--radius)}
+#toasts{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;width:calc(100% - 32px);pointer-events:none}
+.toast{background:#1F2937;color:#fff;padding:10px 18px;border-radius:24px;font-weight:500;box-shadow:var(--shadow-lg);max-width:520px;pointer-events:auto}
+.toast.success{background:#15803D}.toast.error{background:#B91C1C}
+.prog{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:10px}
+.prog i{display:block;height:100%;background:var(--blue);width:0;transition:width .2s}
+.log{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.log:last-child{border:0}
+.log .t{color:var(--muted);font-size:12px;white-space:nowrap;min-width:110px}
+
+/* org members manager */
+.mm-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.mm-row:last-child{border:0}
+.mm-row .u{flex:1;min-width:180px}
+.mm-row .u b,.mm-row .u span{max-width:200px}
+.rsel{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);font-weight:600;font-size:12px}
+.rsel:disabled{opacity:.6}
+.mm-list{max-height:48vh;overflow:auto;border-top:1px solid var(--border);margin-top:8px}
+.mm-add{display:flex;gap:8px;flex-wrap:wrap;padding:10px;background:var(--bg);border-radius:var(--radius)}
+.mm-legend{font-size:12px;color:var(--muted);margin:8px 0 4px;line-height:1.6}
+
+
+/* support view (read-only) */
+.sv-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.sv-tabs button{padding:5px 12px;border-radius:16px;border:1px solid var(--border);font-weight:600;font-size:12px;background:var(--surface)}
+.sv-tabs button.on{background:var(--soft);border-color:var(--blue);color:var(--blue)}
+.sv-list{max-height:46vh;overflow:auto;border:1px solid var(--border);border-radius:var(--radius)}
+.sv-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border)}
+.sv-row:last-child{border:0}.sv-row.dir{cursor:pointer}.sv-row.dir:hover{background:var(--soft)}
+.sv-row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sv-row small{color:var(--muted);white-space:nowrap;font-size:11px}
+.crumbs{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin:8px 0;font-size:12px}
+.crumbs button{color:var(--blue);font-weight:600}
+/* undo toast */
+.toast.undo{position:relative;overflow:hidden;padding-bottom:14px}
+.toast.undo .uw{display:flex;align-items:center;gap:14px}
+.toast.undo button{background:rgba(255,255,255,.2);color:#fff;border-radius:14px;padding:3px 14px;font-weight:700}
+.toast.undo .pb{position:absolute;left:0;bottom:0;height:3px;background:#fff;width:100%;animation:shr linear forwards}
+@keyframes shr{to{width:0}}
+.orgpick{max-height:180px;overflow:auto;margin-top:8px}
+.orgpick .chk{margin-top:6px}
+
+@media(max-width:860px){
+  aside{transform:translateX(-100%);box-shadow:var(--shadow-lg)}
+  aside.on{transform:none}
+  .scrim.on{display:block}
+  main{margin-left:0}
+  #menu{display:inline-flex}
+  .grid2{grid-template-columns:1fr}
+  .mrow{grid-template-columns:1fr}.mrow label{padding-top:0}
+  .page{padding:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN GATE ============ -->
+<div id="gate">
+  <div class="gate-card">
+    <div class="logo"><span class="ms">admin_panel_settings</span></div>
+    <h1>MART Drive Admin Panel</h1>
+    <p>Only authorized administrators can access this panel.</p>
+    <button class="btn pri" id="btn-login"><span class="ms">login</span> Sign in with Google</button>
+    <div id="gate-msg"></div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+  <aside id="side">
+    <div class="brand"><div class="logo"><span class="ms">shield_person</span></div><div>MART Drive<small>Admin Panel</small></div></div>
+    <nav>
+      <button class="nv on" data-tab="dash"><span class="ms">dashboard</span>Dashboard</button>
+      <button class="nv" data-tab="users"><span class="ms">group</span>Users<span class="cnt" id="c-users">0</span></button>
+      <button class="nv" data-tab="mail"><span class="ms">forward_to_inbox</span>Send Email</button>
+      <button class="nv" data-tab="notify"><span class="ms">campaign</span>Notices &amp; Warnings</button>
+      <button class="nv" data-tab="admins"><span class="ms">admin_panel_settings</span>Admins<span class="cnt" id="c-admins">0</span></button>
+      <button class="nv" data-tab="blocked"><span class="ms">block</span>Blocked<span class="cnt" id="c-blocked">0</span></button>
+      <button class="nv" data-tab="orgs"><span class="ms">apartment</span>Organizations<span class="cnt" id="c-orgs">0</span></button>
+      <button class="nv" data-tab="activity"><span class="ms">history</span>Activity Log</button>
+      <button class="nv" data-tab="analytics"><span class="ms">monitoring</span>Analytics</button><button class="nv" data-tab="appeals"><span class="ms">support_agent</span>Appeals<span class="cnt" id="c-appeals">0</span></button><button class="nv" data-tab="tools"><span class="ms">build</span>Tools</button>
+    </nav>
+    <div class="me">
+      <img id="me-img" alt="" referrerpolicy="no-referrer">
+      <div class="who"><b id="me-name"></b><span id="me-role"></span></div>
+      <button class="ib" id="btn-theme" title="Dark mode"><span class="ms">dark_mode</span></button>
+      <button class="ib" id="btn-out" title="Logout"><span class="ms">logout</span></button>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <main>
+    <div class="top">
+      <button class="ib" id="menu"><span class="ms">menu</span></button>
+      <h2 id="title">Dashboard</h2>
+      <a class="btn sm" href="./" title="Go to main site"><span class="ms" style="font-size:16px">open_in_new</span> MART Drive</a>
+    </div>
+
+    <div class="page">
+
+      <!-- DASHBOARD -->
+      <section class="tab on" id="tab-dash">
+        <div class="stats" id="stats"></div>
+        <div class="grid2">
+          <div class="card"><h3><span class="ms">person_add</span>Recent New Users</h3><div id="d-new"></div></div>
+          <div class="card"><h3><span class="ms">schedule</span>Recent Logins</h3><div id="d-last"></div></div>
+        </div>
+        <div class="card" id="legacy-note" style="display:none">
+          <h3><span class="ms">info</span>Add Legacy Users</h3>
+          <p style="color:var(--muted)">The user list is almost empty. To pull existing MART Drive users (from their files/folders) into the list, run <b>"Import Legacy Users"</b> in the <b>Tools</b> tab.</p>
+        </div>
+      </section>
+
+      <!-- USERS -->
+      <section class="tab" id="tab-users">
+        <div class="bar">
+          <div class="search"><span class="ms">search</span><input class="inp" id="u-q" placeholder="Search by name or email…"></div>
+          <select class="inp" id="u-f">
+            <option value="all">All</option><option value="active">Active</option><option value="blocked">Blocked</option><option value="admins">Admins</option><option value="new7">New in last 7 days</option><option value="idle30">No login for 30 days</option>
+          </select>
+          <select class="inp" id="u-s">
+            <option value="login">Sort: Last login</option><option value="join">Sort: Joined (newest)</option><option value="name">Sort: Name</option><option value="email">Sort: Email</option><option value="count">Sort: Login count</option>
+          </select>
+          <button class="btn" id="u-csv"><span class="ms">download</span>CSV</button>
+        </div>
+        <div class="selbar" id="selbar">
+          <span id="sel-n">0 selected</span>
+          <button class="btn sm pri" id="sel-mail"><span class="ms" style="font-size:16px">mail</span>Email</button>
+          <button class="btn sm" id="sel-warn"><span class="ms" style="font-size:16px">report</span>Warn</button>
+          <button class="btn sm" id="sel-block"><span class="ms" style="font-size:16px">block</span>Block</button>
+          <button class="btn sm" id="sel-unblock"><span class="ms" style="font-size:16px">lock_open</span>Unblock</button>
+          <button class="btn sm dng" id="sel-del"><span class="ms" style="font-size:16px">delete</span>Delete</button>
+          <button class="btn sm" id="sel-clear">Cancel</button>
+        </div>
+        <div class="tw">
+          <table>
+            <thead><tr><th style="width:36px"><input type="checkbox" id="u-all"></th><th>User</th><th>Status</th><th>Joined</th><th>Last Login</th><th style="text-align:right">Logins</th><th></th></tr></thead>
+            <tbody id="u-body"></tbody>
+          </table>
+          <div class="empty" id="u-empty" style="display:none">No users found</div>
+          <div class="pager"><span id="u-info"></span><span><button class="btn sm" id="u-prev">‹ Prev</button> <button class="btn sm" id="u-next">Next ›</button></span></div>
+        </div>
+      </section>
+
+      <!-- MAIL -->
+      <section class="tab" id="tab-mail">
+        <div class="card">
+          <h3><span class="ms">edit_note</span>Compose Email</h3>
+          <div class="mrow"><label>Recipients</label>
+            <div>
+              <div class="radios" id="m-mode">
+                <label><input type="radio" name="mm" value="all" checked>All users</label>
+                <label><input type="radio" name="mm" value="selected">Selected users</label>
+                <label><input type="radio" name="mm" value="active">Active (not blocked)</label>
+                <label><input type="radio" name="mm" value="custom">Custom</label>
+              </div>
+              <textarea class="inp" id="m-custom" style="display:none;min-height:70px;margin-top:8px" placeholder="Separate emails with commas, spaces, or new lines"></textarea>
+              <div class="hint" id="m-count"></div>
+              <div class="chips" id="m-chips"></div>
+            </div>
+          </div>
+          <div class="mrow"><label>Send as</label>
+            <div class="radios" id="m-field">
+              <label><input type="radio" name="mf" value="bcc" checked>BCC (private, recommended)</label>
+              <label><input type="radio" name="mf" value="to">To (everyone sees all emails)</label>
+            </div>
+          </div>
+          <div class="mrow"><label>Subject</label><input class="inp" id="m-sub" placeholder="Email subject"></div>
+          <div class="mrow"><label>Message</label><textarea class="inp" id="m-body" placeholder="Write your email here…"></textarea></div>
+          <div class="mrow"><label>Template</label>
+            <select class="inp" id="m-tpl"><option value="">— Choose —</option><option value="welcome">Welcome message</option><option value="update">New update</option><option value="maint">Maintenance notice</option><option value="warn">Warning notice</option></select>
+          </div>
+          <div class="bar" style="margin-top:6px">
+            <button class="btn pri" id="m-send"><span class="ms">send</span>Send Email (opens Gmail)</button>
+            <button class="btn" id="m-copy"><span class="ms">content_copy</span>Copy email addresses</button>
+          </div>
+          <div class="hint">Clicking "Send" opens your Gmail (Gmail app on mobile, Gmail web on desktop) with a pre-filled email. You just press Send there. A standard Gmail account can send to about 500 recipients per day.</div>
+          <div id="m-batches" style="margin-top:14px"></div>
+        </div>
+      </section>
+
+      <!-- NOTICES & WARNINGS -->
+      <section class="tab" id="tab-notify">
+        <div class="card">
+          <h3><span class="ms">campaign</span>Send Notice / Warning (shown inside the app)</h3>
+          <div class="mrow"><label>Type</label>
+            <div>
+              <div class="radios" id="n-type">
+                <label><input type="radio" name="nt" value="notice" checked>Notice (information)</label>
+                <label><input type="radio" name="nt" value="warning">Warning (user must acknowledge)</label>
+              </div>
+              <div class="hint">Notices can go to everyone, to selected organizations, or to selected users. Warnings go only to selected users and appear as a full-screen alert until the user taps “I understand”.</div>
+            </div>
+          </div>
+          <div class="mrow"><label>Audience</label>
+            <div>
+              <div class="radios" id="n-aud">
+                <label><input type="radio" name="na" value="all" checked>All users</label>
+                <label><input type="radio" name="na" value="orgs">Selected organizations</label>
+                <label><input type="radio" name="na" value="selected">Selected users</label>
+                <label><input type="radio" name="na" value="custom">Custom emails</label>
+              </div>
+              <div class="orgpick" id="n-orgs" style="display:none"></div>
+              <textarea class="inp" id="n-custom" style="display:none;min-height:70px;margin-top:8px" placeholder="Separate emails with commas, spaces, or new lines"></textarea>
+              <div class="hint" id="n-count"></div>
+              <div class="chips" id="n-chips"></div>
+            </div>
+          </div>
+          <div class="mrow"><label>Title</label><input class="inp" id="n-title" maxlength="120" placeholder="Short title"></div>
+          <div class="mrow"><label>Message</label><textarea class="inp" id="n-body" maxlength="1000" style="min-height:120px" placeholder="Write the message users will see…"></textarea></div>
+          <div class="bar" style="margin-top:6px"><button class="btn pri" id="n-send"><span class="ms">send</span>Send</button></div>
+          <div class="hint">Blocked users are skipped. Users see it in the bell icon (and as a device notification if they enabled push alerts).</div>
+        </div>
+        <div class="card"><h3><span class="ms">history</span>Sent History</h3><div id="n-hist"></div></div>
+      </section>
+
+      <!-- ADMINS -->
+      <section class="tab" id="tab-admins">
+        <div class="card">
+          <h3><span class="ms">person_add</span>Add New Admin</h3>
+          <div class="bar">
+            <input class="inp" id="a-email" type="email" placeholder="Gmail address" style="flex:1;min-width:220px" list="a-list">
+            <datalist id="a-list"></datalist>
+            <button class="btn pri" id="a-add"><span class="ms">add</span>Make Admin</button>
+          </div>
+          <div class="hint" id="a-hint"></div>
+        </div>
+        <div class="tw"><table><thead><tr><th>Admin</th><th>Role</th><th>Added By</th><th></th></tr></thead><tbody id="a-body"></tbody></table></div>
+      </section>
+
+      <!-- BLOCKED -->
+      <section class="tab" id="tab-blocked">
+        <div class="card">
+          <h3><span class="ms">block</span>Block by Email</h3>
+          <div class="bar">
+            <input class="inp" id="b-email" type="email" placeholder="Email address" style="flex:1;min-width:220px">
+            <input class="inp" id="b-reason" placeholder="Reason (optional)" style="flex:1;min-width:160px">
+            <button class="btn dng" id="b-add"><span class="ms">block</span>Block</button>
+          </div>
+        </div>
+        <div class="tw"><table><thead><tr><th>User</th><th>Reason</th><th>Blocked At</th><th>Blocked By</th><th></th></tr></thead><tbody id="b-body"></tbody></table><div class="empty" id="b-empty" style="display:none">No one is blocked</div></div>
+      </section>
+
+      <!-- ORGS -->
+      <section class="tab" id="tab-orgs">
+        <div class="bar"><div class="search"><span class="ms">search</span><input class="inp" id="o-q" placeholder="Search organizations…"></div></div>
+        <div class="tw"><table><thead><tr><th>Name</th><th>Team</th><th>Super Admins</th><th>Admins</th><th>Members</th><th>Creator</th><th>Auto-approve</th><th></th></tr></thead><tbody id="o-body"></tbody></table><div class="empty" id="o-empty" style="display:none">No organizations found</div></div>
+      </section>
+
+      <!-- ACTIVITY -->
+      <section class="tab" id="tab-activity">
+        <div class="card"><h3><span class="ms">history</span>Recent Activity (last 100)</h3><div id="act"></div></div>
+        <div class="card"><h3><span class="ms">visibility</span>Support Views (audit of “View as user”)</h3><div id="sv-log"></div></div>
+      </section>
+
+      <section class="tab" id="tab-analytics"><div class="bar"><select class="inp" id="an-range" style="width:auto"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option></select><button class="btn" id="an-ref">Refresh</button></div><div id="an-body"></div></section><section class="tab" id="tab-appeals"><div class="card"><h3><span class="ms">support_agent</span>Ban appeals</h3><div id="ap-list"></div></div></section>
+      <!-- TOOLS -->
+      <section class="tab" id="tab-tools">
+        <div class="card">
+          <h3><span class="ms">cloud_download</span>Import Legacy Users</h3>
+          <p style="color:var(--muted);margin-bottom:12px">Finds users who were using the app before this panel existed—from their files, folders, and notes—and adds them to the user list. Existing users' data is not deleted.</p>
+          <button class="btn pri" id="t-import"><span class="ms">sync</span>Start Import</button>
+          <div class="prog" id="t-prog" style="display:none"><i id="t-bar"></i></div>
+          <div class="hint" id="t-msg"></div>
+        </div>
+        <div class="card">
+          <h3><span class="ms">restore_from_trash</span>Recently Deleted Users</h3>
+          <p style="color:var(--muted);margin-bottom:12px">Deleted profiles are kept for 7 days (then purged automatically). Restoring brings back the profile only; files and folders that were wiped cannot be recovered.</p>
+          <div id="t-del"></div>
+        </div>
+        <div class="card">
+          <h3><span class="ms">ios_share</span>Export All User Data</h3>
+          <p style="color:var(--muted);margin-bottom:12px">Download a CSV with every user's name, email, photo URL, joined date, and last login.</p>
+          <button class="btn" id="t-csv"><span class="ms">download</span>Download CSV</button>
+        </div>
+        <div class="card">
+          <h3><span class="ms">info</span>System Info</h3>
+          <div class="kv" id="t-info"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="modal-bg" id="modal-bg"><div class="modal" id="modal"></div></div>
+<div id="toasts"></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc, updateDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp, arrayRemove, getCountFromServer, getAggregateFromServer, sum, writeBatch, Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+const firebaseConfig={apiKey:"AIzaSyDUcT6hVqLHy3pYzwg1oktI7amTpF9Qj4c",authDomain:"mart-drive.firebaseapp.com",projectId:"mart-drive",storageBucket:"mart-drive.firebasestorage.app",messagingSenderId:"829348083361",appId:"1:829348083361:web:d6e91ccec70c2b9d53e2e0",measurementId:"G-J2ERB07TW0"};
+const SUPER='rovermdashfaq@gmail.com';
+const app=initializeApp(firebaseConfig), auth=getAuth(app), db=getFirestore(app);
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const low=s=>String(s||'').trim().toLowerCase();
+const isEmail=s=>/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(s);
+const toDate=t=>t?.toDate?t.toDate():(t?new Date(t):null);
+const fmtD=t=>{const d=toDate(t);return d?d.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}):'—'};
+const fmtDT=t=>{const d=toDate(t);return d?d.toLocaleString('en-US',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'—'};
+const ago=t=>{const d=toDate(t);if(!d)return '—';const s=(Date.now()-d)/1000;if(s<60)return 'just now';if(s<3600)return Math.floor(s/60)+' min ago';if(s<86400)return Math.floor(s/3600)+' hr ago';if(s<86400*30)return Math.floor(s/86400)+' days ago';return fmtD(t)};
+const bytes=n=>{n=+n||0;if(n<1024)return n+' B';const u=['KB','MB','GB','TB'];let i=-1;do{n/=1024;i++}while(n>=1024&&i<3);return n.toFixed(1)+' '+u[i]};
+const toast=(m,t='')=>{const d=document.createElement('div');d.className='toast '+t;d.textContent=m;$('toasts').appendChild(d);setTimeout(()=>d.remove(),3800)};
+const avatar=u=>u.photoURL?`<div class="av"><img src="${esc(u.photoURL)}" referrerpolicy="no-referrer" alt="" onerror="this.parentNode.textContent='${esc((u.name||u.email||'?')[0].toUpperCase())}'"></div>`:`<div class="av">${esc((u.name||u.email||'?')[0].toUpperCase())}</div>`;
+
+let me=null, isSuper=false;
+let users=[], blocked=new Map(), admins=new Map(), orgs=[], unsubs=[];
+let selected=new Set(), page=0; const PER=25;
+let counts={files:0,folders:0,notes:0,bytes:0};
+let membersOpen=null; // organization id whose member manager is open
+
+/* ---------------- auth ---------------- */
+$('btn-login').onclick=async()=>{
+  $('gate-msg').textContent='';
+  try{await signInWithPopup(auth,new GoogleAuthProvider())}catch(e){$('gate-msg').textContent='Login failed: '+(e.code||e.message)}
+};
+$('btn-out').onclick=async()=>{await signOut(auth);location.reload()};
+
+async function checkAdmin(user){
+  const email=low(user.email);
+  if(email===SUPER) return {ok:true,sup:true};
+  try{const s=await getDoc(doc(db,'admins',email));if(s.exists())return {ok:true,sup:false}}catch(e){console.warn(e)}
+  return {ok:false};
+}
+onAuthStateChanged(auth,async user=>{
+  stopAll();
+  if(!user){me=null;$('app').classList.remove('on');$('gate').style.display='flex';return}
+  const r=await checkAdmin(user);
+  if(!r.ok){
+    $('gate-msg').innerHTML=`<b>${esc(user.email)}</b> is not an admin. Access denied.<br><button class="btn sm" id="g-out" style="margin-top:10px">Sign in with another account</button>`;
+    $('g-out').onclick=async()=>{await signOut(auth)};
+    $('gate').style.display='flex';$('app').classList.remove('on');return;
+  }
+  me=user;isSuper=r.sup;
+  $('gate').style.display='none';$('app').classList.add('on');
+  $('me-img').src=user.photoURL||'';$('me-img').style.display=user.photoURL?'block':'none';
+  $('me-name').textContent=user.displayName||user.email;
+  $('me-role').textContent=isSuper?'Super Admin':'Admin';
+  startListeners();loadCounts();setTimeout(housekeeping,2500);
+});
+function stopAll(){unsubs.forEach(u=>u());unsubs=[]}
+function startListeners(){
+  const err=n=>e=>{console.warn(n,e);toast(n+' failed to load: '+(e.code||e.message),'error')};
+  unsubs.push(onSnapshot(collection(db,'users'),s=>{users=s.docs.map(d=>({id:d.id,...d.data()}));renderAll()},err('Users')));
+  unsubs.push(onSnapshot(collection(db,'blockedUsers'),s=>{blocked=new Map(s.docs.map(d=>[d.id,{id:d.id,...d.data()}]));renderAll()},err('Blocked list')));
+  unsubs.push(onSnapshot(collection(db,'admins'),s=>{admins=new Map(s.docs.map(d=>[d.id,{id:d.id,...d.data()}]));renderAll()},err('Admins')));
+  unsubs.push(onSnapshot(collection(db,'organizations'),s=>{orgs=s.docs.map(d=>({id:d.id,...d.data()}));renderAll()},err('Organizations')));
+}
+async function loadCounts(){
+  try{
+    const [f,d,n,sz]=await Promise.all([
+      getCountFromServer(collection(db,'files')),getCountFromServer(collection(db,'folders')),getCountFromServer(collection(db,'notes')),
+      getAggregateFromServer(collection(db,'files'),{total:sum('size')})]);
+    counts={files:f.data().count,folders:d.data().count,notes:n.data().count,bytes:sz.data().total||0};
+    renderDash();
+  }catch(e){console.warn('counts',e)}
+}
+
+/* ---------------- helpers ---------------- */
+const isBlocked=u=>blocked.has(low(u.email));
+const isAdminEmail=e=>low(e)===SUPER||admins.has(low(e));
+const lastLogin=u=>toDate(u.lastLogin)?.getTime()||0;
+const joined=u=>toDate(u.createdAt)?.getTime()||0;
+
+/* ---------------- tabs ---------------- */
+const TITLES={dash:'Dashboard',users:'Users',mail:'Send Email',notify:'Notices & Warnings',admins:'Admin Management',blocked:'Blocked List',orgs:'Organizations',activity:'Activity Log',tools:'Tools'};
+function go(t){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='tab-'+t));
+  document.querySelectorAll('.nv').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));
+  $('title').textContent=TITLES[t];closeSide();
+  if(t==='activity')loadActivity();
+  if(t==='mail'){renderMail();window.__loadTpl&&window.__loadTpl()}
+  if(t==='notify'){renderNotify(true);loadNoticeHistory()}
+  if(t==='tools')renderTools();
+}
+document.querySelectorAll('.nv').forEach(b=>b.onclick=()=>go(b.dataset.tab));
+const closeSide=()=>{$('side').classList.remove('on');$('scrim').classList.remove('on')};
+$('menu').onclick=()=>{$('side').classList.add('on');$('scrim').classList.add('on')};
+$('scrim').onclick=closeSide;
+$('btn-theme').onclick=()=>{document.body.classList.toggle('dark');try{localStorage.setItem('admin_theme',document.body.classList.contains('dark')?'dark':'light')}catch{}};
+try{if(localStorage.getItem('admin_theme')==='dark'||(!localStorage.getItem('admin_theme')&&matchMedia('(prefers-color-scheme:dark)').matches))document.body.classList.add('dark')}catch{}
+
+/* ---------------- modal ---------------- */
+function modal(html,wire,wide){$('modal').className='modal'+(wide?' wide':'');$('modal').innerHTML=html;$('modal-bg').classList.add('on');wire&&wire($('modal'))}
+const closeModal=()=>{membersOpen=null;$('modal-bg').classList.remove('on')};
+$('modal-bg').onclick=e=>{if(e.target===$('modal-bg'))closeModal()};
+function confirmBox(title,msg,okLabel,danger,extra=''){
+  return new Promise(res=>modal(`<h3>${esc(title)}</h3><p>${msg}</p>${extra}<div class="row"><button class="btn" id="cb-no">Cancel</button><button class="btn ${danger?'dng':'pri'}" id="cb-ok">${esc(okLabel)}</button></div>`,m=>{
+    m.querySelector('#cb-no').onclick=()=>{closeModal();res(null)};
+    m.querySelector('#cb-ok').onclick=()=>{const x=m.querySelector('#cb-x');const b=m.querySelector('#cb-b');const out={x:x?x.checked:false,b:b?b.checked:false};closeModal();res(out)};
+  }));
+}
+
+/* ---------------- render all ---------------- */
+function renderAll(){
+  $('c-users').textContent=users.length;$('c-admins').textContent=admins.size+1;$('c-blocked').textContent=blocked.size;$('c-orgs').textContent=orgs.length;
+  renderDash();renderUsers();renderAdmins();renderBlocked();renderOrgs();
+  if($('tab-mail').classList.contains('on'))renderMail();
+  if($('tab-notify').classList.contains('on'))renderNotify(true);
+  if(membersOpen&&$('modal-bg').classList.contains('on'))renderMembers();
+}
+
+/* ---------------- dashboard ---------------- */
+function renderDash(){
+  const now=Date.now(),day=86400000;
+  const n7=users.filter(u=>now-joined(u)<7*day&&joined(u)).length;
+  const a1=users.filter(u=>now-lastLogin(u)<day).length;
+  const a7=users.filter(u=>now-lastLogin(u)<7*day).length;
+  const S=(ic,l,v,s='')=>`<div class="stat"><div class="l"><span class="ms">${ic}</span>${l}</div><div class="v">${v}</div><div class="s">${s}&nbsp;</div></div>`;
+  $('stats').innerHTML=
+    S('group','Total Users',users.length,'Registered / logged in')+
+    S('person_add','New (7 days)',n7)+
+    S('bolt','Active Today',a1,'Logged in within 24h')+
+    S('calendar_month','Weekly Active',a7)+
+    S('block','Blocked',blocked.size)+
+    S('admin_panel_settings','Admins',admins.size+1)+
+    S('apartment','Organizations',orgs.length)+
+    S('description','Total Files',counts.files,bytes(counts.bytes)+' used')+
+    S('folder','Folders',counts.folders)+
+    S('sticky_note_2','Notes & Links',counts.notes);
+  const row=(u,t)=>`<div class="log" style="align-items:center"><div class="u" style="min-width:0;flex:1">${avatar(u)}<div style="min-width:0"><b>${esc(u.name||'—')}</b><span>${esc(u.email)}</span></div></div><span class="t" style="min-width:0">${t}</span></div>`;
+  const nw=[...users].sort((a,b)=>joined(b)-joined(a)).slice(0,6);
+  const ll=[...users].sort((a,b)=>lastLogin(b)-lastLogin(a)).slice(0,6);
+  $('d-new').innerHTML=nw.length?nw.map(u=>row(u,fmtD(u.createdAt))).join(''):'<div class="empty">No users yet</div>';
+  $('d-last').innerHTML=ll.length?ll.map(u=>row(u,ago(u.lastLogin))).join(''):'<div class="empty">No users yet</div>';
+  $('legacy-note').style.display=users.length<3?'block':'none';
+}
+
+/* ---------------- users ---------------- */
+function filtered(){
+  const q=low($('u-q').value),f=$('u-f').value,now=Date.now(),day=86400000;
+  let l=users.filter(u=>{
+    if(q&&!(low(u.email).includes(q)||low(u.name).includes(q)))return false;
+    if(f==='active')return !isBlocked(u);
+    if(f==='blocked')return isBlocked(u);
+    if(f==='admins')return isAdminEmail(u.email);
+    if(f==='new7')return joined(u)&&now-joined(u)<7*day;
+    if(f==='idle30')return !lastLogin(u)||now-lastLogin(u)>30*day;
+    return true;
+  });
+  const s=$('u-s').value;
+  l.sort((a,b)=>s==='name'?low(a.name).localeCompare(low(b.name)):s==='email'?low(a.email).localeCompare(low(b.email)):s==='join'?joined(b)-joined(a):s==='count'?(b.loginCount||0)-(a.loginCount||0):lastLogin(b)-lastLogin(a));
+  return l;
+}
+function statusPills(u){
+  const e=low(u.email);
+  return (e===SUPER?'<span class="pill sup">Super Admin</span>':admins.has(e)?'<span class="pill adm">Admin</span>':'')+(isBlocked(u)?'<span class="pill bad">Blocked</span>':'<span class="pill ok">Active</span>');
+}
+function renderUsers(){
+  const l=filtered(),pages=Math.max(1,Math.ceil(l.length/PER));if(page>=pages)page=pages-1;
+  const sl=l.slice(page*PER,page*PER+PER);
+  $('u-empty').style.display=l.length?'none':'block';
+  $('u-body').innerHTML=sl.map(u=>{
+    const prot=isAdminEmail(u.email);
+    return `<tr class="${isBlocked(u)?'blk':''}" data-id="${esc(u.id)}">
+      <td><input type="checkbox" class="u-chk" ${selected.has(u.id)?'checked':''}></td>
+      <td><div class="u">${avatar(u)}<div style="min-width:0"><b>${esc(u.name||'Unnamed')}</b><span>${esc(u.email)}</span></div></div></td>
+      <td>${statusPills(u)}${u.imported?'<span class="pill gray">Imported</span>':''}</td>
+      <td>${fmtD(u.createdAt)}</td>
+      <td title="${esc(fmtDT(u.lastLogin))}">${ago(u.lastLogin)}</td>
+      <td style="text-align:right">${u.loginCount||0}</td>
+      <td class="acts">
+        <button class="ib" data-a="info" title="Details"><span class="ms">info</span></button>
+        <button class="ib" data-a="view" title="View files (read-only)"><span class="ms">visibility</span></button>
+        <button class="ib" data-a="mail" title="Send email"><span class="ms">mail</span></button>
+        <button class="ib" data-a="warn" title="Send warning"><span class="ms">report</span></button>
+        ${prot?'':isBlocked(u)?'<button class="ib" data-a="unblock" title="Unblock"><span class="ms">lock_open</span></button>':'<button class="ib" data-a="block" title="Block"><span class="ms">block</span></button>'}
+        ${prot?'':'<button class="ib red" data-a="del" title="Delete"><span class="ms">delete</span></button>'}
+      </td></tr>`}).join('');
+  $('u-info').textContent=`Showing ${l.length?page*PER+1:0}–${Math.min(l.length,page*PER+PER)} of ${l.length}`;
+  $('u-prev').disabled=page===0;$('u-next').disabled=page>=pages-1;
+  $('u-all').checked=sl.length>0&&sl.every(u=>selected.has(u.id));
+  const n=selected.size;$('selbar').classList.toggle('on',n>0);$('sel-n').textContent=n+' selected';
+}
+['u-q','u-f','u-s'].forEach(i=>$(i).addEventListener('input',()=>{page=0;renderUsers()}));
+$('u-prev').onclick=()=>{page--;renderUsers()};$('u-next').onclick=()=>{page++;renderUsers()};
+$('u-all').onchange=e=>{const l=filtered().slice(page*PER,page*PER+PER);l.forEach(u=>e.target.checked?selected.add(u.id):selected.delete(u.id));renderUsers()};
+$('u-body').addEventListener('click',e=>{
+  const tr=e.target.closest('tr');if(!tr)return;const u=users.find(x=>x.id===tr.dataset.id);if(!u)return;
+  if(e.target.classList.contains('u-chk')){e.target.checked?selected.add(u.id):selected.delete(u.id);renderUsers();return}
+  const b=e.target.closest('[data-a]');if(!b)return;
+  ({info:()=>userInfo(u),view:()=>viewAsUser(u),warn:()=>warnUsers([u.email]),mail:()=>{mailTo([u.email])},block:()=>blockUsers([u]),unblock:()=>unblockUsers([u]),del:()=>deleteUsers([u])})[b.dataset.a]();
+});
+const selUsers=()=>users.filter(u=>selected.has(u.id));
+$('sel-clear').onclick=()=>{selected.clear();renderUsers()};
+$('sel-warn').onclick=()=>{const l=selUsers().map(u=>u.email);if(!l.length)return toast('Select users first');warnUsers(l)};
+$('sel-mail').onclick=()=>{$('m-mode').querySelector('[value=selected]').checked=true;go('mail')};
+$('sel-block').onclick=()=>blockUsers(selUsers());
+$('sel-unblock').onclick=()=>unblockUsers(selUsers());
+$('sel-del').onclick=()=>deleteUsers(selUsers());
+
+async function userInfo(u){
+  const e=low(u.email);
+  const myOrgs=orgs.filter(o=>(o.members||[]).map(low).includes(e)).map(o=>`${esc(o.name)} <span class="pill ${roleOf(o,e)==='super'?'sup':roleOf(o,e)==='admin'?'adm':'gray'}">${ROLE_LABEL[roleOf(o,e)]}</span>`).join('<br>')||'—';
+  modal(`<h3>User Details</h3><div class="u" style="margin-bottom:14px">${avatar(u)}<div><b>${esc(u.name||'Unnamed')}</b><span>${esc(u.email)}</span></div></div>
+   <div class="kv"><b>Status</b><span>${statusPills(u)}</span><b>UID</b><span>${esc(u.id)}</span><b>Joined</b><span>${fmtDT(u.createdAt)}</span><b>Last Login</b><span>${fmtDT(u.lastLogin)}</span><b>Login Count</b><span>${u.loginCount||0}</span>
+   ${isBlocked(u)?`<b>Block Reason</b><span>${esc(blocked.get(e)?.reason||'—')}</span>`:''}
+   <b>Files</b><span id="ui-f">…</span><b>Folders</b><span id="ui-d">…</span><b>Notes/Links</b><span id="ui-n">…</span><b>Storage</b><span id="ui-s">…</span><b>Organizations</b><span>${myOrgs}</span></div>
+   <div class="row"><button class="btn" id="ui-x">Close</button></div>`,m=>m.querySelector('#ui-x').onclick=closeModal);
+  try{
+    const c=n=>getCountFromServer(query(collection(db,n),where('uid','==',u.id)));
+    const [f,d,n,s]=await Promise.all([c('files'),c('folders'),c('notes'),getAggregateFromServer(query(collection(db,'files'),where('uid','==',u.id)),{t:sum('size')})]);
+    $('ui-f').textContent=f.data().count;$('ui-d').textContent=d.data().count;$('ui-n').textContent=n.data().count;$('ui-s').textContent=bytes(s.data().t);
+  }catch(err){['ui-f','ui-d','ui-n','ui-s'].forEach(i=>{const x=$(i);if(x)x.textContent='—'})}
+}
+
+/* block / unblock */
+async function blockUsers(list){
+  list=list.filter(u=>!isAdminEmail(u.email)&&!isBlocked(u));
+  if(!list.length)return toast('No users to block');
+  const r=await confirmBox('Block these users?',`<b>${list.length}</b> user(s) will be blocked. They won't be able to use the app after the next load. Data is not deleted—unblocking restores access.<br><br><input class="inp" id="bk-r" style="width:100%" placeholder="Reason (optional)">`,'Block',true);
+  if(!r)return;
+  const reason=($('bk-r')?.value||'').slice(0,200);
+  try{
+    for(const u of list)await setDoc(doc(db,'blockedUsers',low(u.email)),{email:low(u.email),uid:u.id||null,name:u.name||'',photoURL:u.photoURL||'',reason,blockedBy:low(me.email),blockedAt:serverTimestamp()});
+    selected.clear();toast(list.length+' user(s) blocked','success');
+  }catch(e){toast('Block failed: '+(e.code||e.message),'error')}
+}
+async function unblockUsers(list){
+  list=list.filter(isBlocked);if(!list.length)return toast('No one is blocked');
+  try{for(const u of list)await deleteDoc(doc(db,'blockedUsers',low(u.email)));selected.clear();toast(list.length+' user(s) unblocked','success')}
+  catch(e){toast('Failed: '+(e.code||e.message),'error')}
+}
+$('b-add').onclick=async()=>{
+  const e=low($('b-email').value);if(!isEmail(e))return toast('Enter a valid email','error');
+  if(isAdminEmail(e))return toast('Admins cannot be blocked','error');
+  const u=users.find(x=>low(x.email)===e);
+  try{await setDoc(doc(db,'blockedUsers',e),{email:e,uid:u?.id||null,name:u?.name||'',photoURL:u?.photoURL||'',reason:$('b-reason').value.trim().slice(0,200),blockedBy:low(me.email),blockedAt:serverTimestamp()});$('b-email').value='';$('b-reason').value='';toast('Blocked','success')}
+  catch(err){toast('Failed: '+(err.code||err.message),'error')}
+};
+function renderBlocked(){
+  const l=[...blocked.values()].sort((a,b)=>(toDate(b.blockedAt)||0)-(toDate(a.blockedAt)||0));
+  $('b-empty').style.display=l.length?'none':'block';
+  $('b-body').innerHTML=l.map(b=>`<tr><td><div class="u">${avatar(b)}<div style="min-width:0"><b>${esc(b.name||'—')}</b><span>${esc(b.email)}</span></div></div></td><td>${esc(b.reason||'—')}</td><td>${fmtDT(b.blockedAt)}</td><td>${esc(b.blockedBy||'')}</td><td class="acts"><button class="btn sm" data-e="${esc(b.id)}"><span class="ms" style="font-size:16px">lock_open</span>Unblock</button></td></tr>`).join('');
+}
+$('b-body').addEventListener('click',async e=>{const b=e.target.closest('[data-e]');if(!b)return;try{await deleteDoc(doc(db,'blockedUsers',b.dataset.e));toast('Unblocked','success')}catch(err){toast('Failed: '+(err.code||err.message),'error')}});
+
+/* delete = soft delete with a 10-second Undo.
+   1) profile snapshot -> deletedUsers/{uid} (TTL field expireAt, purged after 7 days)
+   2) users/{uid} removed (+ optional block)
+   3) Undo toast for 10 s. Undo restores everything.
+   4) After 10 s the data wipe (files/folders/notes records ...) runs for good. */
+const UNDO_MS=10000, KEEP_DAYS=7;
+const USER_KEYS=['uid','email','name','photoURL','createdAt','lastLogin','loginCount','provider','imported'];
+function pickProfile(u){const o={};USER_KEYS.forEach(k=>{if(u[k]!==undefined)o[k]=u[k]});o.uid=u.id||u.uid;return o}
+function undoToast(msg,ms,onUndo,onExpire){
+  const d=document.createElement('div');d.className='toast undo';
+  d.innerHTML=`<div class="uw"><span>${esc(msg)}</span><button type="button">Undo</button></div><i class="pb" style="animation-duration:${ms}ms"></i>`;
+  $('toasts').appendChild(d);
+  let done=false;
+  const t=setTimeout(async()=>{if(done)return;done=true;d.remove();try{await onExpire()}catch(e){toast('Cleanup failed: '+(e.code||e.message),'error')}},ms);
+  const btn=d.querySelector('button');
+  btn.onclick=async()=>{if(done)return;done=true;clearTimeout(t);btn.disabled=true;try{await onUndo();toast('Undo complete — restored','success')}catch(e){toast('Undo failed: '+(e.code||e.message),'error')}d.remove()};
+}
+async function restoreDeleted(uid,profile,email,removeBlock){
+  await setDoc(doc(db,'users',uid),pickProfile({...profile,id:uid}));
+  if(removeBlock)await deleteDoc(doc(db,'blockedUsers',email)).catch(()=>0);
+  await deleteDoc(doc(db,'deletedUsers',uid));
+}
+async function finalizeDeletion(u,wipe){
+  if(wipe)await wipeUserData(u);
+  await updateDoc(doc(db,'deletedUsers',u.id),{wipePending:false,wipeDone:!!wipe,finalizedAt:serverTimestamp()}).catch(()=>0);
+}
+async function deleteUsers(list){
+  list=list.filter(u=>!isAdminEmail(u.email));
+  if(!list.length)return toast('No users to delete');
+  const extra=`<label class="chk"><input type="checkbox" id="cb-x" checked><span><b>Also delete all their data</b><br><small style="color:var(--muted)">File records, folders, notes, shares, storage records, and organization memberships. Runs after the 10-second Undo window. (Their actual files in Google Drive cannot be deleted.)</small></span></label>
+    <label class="chk"><input type="checkbox" id="cb-b" checked><span><b>Block them as well</b><br><small style="color:var(--muted)">Without blocking, the user could sign in again and re-register.</small></span></label>`;
+  const r=await confirmBox('Delete users?',`<b>${list.length}</b> user(s) will be deleted. You get a <b>10-second Undo</b> afterwards, and the profile stays in “Recently Deleted” for ${KEEP_DAYS} days.`,'Delete',true,extra);
+  if(!r)return;
+  const alsoBlock=r.b,wipe=r.x,done=[];
+  const note=document.createElement('div');note.className='toast';note.textContent='Deleting…';$('toasts').appendChild(note);
+  try{
+    let i=0;
+    for(const u of list){
+      note.textContent=`Deleting ${++i}/${list.length}…`;
+      const e=low(u.email),was=isBlocked(u);
+      await setDoc(doc(db,'deletedUsers',u.id),{uid:u.id,email:e,profile:pickProfile(u),wipe,alsoBlock,wasBlocked:was,wipePending:wipe,wipeDone:false,deletedBy:low(me.email),deletedAt:serverTimestamp(),undoUntil:Timestamp.fromMillis(Date.now()+UNDO_MS+2000),expireAt:Timestamp.fromMillis(Date.now()+KEEP_DAYS*864e5)});
+      if(alsoBlock&&!was)await setDoc(doc(db,'blockedUsers',e),{email:e,uid:u.id,name:u.name||'',photoURL:u.photoURL||'',reason:'Deleted by admin',blockedBy:low(me.email),blockedAt:serverTimestamp()});
+      await deleteDoc(doc(db,'users',u.id));
+      done.push({u,e,was});selected.delete(u.id);
+    }
+  }catch(e){toast('Delete failed: '+(e.code||e.message),'error')}
+  note.remove();
+  if(!done.length)return;
+  undoToast(`${done.length} user(s) deleted`,UNDO_MS,
+    async()=>{for(const x of done)await restoreDeleted(x.u.id,x.u,x.e,alsoBlock&&!x.was)},
+    async()=>{for(const x of done)await finalizeDeletion(x.u,wipe);loadCounts()});
+}
+/* runs at start: finish wipes an admin never completed (tab closed) and purge expired snapshots */
+async function housekeeping(){
+  try{
+    const p=await getDocs(query(collection(db,'deletedUsers'),where('wipePending','==',true)));
+    for(const d of p.docs){const x=d.data();if((x.undoUntil?.toMillis?.()||0)<Date.now())await finalizeDeletion({id:d.id,email:x.email},true)}
+    const ex=await getDocs(query(collection(db,'deletedUsers'),where('expireAt','<',Timestamp.now())));
+    for(const d of ex.docs.slice(0,50))await deleteDoc(d.ref);
+  }catch(e){console.warn('housekeeping',e)}
+}
+async function loadDeleted(){
+  const box=$('t-del');if(!box)return;box.innerHTML='<div class="hint">Loading…</div>';
+  try{
+    const s=await getDocs(query(collection(db,'deletedUsers'),orderBy('deletedAt','desc'),limit(50)));
+    if(!s.docs.length){box.innerHTML='<div class="hint">Nothing deleted recently.</div>';return}
+    box.innerHTML=s.docs.map(d=>{const x=d.data(),p=x.profile||{};
+      return `<div class="batch" data-id="${esc(d.id)}"><span><b>${esc(p.name||x.email)}</b> · ${esc(x.email)}<br><small style="color:var(--muted)">Deleted ${fmtDT(x.deletedAt)} by ${esc(x.deletedBy||'')} · ${x.wipeDone?'data wiped':x.wipePending?'data wipe pending':'data kept'} · expires ${fmtD(x.expireAt)}</small></span><button class="btn sm pri" data-r="1"><span class="ms" style="font-size:16px">restore</span>Restore profile</button><button class="btn sm dng" data-p="1"><span class="ms" style="font-size:16px">delete_forever</span>Purge now</button></div>`}).join('');
+    box.onclick=async e=>{
+      const row=e.target.closest('.batch');if(!row)return;const id=row.dataset.id;
+      const snap=s.docs.find(d=>d.id===id);if(!snap)return;const x=snap.data();
+      try{
+        if(e.target.closest('[data-r]')){await restoreDeleted(id,x.profile||{},x.email,!!x.alsoBlock&&!x.wasBlocked);toast('Profile restored','success')}
+        else if(e.target.closest('[data-p]')){
+          const c=await confirmBox('Purge now?','This removes the snapshot permanently.','Purge',true);if(!c)return;
+          if(x.wipePending)await finalizeDeletion({id,email:x.email},true);
+          await deleteDoc(snap.ref);toast('Purged','success');loadCounts();
+        }
+        loadDeleted();
+      }catch(err){toast('Failed: '+(err.code||err.message),'error')}
+    };
+  }catch(e){box.innerHTML=`<div class="hint">Failed to load: ${esc(e.code||e.message)}</div>`}
+}
+async function delQuery(q){const s=await getDocs(q);for(let i=0;i<s.docs.length;i+=400){const b=writeBatch(db);s.docs.slice(i,i+400).forEach(d=>b.delete(d.ref));await b.commit()}}
+async function wipeUserData(u){
+  const e=low(u.email),uid=u.id;
+  for(const c of['files','folders','notes','fcmTokens','folderGrants'])await delQuery(query(collection(db,c),where('uid','==',uid))).catch(err=>console.warn(c,err));
+  await delQuery(query(collection(db,'shares'),where('ownerUid','==',uid))).catch(()=>0);
+  await delQuery(query(collection(db,'shares'),where('email','==',e))).catch(()=>0);
+  for(const c of['memberQuotas','joinRequests','folderJoins','fileJoins'])await delQuery(query(collection(db,c),where('email','==',e))).catch(()=>0);
+  for(const o of orgs){
+    const inAny=[...(o.members||[]),...(o.owners||[]),...(o.founders||[])].map(low).includes(e);
+    if(inAny&&low(o.ownerEmail)!==e){
+      // remove from members, owners AND founders so "Super Admin ⊆ Admin ⊆ Member" always holds
+      try{await updateDoc(doc(db,'organizations',o.id),{members:arrayRemove(e),owners:arrayRemove(e),founders:arrayRemove(e)})}catch(err){console.warn('org',o.id,err)}
+    }
+  }
+}
+
+/* csv */
+function csv(list){
+  const h=['name','email','photoURL','uid','status','role','joined','lastLogin','loginCount'];
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const rows=list.map(u=>[u.name,u.email,u.photoURL,u.id,isBlocked(u)?'blocked':'active',low(u.email)===SUPER?'super-admin':admins.has(low(u.email))?'admin':'user',toDate(u.createdAt)?.toISOString()||'',toDate(u.lastLogin)?.toISOString()||'',u.loginCount||0].map(q).join(','));
+  const blob=new Blob(['\ufeff'+[h.join(','),...rows].join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mart-drive-users-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+$('u-csv').onclick=()=>csv(filtered());$('t-csv').onclick=()=>csv(users);
+
+/* ---------------- admins ---------------- */
+function renderAdmins(){
+  $('a-hint').textContent=isSuper?'New admins can manage users and blocks, but cannot add/remove other admins. Only the Super Admin (you) can do that.':'Only the Super Admin can add or remove admins.';
+  $('a-add').disabled=!isSuper;$('a-email').disabled=!isSuper;
+  $('a-list').innerHTML=users.filter(u=>!isAdminEmail(u.email)).map(u=>`<option value="${esc(u.email)}">${esc(u.name||'')}</option>`).join('');
+  const rows=[{id:SUPER,sup:true},...[...admins.values()].sort((a,b)=>(toDate(a.addedAt)||0)-(toDate(b.addedAt)||0))];
+  $('a-body').innerHTML=rows.map(a=>{
+    const u=users.find(x=>low(x.email)===a.id)||{email:a.id,name:a.name||'',photoURL:a.photoURL||''};
+    return `<tr><td><div class="u">${avatar(u)}<div style="min-width:0"><b>${esc(u.name||'—')}</b><span>${esc(a.id)}</span></div></div></td><td>${a.sup?'<span class="pill sup">Super Admin</span>':'<span class="pill adm">Admin</span>'}</td><td>${a.sup?'—':esc(a.addedBy||'')+' · '+fmtD(a.addedAt)}</td><td class="acts">${a.sup||!isSuper?'':`<button class="btn sm dng" data-e="${esc(a.id)}"><span class="ms" style="font-size:16px">person_remove</span>Remove</button>`}</td></tr>`}).join('');
+}
+$('a-add').onclick=async()=>{
+  const e=low($('a-email').value);
+  if(!isEmail(e))return toast('Enter a valid Gmail address','error');
+  if(e===SUPER||admins.has(e))return toast('Already an admin','error');
+  if(blocked.has(e))return toast('Blocked users cannot be admins. Unblock first.','error');
+  const u=users.find(x=>low(x.email)===e);
+  const r=await confirmBox('Make this user an admin?',`<b>${esc(e)}</b> will be able to view all users, block/delete them, and send emails.`,'Make Admin',false);
+  if(!r)return;
+  try{await setDoc(doc(db,'admins',e),{email:e,name:u?.name||'',photoURL:u?.photoURL||'',addedBy:low(me.email),addedAt:serverTimestamp()});$('a-email').value='';toast('Admin added','success')}
+  catch(err){toast('Failed: '+(err.code||err.message),'error')}
+};
+$('a-body').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-e]');if(!b)return;
+  const r=await confirmBox('Remove this admin?',`<b>${esc(b.dataset.e)}</b> will no longer be an admin.`,'Remove',true);if(!r)return;
+  try{await deleteDoc(doc(db,'admins',b.dataset.e));toast('Removed','success')}catch(err){toast('Failed: '+(err.code||err.message),'error')}
+});
+
+/* ---------------- organizations ---------------- */
+/* Roles inside an organization (same model as the main app):
+     Member       → in `members`
+     Admin        → in `members` + `owners`
+     Super Admin  → in `members` + `owners` + `founders`
+   The organization's creator (`ownerEmail`) is always a Super Admin and is locked. */
+const ROLE_LABEL={super:'Super Admin',admin:'Admin',member:'Member'};
+const creatorOf=o=>low(o.ownerEmail||'');
+const founderList=o=>[...new Set([...(o.founders||[]).map(low),...(creatorOf(o)?[creatorOf(o)]:[])])];
+const ownerList=o=>[...new Set([...(o.owners||[]).map(low),...(creatorOf(o)&&!(o.owners||[]).length?[creatorOf(o)]:[])])];
+function roleOf(o,e){e=low(e);if(founderList(o).includes(e))return 'super';if(ownerList(o).includes(e))return 'admin';return 'member'}
+
+function renderOrgs(){setTimeout(()=>window.__orgBulkUI&&window.__orgBulkUI(),0);
+  const q=low($('o-q').value);
+  const l=orgs.filter(o=>!q||low(o.name).includes(q)||low(o.teamName).includes(q)).sort((a,b)=>low(a.name).localeCompare(low(b.name)));
+  $('o-empty').style.display=l.length?'none':'block';
+  $('o-body').innerHTML=l.map(o=>{
+    const mem=(o.members||[]).map(low);
+    const sup=mem.filter(e=>roleOf(o,e)==='super').length,adm=mem.filter(e=>roleOf(o,e)==='admin').length,mb=mem.filter(e=>roleOf(o,e)==='member').length;
+    return `<tr><td><b>${esc(o.name||'—')}</b></td><td>${esc(o.teamName||'—')}</td><td><span class="pill sup">${sup}</span></td><td><span class="pill adm">${adm}</span></td><td><span class="pill gray">${mb}</span></td><td>${esc(o.ownerEmail||'—')}</td><td>${o.autoApprove?'<span class="pill ok">On</span>':'<span class="pill gray">Off</span>'}</td><td class="acts"><button class="btn sm" data-a="m" data-id="${esc(o.id)}"><span class="ms" style="font-size:16px">manage_accounts</span>Manage roles</button><button class="ib" data-a="mail" data-id="${esc(o.id)}" title="Email members"><span class="ms">mail</span></button><button class="ib" data-a="notice" data-id="${esc(o.id)}" title="Send in-app notice to members"><span class="ms">campaign</span></button><button class="ib red" data-a="d" data-id="${esc(o.id)}" title="Delete organization"><span class="ms">delete</span></button></td></tr>`}).join('');
+}
+$('o-q').oninput=renderOrgs;
+$('o-body').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;const o=orgs.find(x=>x.id===b.dataset.id);if(!o)return;
+  if(b.dataset.a==='m')return openMembers(o.id);
+  if(b.dataset.a==='mail')return mailTo(o.members||[]);
+  if(b.dataset.a==='notice')return noticeToOrg(o.id);
+  const r=await confirmBox('Delete organization?',`<b>${esc(o.name)}</b> and all its file/folder/note records will be deleted.`,'Delete',true);if(!r)return;
+  try{
+    for(const c of['files','folders','notes','joinRequests','memberQuotas'])await delQuery(query(collection(db,c),where('orgId','==',o.id))).catch(()=>0);
+    if(o.inviteCode)await deleteDoc(doc(db,'invites',o.inviteCode)).catch(()=>0);
+    await deleteDoc(doc(db,'organizations',o.id));toast('Deleted','success');loadCounts();
+  }catch(err){toast('Failed: '+(err.code||err.message),'error')}
+});
+
+/* member / role manager */
+function openMembers(id){membersOpen=id;modal('','',true);renderMembers()}
+function renderMembers(){
+  const o=orgs.find(x=>x.id===membersOpen);
+  if(!o){closeModal();return}
+  const cr=creatorOf(o);
+  const rank={super:0,admin:1,member:2};
+  const list=[...new Set((o.members||[]).map(low))].sort((a,b)=>rank[roleOf(o,a)]-rank[roleOf(o,b)]||a.localeCompare(b));
+  const row=e=>{
+    const u=users.find(x=>low(x.email)===e)||{email:e,name:''};
+    const locked=e===cr, r=roleOf(o,e);
+    return `<div class="mm-row" data-e="${esc(e)}">
+      <div class="u">${avatar(u)}<div style="min-width:0"><b>${esc(u.name||e.split('@')[0])}</b><span>${esc(e)}</span></div></div>
+      ${locked?'<span class="pill sup">Creator · Super Admin</span>':`<select class="rsel" data-role>
+        <option value="member"${r==='member'?' selected':''}>Member</option>
+        <option value="admin"${r==='admin'?' selected':''}>Admin</option>
+        <option value="super"${r==='super'?' selected':''}>Super Admin</option></select>`}
+      <button class="ib red" data-rm title="${locked?'The creator cannot be removed':'Remove from organization'}" ${locked?'disabled':''}><span class="ms">person_remove</span></button>
+    </div>`};
+  $('modal').innerHTML=`<h3>${esc(o.name||'Organization')} · Roles (${list.length})</h3>
+    <div class="mm-legend"><span class="pill sup">Super Admin</span> full control; can promote/demote others; only they can remove other Super Admins<br>
+      <span class="pill adm">Admin</span> manages members, requests and settings<br>
+      <span class="pill gray">Member</span> normal access</div>
+    <div class="mm-add">
+      <input class="inp" id="mm-email" type="email" placeholder="Add member by email" style="flex:1;min-width:180px" list="mm-users">
+      <datalist id="mm-users">${users.filter(u=>!list.includes(low(u.email))).map(u=>`<option value="${esc(u.email)}">${esc(u.name||'')}</option>`).join('')}</datalist>
+      <select class="rsel" id="mm-role"><option value="member">Member</option><option value="admin">Admin</option><option value="super">Super Admin</option></select>
+      <button class="btn pri sm" id="mm-add"><span class="ms" style="font-size:16px">add</span>Add</button>
+    </div>
+    <div class="mm-list">${list.map(row).join('')||'<div class="empty">No members</div>'}</div>
+    <div class="row"><button class="btn" id="mm-close">Close</button></div>`;
+  $('mm-close').onclick=closeModal;
+  $('mm-add').onclick=async()=>{
+    const e=low($('mm-email').value);
+    if(!isEmail(e))return toast('Enter a valid email','error');
+    if(blocked.has(e))return toast('This user is blocked. Unblock first.','error');
+    if(list.includes(e))return toast('Already a member — change the role in the list','error');
+    await saveRoles(o,e,$('mm-role').value,'add');
+  };
+  $('modal').querySelectorAll('.mm-row').forEach(r=>{
+    const e=r.dataset.e;
+    const sel=r.querySelector('[data-role]');
+    if(sel)sel.onchange=()=>saveRoles(o,e,sel.value,'role');
+    r.querySelector('[data-rm]').onclick=async()=>{
+      if(e===cr)return;
+      const c=await confirmBox('Remove from organization?',`<b>${esc(e)}</b> will lose access to <b>${esc(o.name)}</b>.`,'Remove',true);
+      if(c)await saveRoles(o,e,null,'remove');
+      openMembers(o.id);
+    };
+  });
+}
+async function saveRoles(o,email,role,kind){
+  const cr=creatorOf(o);
+  const members=new Set((o.members||[]).map(low));
+  const owners=new Set(ownerList(o));
+  const founders=new Set((o.founders||[]).map(low));
+  if(cr){members.add(cr);owners.add(cr)}
+  if(role===null){members.delete(email);owners.delete(email);founders.delete(email)}
+  else{
+    members.add(email);
+    if(role==='member'){owners.delete(email);founders.delete(email)}
+    if(role==='admin'){owners.add(email);founders.delete(email)}
+    if(role==='super'){owners.add(email);founders.add(email)}
+  }
+  if(!owners.size)return toast('An organization needs at least one Admin or Super Admin','error');
+  try{
+    await updateDoc(doc(db,'organizations',o.id),{members:[...members],owners:[...owners],founders:[...founders]});
+    o.members=[...members];o.owners=[...owners];o.founders=[...founders];
+    toast(kind==='add'?'Member added':kind==='remove'?'Member removed':'Role changed to '+ROLE_LABEL[role],'success');
+  }catch(e){toast('Failed: '+(e.code||e.message),'error')}
+  if(membersOpen===o.id)renderMembers();
+}
+
+/* ---------------- activity ---------------- */
+async function loadActivity(){
+  $('act').innerHTML='<div class="empty">Loading…</div>';
+  try{
+    const s=await getDocs(query(collection(db,'activity'),orderBy('createdAt','desc'),limit(100)));
+    const l=s.docs.map(d=>d.data());
+    $('act').innerHTML=l.length?l.map(a=>`<div class="log"><span class="t">${fmtDT(a.createdAt)}</span><span style="flex:1;min-width:0"><b>${esc(a.email)}</b> · ${esc(a.action)}${a.name?' · '+esc(a.name):''}</span></div>`).join(''):'<div class="empty">No activity yet</div>';
+  }catch(e){$('act').innerHTML=`<div class="empty">Failed to load: ${esc(e.code||e.message)}</div>`}
+  try{
+    const s=await getDocs(query(collection(db,'supportViews'),orderBy('createdAt','desc'),limit(50)));
+    $('sv-log').innerHTML=s.docs.length?s.docs.map(d=>{const a=d.data();return `<div class="log"><span class="t">${fmtDT(a.createdAt)}</span><span style="flex:1;min-width:0"><b>${esc(a.adminEmail)}</b> viewed <b>${esc(a.targetEmail)}</b> · <i>${esc(a.reason)}</i></span></div>`}).join(''):'<div class="empty">No support views yet</div>';
+  }catch(e){$('sv-log').innerHTML=`<div class="empty">Failed to load: ${esc(e.code||e.message)}</div>`}
+}
+
+/* ---------------- email ---------------- */
+const TPL={
+  welcome:['Welcome to MART Drive!','Hello,\n\nThank you for using MART Drive. Here you can organize your files, notes, and links in one place, and share them with your team.\n\nIf you need help, just reply to this email.\n\nBest regards,\nThe MART Drive Team'],
+  update:['New update for MART Drive','Hello,\n\nWe have added some new features to MART Drive:\n\n• …\n• …\n\nRefresh the page to get the latest version.\n\nThank you,\nThe MART Drive Team'],
+  maint:['Maintenance notice','Hello,\n\nMART Drive may be temporarily unavailable on [date and time] for scheduled maintenance. We apologize for any inconvenience.\n\nThank you,\nThe MART Drive Team'],
+  warn:['Important message about your account','Hello,\n\nWe noticed that activity on your account does not comply with our terms of use. Please correct this, otherwise your account may be restricted.\n\nThank you,\nThe MART Drive Team']
+};
+$('m-tpl').onchange=e=>{const t=TPL[e.target.value];if(t){$('m-sub').value=t[0];$('m-body').value=t[1]}};
+function mailTo(list){const l=[...new Set(list.map(low).filter(isEmail))];$('m-mode').querySelector('[value=custom]').checked=true;$('m-custom').value=l.join('\n');go('mail')}
+document.querySelectorAll('#m-mode input').forEach(i=>i.onchange=renderMail);
+$('m-custom').oninput=renderMail;
+function recipients(){
+  const m=document.querySelector('#m-mode input:checked').value;
+  let l;
+  if(m==='all')l=users.map(u=>u.email);
+  else if(m==='active')l=users.filter(u=>!isBlocked(u)).map(u=>u.email);
+  else if(m==='selected')l=selUsers().map(u=>u.email);
+  else l=($('m-custom').value||'').split(/[\s,;]+/);
+  return [...new Set(l.map(low).filter(isEmail))].filter(e=>e!==low(me?.email));
+}
+function renderMail(){
+  const m=document.querySelector('#m-mode input:checked').value;
+  $('m-custom').style.display=m==='custom'?'block':'none';
+  const l=recipients();
+  $('m-count').textContent=m==='selected'&&!l.length?'Select users from the Users tab first.':`Total recipients: ${l.length}`;
+  $('m-chips').innerHTML=l.slice(0,60).map(e=>`<span class="chip">${esc(e)}</span>`).join('')+(l.length>60?`<span class="chip">+${l.length-60} more</span>`:'');
+  $('m-batches').innerHTML='';
+}
+const isMobile=()=>/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+function buildLink(to,bcc,sub,body){
+  if(isMobile()){
+    const p=[];if(bcc.length)p.push('bcc='+encodeURIComponent(bcc.join(',')));if(sub)p.push('subject='+encodeURIComponent(sub));if(body)p.push('body='+encodeURIComponent(body));
+    return 'mailto:'+encodeURIComponent(to.join(','))+(p.length?'?'+p.join('&'):'');
+  }
+  const p=['view=cm','fs=1'];
+  if(to.length)p.push('to='+encodeURIComponent(to.join(',')));if(bcc.length)p.push('bcc='+encodeURIComponent(bcc.join(',')));
+  if(sub)p.push('su='+encodeURIComponent(sub));if(body)p.push('body='+encodeURIComponent(body));
+  return 'https://mail.google.com/mail/?'+p.join('&');
+}
+$('m-send').onclick=()=>{
+  const l=recipients(),sub=$('m-sub').value.trim(),body=$('m-body').value,useBcc=document.querySelector('#m-field input:checked').value==='bcc';
+  if(!l.length)return toast('No recipients','error');
+  if(!sub&&!body)return toast('Enter a subject or message','error');
+  const MAX=isMobile()?1700:1900, base=buildLink(useBcc?[low(me.email)]:[],[],sub,body).length;
+  const room=Math.max(200,MAX-base-200);
+  // split recipients so every link stays under the browser / Gmail URL limit
+  const batches=[];let cur=[],len=0;
+  for(const e of l){const add=encodeURIComponent(e).length+3;if(cur.length&&len+add>room){batches.push(cur);cur=[];len=0}cur.push(e);len+=add}
+  if(cur.length)batches.push(cur);
+  const open=b=>{const href=useBcc?buildLink([low(me.email)],b,sub,body):buildLink(b,[],sub,body);if(isMobile())location.href=href;else window.open(href,'_blank','noopener')};
+  if(batches.length===1){open(batches[0]);toast('Opening Gmail…','success');return}
+  $('m-batches').innerHTML=`<div class="hint" style="margin-bottom:8px">Because of the large number of recipients, the list was split into ${batches.length} batches. Each batch opens a separate Gmail draft. Send one, then click the next.</div>`+batches.map((b,i)=>`<div class="batch"><span><b>Batch ${i+1}</b> · ${b.length} recipients</span><button class="btn pri sm" data-i="${i}"><span class="ms" style="font-size:16px">send</span>Open in Gmail</button></div>`).join('');
+  $('m-batches').onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;open(batches[+b.dataset.i]);b.closest('.batch').style.opacity='.55'};
+  $('m-batches').scrollIntoView({behavior:'smooth',block:'nearest'});
+};
+$('m-copy').onclick=async()=>{const l=recipients();if(!l.length)return toast('No recipients','error');try{await navigator.clipboard.writeText(l.join(', '));toast(l.length+' email addresses copied','success')}catch{toast('Copy failed','error')}};
+
+/* ---------------- tools ---------------- */
+function renderTools(){
+  loadDeleted();
+  $('t-info').innerHTML=`<b>Project</b><span>${esc(firebaseConfig.projectId)}</span><b>You</b><span>${esc(me.email)} (${isSuper?'Super Admin':'Admin'})</span><b>User Docs</b><span>${users.length}</span><b>Blocked</b><span>${blocked.size}</span>`;
+}
+$('t-import').onclick=async()=>{
+  const btn=$('t-import');btn.disabled=true;$('t-prog').style.display='block';
+  const set=(p,t)=>{$('t-bar').style.width=p+'%';$('t-msg').textContent=t};
+  try{
+    const found=new Map(); // uid -> {email, firstSeen}
+    const cols=['files','folders','notes'];
+    for(let i=0;i<cols.length;i++){
+      set(Math.round(i/cols.length*70),'Scanning '+cols[i]+'…');
+      const s=await getDocs(collection(db,cols[i]));
+      s.forEach(d=>{const x=d.data();if(!x.uid||!x.by)return;const e=low(x.by);if(!isEmail(e))return;const t=toDate(x.createdAt);const f=found.get(x.uid);if(!f)found.set(x.uid,{email:e,first:t});else if(t&&(!f.first||t<f.first))f.first=t});
+    }
+    set(75,'Matching names and avatars…');
+    const prof=new Map();
+    try{(await getDocs(collection(db,'memberQuotas'))).forEach(d=>{const x=d.data();if(x.email)prof.set(low(x.email),{name:x.name||'',photoURL:x.photoURL||''})})}catch{}
+    try{(await getDocs(collection(db,'joinRequests'))).forEach(d=>{const x=d.data();if(x.email&&!prof.has(low(x.email)))prof.set(low(x.email),{name:x.name||'',photoURL:x.photo||''})})}catch{}
+    const have=new Set(users.map(u=>u.id));
+    let add=0,i=0;const todo=[...found].filter(([uid])=>!have.has(uid));
+    for(const [uid,f] of todo){
+      const p=prof.get(f.email)||{};
+      const data={uid,email:f.email,name:p.name||'',photoURL:p.photoURL||'',imported:true};
+      if(f.first)data.createdAt=f.first;
+      await setDoc(doc(db,'users',uid),data,{merge:true});add++;
+      if(++i%10===0)set(75+Math.round(i/todo.length*24),`Adding ${i}/${todo.length}…`);
+    }
+    set(100,`Done. ${add} new user(s) added. (Organization-only members will appear after they sign in.)`);
+    toast('Import complete','success');
+  }catch(e){set(0,'Failed: '+(e.code||e.message));toast('Import failed','error')}
+  btn.disabled=false;
+};
+
+/* =====================================================================
+   VIEW AS USER  (read-only support view)
+   - needs a reason; an immutable record is written to supportViews FIRST
+   - shows file / folder / note NAMES and metadata only (never contents)
+   - no edit, delete or download actions exist in this view
+   ===================================================================== */
+let sv=null;
+async function viewAsUser(u){
+  if(low(u.email)===low(me.email))return toast('Open your own files in the main app','error');
+  const r=await confirmBox('Open read-only support view?',`You will see the <b>file list</b> (names and details only, no file contents) of <b>${esc(u.email)}</b>: personal items and their organizations. You cannot change anything. This access is recorded with your name and reason.<br><br><input class="inp" id="sv-r" style="width:100%" maxlength="300" placeholder="Reason (required), e.g. support ticket #123">`,'Open view',false);
+  if(!r)return;
+  const reason=($('sv-r')?.value||'').trim();
+  if(reason.length<3)return toast('A reason is required for the audit log','error');
+  const e=low(u.email),myOrgs=orgs.filter(o=>(o.members||[]).map(low).includes(e));
+  try{
+    await setDoc(doc(collection(db,'supportViews')),{adminEmail:low(me.email),adminUid:me.uid,adminName:me.displayName||'',targetUid:u.id,targetEmail:e,targetName:u.name||'',reason,scope:'file-list:read-only',orgIds:myOrgs.map(o=>o.id),createdAt:serverTimestamp()});
+  }catch(err){return toast('Audit record failed, view cancelled: '+(err.code||err.message),'error')}
+  modal('<h3>Support view</h3><div class="empty">Loading file list…</div>',null,true);
+  try{
+    const fetchCol=async(col,field,val)=>(await getDocs(query(collection(db,col),where(field,'==',val)))).docs.map(d=>({id:d.id,kind:col,...d.data()}));
+    const mine=(await Promise.all(['files','folders','notes'].map(c=>fetchCol(c,'uid',u.id)))).flat().filter(x=>!x.orgId);
+    const data={personal:mine};
+    for(const o of myOrgs)data[o.id]=(await Promise.all(['files','folders','notes'].map(c=>fetchCol(c,'orgId',o.id)))).flat();
+    sv={u,reason,scope:'personal',folder:null,trashed:false,q:'',data,orgs:myOrgs};
+    renderSV();
+  }catch(err){modal(`<h3>Support view</h3><p style="color:var(--error)">Failed to load: ${esc(err.code||err.message)}</p><div class="row"><button class="btn" id="sv-x">Close</button></div>`,m=>m.querySelector('#sv-x').onclick=closeModal,true)}
+}
+function renderSV(){
+  const tabs=[['personal','Personal']].concat(sv.orgs.map(o=>[o.id,o.name||'Organization']));
+  modal(`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="u" style="flex:1;min-width:180px">${avatar(sv.u)}<div style="min-width:0"><b>${esc(sv.u.name||'Unnamed')}</b><span>${esc(sv.u.email)}</span></div></div><span class="pill sup">READ-ONLY</span></div>
+   <div class="hint">Reason logged: ${esc(sv.reason)} · Names and details only, no file contents.</div>
+   <div class="sv-tabs" id="sv-tabs"></div>
+   <div class="bar" style="margin:0 0 4px"><input class="inp" id="sv-q" placeholder="Search names or tags…" style="flex:1;min-width:150px"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="sv-t">Show trashed</label></div>
+   <div class="crumbs" id="sv-crumbs"></div>
+   <div class="sv-list" id="sv-list"></div>
+   <div class="row"><button class="btn" id="sv-x">Close</button></div>`,m=>{
+    m.querySelector('#sv-x').onclick=closeModal;
+    m.querySelector('#sv-q').oninput=e=>{sv.q=e.target.value;renderSVList()};
+    m.querySelector('#sv-t').onchange=e=>{sv.trashed=e.target.checked;renderSVList()};
+    m.querySelector('#sv-tabs').onclick=e=>{const b=e.target.closest('[data-s]');if(!b)return;sv.scope=b.dataset.s;sv.folder=null;renderSVList()};
+    m.querySelector('#sv-crumbs').onclick=e=>{const b=e.target.closest('[data-f]');if(!b)return;sv.folder=b.dataset.f||null;renderSVList()};
+    m.querySelector('#sv-list').onclick=e=>{const r=e.target.closest('[data-dir]');if(!r)return;sv.folder=r.dataset.dir;renderSVList()};
+  },true);
+  renderSVList();
+}
+function svIcon(x){
+  if(x.kind==='folders')return 'folder';
+  if(x.kind==='notes')return x.ntype==='link'?'link':'sticky_note_2';
+  const t=x.mimeType||'';return t.startsWith('image/')?'image':t.startsWith('video/')?'movie':t.includes('pdf')?'picture_as_pdf':'description';
+}
+function renderSVList(){
+  if(!sv||!$('sv-list'))return;
+  const all=sv.data[sv.scope]||[],q=low(sv.q);
+  let l=all.filter(x=>sv.trashed||!x.trashed);
+  if(q)l=l.filter(x=>low(x.name).includes(q)||(x.tags||[]).some(t=>low(t).includes(q)));
+  else l=l.filter(x=>x.kind==='folders'?(x.parentId||null)===sv.folder:(x.folderId||null)===sv.folder);
+  l.sort((a,b)=>(a.kind==='folders'?0:1)-(b.kind==='folders'?0:1)||low(a.name).localeCompare(low(b.name)));
+  $('sv-tabs').innerHTML=[['personal','Personal']].concat(sv.orgs.map(o=>[o.id,o.name||'Organization'])).map(([id,n])=>`<button class="${id===sv.scope?'on':''}" data-s="${esc(id)}">${esc(n)} (${(sv.data[id]||[]).filter(x=>x.kind!=='folders').length})</button>`).join('');
+  const path=[];let cur=sv.folder;const fm=new Map(all.filter(x=>x.kind==='folders').map(f=>[f.id,f]));
+  for(let i=0;cur&&fm.has(cur)&&i<30;i++){path.unshift(fm.get(cur));cur=fm.get(cur).parentId||null}
+  $('sv-crumbs').innerHTML=q?`<span>Search results (${l.length})</span>`:`<button data-f="">${sv.scope==='personal'?'Personal':'Organization'} root</button>`+path.map(f=>` › <button data-f="${esc(f.id)}">${esc(f.name)}</button>`).join('');
+  $('sv-list').innerHTML=l.length?l.map(x=>{
+    const dir=x.kind==='folders';
+    return `<div class="sv-row${dir?' dir':''}" ${dir?`data-dir="${esc(x.id)}"`:''}><span class="ms" style="color:var(--blue)">${svIcon(x)}</span><span class="nm" title="${esc(x.name)}">${esc(x.name||'(no name)')}</span>${x.trashed?'<span class="pill bad">Trashed</span>':''}${(x.tags||[]).slice(0,2).map(t=>`<span class="pill gray">${esc(t)}</span>`).join('')}<small>${x.kind==='files'?bytes(x.size):dir?'Folder':x.ntype==='link'?'Link':'Note'}</small><small>${fmtD(x.updatedAt||x.createdAt)}</small>${sv.scope!=='personal'?`<small>${esc(x.by||'')}</small>`:''}</div>`}).join(''):'<div class="empty">Nothing here</div>';
+}
+
+/* =====================================================================
+   NOTICES & WARNINGS  (in-app; one /notifications doc per recipient)
+   ===================================================================== */
+let nOrgSel=new Set();
+const nType=()=>document.querySelector('#n-type input:checked').value;
+const nMode=()=>document.querySelector('#n-aud input:checked').value;
+function nRecipients(){
+  const m=nMode();let l=[];
+  if(m==='all')l=users.map(u=>u.email);
+  else if(m==='orgs')l=orgs.filter(o=>nOrgSel.has(o.id)).flatMap(o=>o.members||[]);
+  else if(m==='selected')l=selUsers().map(u=>u.email);
+  else l=($('n-custom').value||'').split(/[\s,;]+/);
+  return [...new Set(l.map(low).filter(isEmail))].filter(e=>e!==low(me?.email)&&!blocked.has(e));
+}
+function renderNotify(rebuildOrgs){
+  const warn=nType()==='warning';
+  document.querySelectorAll('#n-aud input').forEach(i=>{const lock=warn&&(i.value==='all'||i.value==='orgs');i.disabled=lock;i.closest('label').style.opacity=lock?.4:1});
+  if(warn&&['all','orgs'].includes(nMode()))document.querySelector('#n-aud [value=selected]').checked=true;
+  const m=nMode();
+  $('n-custom').style.display=m==='custom'?'block':'none';
+  $('n-orgs').style.display=m==='orgs'?'block':'none';
+  if(m==='orgs'&&(rebuildOrgs||!$('n-orgs').children.length)){
+    $('n-orgs').innerHTML=[...orgs].sort((a,b)=>low(a.name).localeCompare(low(b.name))).map(o=>`<label class="chk"><input type="checkbox" data-o="${esc(o.id)}" ${nOrgSel.has(o.id)?'checked':''}><span><b>${esc(o.name||'—')}</b> <small style="color:var(--muted)">${(o.members||[]).length} members</small></span></label>`).join('')||'<div class="hint">No organizations</div>';
+  }
+  const l=nRecipients();
+  $('n-count').textContent=m==='selected'&&!l.length?'Select users from the Users tab first.':m==='orgs'&&!nOrgSel.size?'Tick one or more organizations.':`Total recipients: ${l.length}`;
+  $('n-chips').innerHTML=l.slice(0,40).map(e=>`<span class="chip">${esc(e)}</span>`).join('')+(l.length>40?`<span class="chip">+${l.length-40} more</span>`:'');
+  $('n-send').innerHTML=`<span class="ms">${warn?'report':'send'}</span>${warn?'Send Warning':'Send Notice'}`;
+  $('n-send').className='btn '+(warn?'dng':'pri');
+}
+document.querySelectorAll('#n-type input,#n-aud input').forEach(i=>i.onchange=()=>renderNotify(true));
+$('n-custom').oninput=()=>renderNotify();
+$('n-orgs').onchange=e=>{const c=e.target.closest('[data-o]');if(!c)return;c.checked?nOrgSel.add(c.dataset.o):nOrgSel.delete(c.dataset.o);renderNotify()};
+function warnUsers(emails){
+  document.querySelector('#n-type [value=warning]').checked=true;
+  document.querySelector('#n-aud [value=custom]').checked=true;
+  $('n-custom').value=emails.join('\n');go('notify');
+}
+function noticeToOrg(id){
+  document.querySelector('#n-type [value=notice]').checked=true;
+  document.querySelector('#n-aud [value=orgs]').checked=true;
+  nOrgSel=new Set([id]);go('notify');
+}
+$('n-send').onclick=async()=>{
+  const type=nType(),mode=nMode(),title=$('n-title').value.trim(),body=$('n-body').value.trim(),l=nRecipients();
+  if(type==='warning'&&(mode==='all'||mode==='orgs'))return toast('Warnings can only be sent to selected users','error');
+  if(!title)return toast('Enter a title','error');
+  if(!body)return toast('Enter a message','error');
+  if(!l.length)return toast('No recipients','error');
+  const r=await confirmBox(type==='warning'?'Send warning?':'Send notice?',`<b>${l.length}</b> user(s) will receive this ${type} inside the app.<br><br><b>${esc(title)}</b><br><span style="white-space:pre-wrap">${esc(body.slice(0,300))}${body.length>300?'…':''}</span>`,'Send',type==='warning');
+  if(!r)return;
+  const btn=$('n-send');btn.disabled=true;
+  try{
+    const nref=doc(collection(db,'adminNotices')),nid=nref.id;
+    const orgIds=mode==='orgs'?[...nOrgSel]:[];
+    await setDoc(nref,{type,audience:mode,orgIds,orgNames:orgs.filter(o=>nOrgSel.has(o.id)&&mode==='orgs').map(o=>o.name||''),count:l.length,title,body,by:low(me.email),byName:me.displayName||'',createdAt:serverTimestamp(),recalled:false});
+    const uidOf=new Map(users.map(u=>[low(u.email),u.id]));
+    for(let i=0;i<l.length;i+=400){
+      const b=writeBatch(db);
+      l.slice(i,i+400).forEach(e=>b.set(doc(collection(db,'notifications')),{toEmail:e,toUid:uidOf.get(e)||null,type,title,body,read:false,by:low(me.email),byName:me.displayName||'',noticeId:nid,createdAt:serverTimestamp()}));
+      await b.commit();
+    }
+    toast(`${type==='warning'?'Warning':'Notice'} sent to ${l.length} user(s)`,'success');
+    $('n-title').value='';$('n-body').value='';loadNoticeHistory();
+  }catch(e){toast('Send failed: '+(e.code||e.message),'error')}
+  btn.disabled=false;
+};
+async function loadNoticeHistory(){
+  const box=$('n-hist');box.innerHTML='<div class="empty">Loading…</div>';
+  try{
+    const s=await getDocs(query(collection(db,'adminNotices'),orderBy('createdAt','desc'),limit(30)));
+    box.innerHTML=s.docs.length?s.docs.map(d=>{const x=d.data();
+      const aud=x.audience==='all'?'All users':x.audience==='orgs'?'Orgs: '+esc((x.orgNames||[]).join(', ')):x.audience==='selected'?'Selected users':'Custom list';
+      return `<div class="log" style="align-items:center;flex-wrap:wrap" data-id="${esc(d.id)}"><span class="t">${fmtDT(x.createdAt)}</span><span style="flex:1;min-width:200px"><span class="pill ${x.type==='warning'?'bad':'adm'}">${x.type==='warning'?'Warning':'Notice'}</span><b>${esc(x.title)}</b><br><small style="color:var(--muted)">${aud} · ${x.count||0} recipients · by ${esc(x.by||'')}${x.recalled?' · <b>recalled</b>':''}</small></span>${x.recalled?'':`<button class="btn sm" data-recall="1"><span class="ms" style="font-size:16px">undo</span>Recall</button>`}</div>`}).join(''):'<div class="empty">Nothing sent yet</div>';
+    box.onclick=async e=>{
+      const b=e.target.closest('[data-recall]');if(!b)return;const id=b.closest('[data-id]').dataset.id;
+      const c=await confirmBox('Recall this message?','It is removed from every user’s inbox (users who already read it keep what they saw).','Recall',true);if(!c)return;
+      try{
+        const q=await getDocs(query(collection(db,'notifications'),where('noticeId','==',id)));
+        for(let i=0;i<q.docs.length;i+=400){const wb=writeBatch(db);q.docs.slice(i,i+400).forEach(d=>wb.delete(d.ref));await wb.commit()}
+        await updateDoc(doc(db,'adminNotices',id),{recalled:true,recalledAt:serverTimestamp(),recalledBy:low(me.email)});
+        toast('Recalled','success');loadNoticeHistory();
+      }catch(err){toast('Recall failed: '+(err.code||err.message),'error')}
+    };
+  }catch(e){box.innerHTML=`<div class="empty">Failed to load: ${esc(e.code||e.message)}</div>`}
+}
+
+/*PATCH-v1-admin*/
+{
+const TPL_DEF=JSON.parse(JSON.stringify(TPL)),TPL_NAMES={welcome:'Welcome message',update:'New update',maint:'Maintenance notice',warn:'Warning notice'};
+const lk=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
+const dl=(name,text)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+text],{type:'text/csv'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),6e4)};
+const csv=rows=>rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');
+{const _g=go;go=function(t){TITLES.analytics='Analytics';TITLES.appeals='Ban Appeals';_g(t);if(t==='analytics')loadAn();if(t==='appeals')loadAppeals();if(t==='activity')actTools()}}
+/* A1 analytics */
+const chart=(v,l,f,c)=>{const mx=Math.max(1,...v);return'<div style="display:flex;align-items:flex-end;gap:2px;height:130px">'+v.map((x,i)=>`<div title="${esc(l[i])}: ${esc(f(x))}" style="flex:1;min-width:4px;height:${Math.max(2,x/mx*100)}%;background:${c};border-radius:3px 3px 0 0"></div>`).join('')+'</div><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px"><span>'+esc(l[0])+'</span><span>'+esc(l[l.length-1])+'</span></div>'};
+async function loadAn(){
+  const body=$('an-body'),days=+$('an-range').value;body.innerHTML='<div class="empty">Loading…</div>';
+  const keys=[];for(let i=days-1;i>=0;i--)keys.push(lk(Date.now()-i*864e5));
+  try{
+    const[act,files,fails]=await Promise.all([getDocs(query(collection(db,'activity'),orderBy('createdAt','desc'),limit(5000))),getDocs(collection(db,'files')),getDocs(query(collection(db,'loginFails'),orderBy('createdAt','desc'),limit(500))).catch(()=>({docs:[]}))]);
+    const dau=Object.fromEntries(keys.map(k=>[k,new Set()])),fl=Object.fromEntries(keys.map(k=>[k,0])),per=Object.fromEntries(keys.map(k=>[k,0])),up=new Map();let base=0;
+    act.docs.forEach(d=>{const a=d.data(),t=toDate(a.createdAt);if(!t)return;const k=lk(t);if(dau[k])dau[k].add(low(a.email))});
+    fails.docs.forEach(d=>{const t=toDate(d.data().createdAt);if(!t)return;const k=lk(t);if(k in fl)fl[k]++});
+    files.docs.forEach(d=>{const f=d.data(),sz=+f.size||0,t=toDate(f.createdAt),k=t?lk(t):null;if(k&&k<keys[0])base+=sz;else if(k&&k in per)per[k]+=sz;const e=low(f.by);if(e){const u=up.get(e)||{n:0,b:0};u.n++;u.b+=sz;up.set(e,u)}});
+    let run=base;const grow=keys.map(k=>run+=per[k]),top=[...up].sort((a,b)=>b[1].b-a[1].b).slice(0,10),fv=keys.map(k=>fl[k]),dv=keys.map(k=>dau[k].size);
+    body.innerHTML=`<div class="grid2"><div class="card"><h3><span class="ms">groups</span>Daily active users (${days} days)</h3>${chart(dv,keys,v=>v+' users','#245B88')}<p style="font-size:12px;color:var(--muted);margin-top:6px">Peak: ${Math.max(0,...dv)} · Today: ${dv[dv.length-1]}</p></div><div class="card"><h3><span class="ms">cloud</span>Storage growth</h3>${chart(grow,keys,bytes,'#34A853')}<p style="font-size:12px;color:var(--muted);margin-top:6px">Total: ${bytes(run)} · +${bytes(run-base)} in ${days} days</p></div></div><div class="grid2"><div class="card"><h3><span class="ms">upload</span>Top uploaders</h3>${top.length?top.map(([e,u])=>`<div class="log"><span style="flex:1;min-width:0"><b>${esc(e)}</b></span><span>${u.n} files · ${bytes(u.b)}</span></div>`).join(''):'<div class="empty">No uploads</div>'}</div><div class="card"><h3><span class="ms">gpp_bad</span>Failed / blocked login attempts</h3>${chart(fv,keys,v=>v+' attempts','#D93025')}<p style="font-size:12px;color:var(--muted);margin:6px 0">Total: ${fv.reduce((a,b)=>a+b,0)} (blocked accounts trying to sign in)</p>${fails.docs.slice(0,8).map(d=>{const x=d.data();return`<div class="log"><span class="t">${fmtDT(x.createdAt)}</span><span style="flex:1;min-width:0">${esc(x.email)}</span></div>`}).join('')}</div></div>`;
+  }catch(e){body.innerHTML=`<div class="empty">Failed to load: ${esc(e.code||e.message)}</div>`}
+}
+$('an-range').onchange=loadAn;$('an-ref').onclick=loadAn;
+/* ban appeals */
+async function loadAppeals(){
+  const box=$('ap-list');box.innerHTML='<div class="empty">Loading…</div>';
+  try{
+    const s=await getDocs(query(collection(db,'supportTickets'),orderBy('createdAt','desc'),limit(100)));
+    $('c-appeals').textContent=s.docs.filter(d=>d.data().status==='open').length;
+    box.innerHTML=s.docs.length?s.docs.map(d=>{const t=d.data();return`<div class="log" style="flex-wrap:wrap;align-items:flex-start" data-id="${esc(d.id)}" data-e="${esc(t.email)}"><span class="t">${fmtDT(t.createdAt)}</span><span style="flex:1;min-width:220px"><span class="pill ${t.status==='open'?'bad':'ok'}">${esc(t.status)}</span> <b>${esc(t.email)}</b>${t.name?' · '+esc(t.name):''}<br><span style="white-space:pre-wrap">${esc(t.message)}</span></span><span style="display:flex;gap:6px;flex-wrap:wrap">${t.status==='open'?'<button class="btn sm" data-a="unblock">Unblock</button><button class="btn sm" data-a="close">Reject</button>':''}${isSuper?'<button class="btn sm dng" data-a="del">Delete</button>':''}</span></div>`}).join(''):'<div class="empty">No appeals</div>';
+    box.onclick=async e=>{const b=e.target.closest('[data-a]');if(!b)return;const row=b.closest('[data-id]'),id=row.dataset.id,em=row.dataset.e,a=b.dataset.a;
+      try{
+        if(a==='unblock'){await deleteDoc(doc(db,'blockedUsers',low(em)));await updateDoc(doc(db,'supportTickets',id),{status:'resolved',resolvedBy:low(me.email),resolvedAt:serverTimestamp()})}
+        else if(a==='close')await updateDoc(doc(db,'supportTickets',id),{status:'rejected',resolvedBy:low(me.email),resolvedAt:serverTimestamp()});
+        else if(a==='del'){if(!await confirmBox('Delete appeal?','This cannot be undone.','Delete',true))return;await deleteDoc(doc(db,'supportTickets',id))}
+        toast('Done','success');loadAppeals()}catch(err){toast('Failed: '+(err.code||err.message),'error')}};
+  }catch(e){box.innerHTML=`<div class="empty">Failed to load: ${esc(e.code||e.message)}</div>`}
+}
+/* A2 bulk org operations */
+const orgSel=new Set();
+const bar=()=>{
+  let b=$('ob-bar');
+  if(!b){document.querySelector('#tab-orgs .tw').insertAdjacentHTML('beforebegin','<div class="bar" id="ob-bar" style="display:none;gap:8px;flex-wrap:wrap;align-items:center"><b id="ob-n"></b><button class="btn sm" id="ob-notice"><span class="ms" style="font-size:16px">campaign</span>Send notice</button><button class="btn sm" id="ob-exp"><span class="ms" style="font-size:16px">download</span>Export members</button><button class="btn sm dng" id="ob-del"><span class="ms" style="font-size:16px">delete</span>Delete</button></div>');b=$('ob-bar');
+    $('ob-notice').onclick=bulkNotice;$('ob-exp').onclick=bulkExport;$('ob-del').onclick=bulkDelete}
+  b.style.display=orgSel.size?'flex':'none';$('ob-n').textContent=orgSel.size+' selected'};
+window.__orgBulkUI=()=>{
+  const tb=$('o-body');if(!tb)return;
+  const th=document.querySelector('#tab-orgs thead tr');if(th&&!th.dataset.cb){th.dataset.cb=1;th.insertAdjacentHTML('afterbegin','<th style="width:30px"><input type="checkbox" id="ob-all"></th>')}
+  tb.querySelectorAll('tr').forEach(tr=>{if(tr.dataset.cb)return;const id=tr.querySelector('[data-id]')?.dataset.id;if(!id)return;tr.dataset.cb=1;tr.insertAdjacentHTML('afterbegin',`<td><input type="checkbox" class="ob" data-oid="${esc(id)}"${orgSel.has(id)?' checked':''}></td>`)});
+  const a=$('ob-all');if(a){const all=[...tb.querySelectorAll('.ob')];a.checked=all.length>0&&all.every(c=>c.checked)}bar()};
+$('tab-orgs').addEventListener('change',e=>{
+  const t=e.target;if(t.id==='ob-all'){document.querySelectorAll('#o-body .ob').forEach(c=>{c.checked=t.checked;t.checked?orgSel.add(c.dataset.oid):orgSel.delete(c.dataset.oid)})}
+  else if(t.classList.contains('ob')){t.checked?orgSel.add(t.dataset.oid):orgSel.delete(t.dataset.oid)}else return;window.__orgBulkUI()});
+const selOrgs=()=>orgs.filter(o=>orgSel.has(o.id));
+function bulkNotice(){
+  const os=selOrgs(),mem=[...new Set(os.flatMap(o=>(o.members||[]).map(low)))].filter(isEmail);
+  modal(`<h3>Send notice to ${os.length} organization(s)</h3><p style="color:var(--muted);margin-bottom:10px">${mem.length} members. It pops up on screen as soon as they open the website (until they tap OK).</p><input class="inp" id="bn-t" maxlength="150" placeholder="Title" style="width:100%;margin-bottom:8px"><textarea class="inp" id="bn-b" rows="5" maxlength="2000" placeholder="Message" style="width:100%"></textarea><div class="row"><button class="btn" id="bn-c">Cancel</button><button class="btn pri" id="bn-s">Send</button></div>`,m=>{
+    m.querySelector('#bn-c').onclick=closeModal;
+    m.querySelector('#bn-s').onclick=async()=>{const title=m.querySelector('#bn-t').value.trim(),body=m.querySelector('#bn-b').value.trim();if(!title||!body)return toast('Enter title and message','error');if(!mem.length)return toast('No members','error');
+      try{const nref=doc(collection(db,'adminNotices'));await setDoc(nref,{type:'notice',audience:'orgs',orgIds:os.map(o=>o.id),orgNames:os.map(o=>o.name||''),count:mem.length,title,body,by:low(me.email),byName:me.displayName||'',createdAt:serverTimestamp(),recalled:false});
+        const uidOf=new Map(users.map(u=>[low(u.email),u.id]));
+        for(let i=0;i<mem.length;i+=400){const b=writeBatch(db);mem.slice(i,i+400).forEach(e=>b.set(doc(collection(db,'notifications')),{toEmail:e,toUid:uidOf.get(e)||null,type:'notice',title,body,read:false,by:low(me.email),byName:me.displayName||'',noticeId:nref.id,createdAt:serverTimestamp()}));await b.commit()}
+        toast('Notice sent to '+mem.length+' member(s)','success');closeModal()}catch(e){toast('Failed: '+(e.code||e.message),'error')}}})}
+function bulkExport(){const rows=[['Organization','Team','Email','Name','Role']];selOrgs().forEach(o=>(o.members||[]).forEach(e=>{const u=users.find(x=>low(x.email)===low(e));rows.push([o.name,o.teamName||'',low(e),u?.name||'',roleOf(o,e)])}));dl('org-members.csv',csv(rows));toast('Exported','success')}
+async function bulkDelete(){
+  const os=selOrgs();if(!await confirmBox('Delete '+os.length+' organization(s)?','Their file/folder/note records will be deleted too. This cannot be undone.','Delete',true))return;
+  let ok=0;for(const o of os){try{for(const c of['files','folders','notes','joinRequests','memberQuotas'])await delQuery(query(collection(db,c),where('orgId','==',o.id))).catch(()=>0);if(o.inviteCode)await deleteDoc(doc(db,'invites',o.inviteCode)).catch(()=>0);await deleteDoc(doc(db,'organizations',o.id));orgSel.delete(o.id);ok++}catch(e){console.warn(e)}}
+  toast(ok+' deleted','success');try{loadCounts()}catch{}}
+/* A3 email template editor */
+window.__loadTpl=async()=>{
+  try{const s=await getDocs(collection(db,'emailTemplates'));Object.keys(TPL).forEach(k=>delete TPL[k]);Object.assign(TPL,JSON.parse(JSON.stringify(TPL_DEF)));
+    Object.keys(TPL_NAMES).forEach(k=>{if(!TPL_DEF[k])delete TPL_NAMES[k]});window.__tplDocs=new Set();
+    s.docs.forEach(d=>{const x=d.data();TPL[d.id]=[x.subject||'',x.body||''];TPL_NAMES[d.id]=x.name||d.id;window.__tplDocs.add(d.id)})}catch(e){console.warn('tpl',e)}
+  const sel=$('m-tpl'),v=sel.value;sel.innerHTML='<option value="">— Choose —</option>'+Object.keys(TPL).map(k=>`<option value="${esc(k)}">${esc(TPL_NAMES[k]||k)}</option>`).join('');sel.value=TPL[v]?v:'';
+  if(!$('tpl-edit'))sel.insertAdjacentHTML('afterend','<button class="btn sm" id="tpl-edit" type="button" style="margin-top:6px"><span class="ms" style="font-size:16px">edit_note</span>Edit templates</button>'),$('tpl-edit').onclick=tplList};
+function tplList(){
+  const ids=Object.keys(TPL);
+  modal(`<h3>Email templates</h3><div style="max-height:50vh;overflow:auto">${ids.map(k=>`<div class="log" style="align-items:center" data-k="${esc(k)}"><span style="flex:1"><b>${esc(TPL_NAMES[k]||k)}</b>${(window.__tplDocs||new Set()).has(k)?'':' <small style="color:var(--muted)">(default)</small>'}</span><button class="btn sm" data-a="e">Edit</button>${(window.__tplDocs||new Set()).has(k)?'<button class="btn sm dng" data-a="d">'+(TPL_DEF[k]?'Reset':'Delete')+'</button>':''}</div>`).join('')}</div><div class="row"><button class="btn" id="tl-c">Close</button><button class="btn pri" id="tl-n">New template</button></div>`,m=>{
+    m.querySelector('#tl-c').onclick=closeModal;m.querySelector('#tl-n').onclick=()=>tplForm(null);
+    m.onclick=async e=>{const b=e.target.closest('[data-a]');if(!b)return;const k=b.closest('[data-k]').dataset.k;
+      if(b.dataset.a==='e')return tplForm(k);
+      try{await deleteDoc(doc(db,'emailTemplates',k));await window.__loadTpl();toast('Done','success');tplList()}catch(err){toast('Failed: '+(err.code||err.message),'error')}}},true)}
+function tplForm(k){
+  const t=k?TPL[k]:['',''];
+  modal(`<h3>${k?'Edit':'New'} template</h3><input class="inp" id="tf-n" placeholder="Template name" value="${esc(k?TPL_NAMES[k]||k:'')}" style="width:100%;margin-bottom:8px"><input class="inp" id="tf-s" placeholder="Subject" value="${esc(t[0])}" style="width:100%;margin-bottom:8px"><textarea class="inp" id="tf-b" rows="10" placeholder="Body" style="width:100%">${esc(t[1])}</textarea><div class="row"><button class="btn" id="tf-c">Back</button><button class="btn pri" id="tf-s2">Save</button></div>`,m=>{
+    m.querySelector('#tf-c').onclick=tplList;
+    m.querySelector('#tf-s2').onclick=async()=>{const name=m.querySelector('#tf-n').value.trim(),subject=m.querySelector('#tf-s').value.trim(),body=m.querySelector('#tf-b').value;if(!name||!subject)return toast('Name and subject required','error');
+      const id=k||(name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,30)||'tpl')+'-'+Math.random().toString(36).slice(2,6);
+      try{await setDoc(doc(db,'emailTemplates',id),{name,subject,body,updatedAt:serverTimestamp(),updatedBy:low(me.email)});await window.__loadTpl();toast('Saved','success');tplList()}catch(err){toast('Failed: '+(err.code||err.message),'error')}}},true)}
+/* A4 super admin: activity export/delete, notice delete */
+function actTools(){
+  if(!isSuper||$('act-tools'))return;const c=document.querySelector('#tab-activity .card h3');if(!c)return;
+  c.insertAdjacentHTML('afterend','<div id="act-tools" class="bar" style="gap:8px;flex-wrap:wrap"><button class="btn sm" id="act-exp"><span class="ms" style="font-size:16px">download</span>Export CSV</button><select class="inp" id="act-age" style="width:auto"><option value="0">All logs</option><option value="30">Older than 30 days</option><option value="90">Older than 90 days</option><option value="365">Older than 1 year</option></select><button class="btn sm dng" id="act-del"><span class="ms" style="font-size:16px">delete</span>Delete logs</button></div>');
+  $('act-exp').onclick=async()=>{try{const s=await getDocs(query(collection(db,'activity'),orderBy('createdAt','desc'),limit(5000)));dl('activity-log.csv',csv([['Time','Email','Action','Name','OrgId'],...s.docs.map(d=>{const a=d.data();return[toDate(a.createdAt)?.toISOString()||'',a.email,a.action,a.name||'',a.orgId||'']})]));toast('Exported '+s.docs.length+' rows','success')}catch(e){toast('Failed: '+(e.code||e.message),'error')}};
+  $('act-del').onclick=async()=>{const d=+$('act-age').value;if(!await confirmBox('Delete activity logs?',d?'All logs older than '+d+' days will be permanently deleted.':'ALL activity logs will be permanently deleted.','Delete',true))return;
+    try{await delQuery(d?query(collection(db,'activity'),where('createdAt','<',Timestamp.fromDate(new Date(Date.now()-d*864e5)))):collection(db,'activity'));toast('Deleted','success');loadActivity()}catch(e){toast('Failed: '+(e.code||e.message),'error')}}}
+{const _l=loadNoticeHistory;loadNoticeHistory=async function(){
+  await _l();if(!isSuper)return;const box=$('n-hist');
+  box.querySelectorAll('[data-id]').forEach(r=>{if(!r.querySelector('[data-del]'))r.insertAdjacentHTML('beforeend','<button class="btn sm dng" data-del="1"><span class="ms" style="font-size:16px">delete</span>Delete</button>')});
+  if(!box.__d){box.__d=1;box.addEventListener('click',async e=>{const b=e.target.closest('[data-del]');if(!b)return;const id=b.closest('[data-id]').dataset.id;
+    if(!await confirmBox('Delete permanently?','The record and every copy in users’ inboxes will be removed.','Delete',true))return;
+    try{await delQuery(query(collection(db,'notifications'),where('noticeId','==',id)));await deleteDoc(doc(db,'adminNotices',id));toast('Deleted','success');loadNoticeHistory()}catch(err){toast('Failed: '+(err.code||err.message),'error')}})}
+}}
+}
+
+</script>
+</body>
+</html>
