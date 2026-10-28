@@ -1,0 +1,14 @@
+{
+  "rewrites": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "query",
+          "key": "join"
+        }
+      ],
+      "destination": "/api/invite"
+    }
+  ]
+}
