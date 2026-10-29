@@ -1393,7 +1393,7 @@ async function runPendingJoin(){
   pendingJoin=null;try{localStorage.removeItem('mart_join')}catch{}
   try{
     const snap=await getDoc(doc(db,'invites',code));
-    if(!snap.exists())return toast('This invite link is invalid or has expired','error');
+    if(!snap.exists())return toast('This invite link is invalid or has expired','error');{const _d=snap.data();if(_d.expiresAt&&Date.now()>_d.expiresAt)return toast('This invite link has expired. Ask an admin for a new link.','error')}/*v2-exp*/
     const inv=snap.data();joinInv={code,...inv};
     if(organizations.some(o=>o.id===inv.orgId)){switchOrg(inv.orgId);return toast('You are already a member of '+inv.orgName,'success')}
     let pending=false;
@@ -2150,6 +2150,445 @@ window.__appeal=async user=>{
 };
 }
 
+
+/*PATCH-v2-index*/
+{
+const $$=id=>document.getElementById(id);
+const FSURL='https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+const getFS=()=>import(FSURL);
+const orgOf=x=>x&&x.orgId?organizations.find(o=>o.id===x.orgId):null;
+const OK='Only the folder creator or an organization admin can do this';
+
+/* =====================================================================
+   1) ORGANIZATION MEMBER PERMISSION FIX
+   A normal member can NOT rename / move / trash / delete / tag / change icon
+   of a folder created by someone else. The creator and org admins can.
+   ===================================================================== */
+try{
+const fmg=x=>{
+  if(!x||x.kind!=='folder'||!currentUser)return true;
+  if(x.uid===currentUser.uid)return true;
+  const o=orgOf(x);if(o&&isOwner(o))return true;
+  return roleOf(x)==='writer';
+};
+window.__fmg=fmg;
+const BLOCK=['rename','move','trash','tag','icon','up','down'];
+{const _mf=menuFor;
+ menuFor=function(item){
+  let a=_mf(item);
+  if(!item||item.kind!=='folder'||!currentUser||!Array.isArray(a))return a;
+  if(!fmg(item))a=a.filter(k=>!BLOCK.includes(k));
+  /* every org member gets the "Copy Link" (share) option on folders */
+  const o=orgOf(item);
+  if(o&&(o.members||[]).includes(me())&&!a.includes('share'))a=[...a,'share'];
+  return a;
+ }}
+{const _ca=window.ctxAction;
+ window.ctxAction=function(action){
+  const it=ctxItem;
+  if(it&&it.kind==='folder'&&[...BLOCK,'purge','restore'].includes(action)&&!fmg(it)){
+    $$('context-menu').classList.remove('open');toast(OK,'error');return;
+  }
+  return _ca.apply(this,arguments);
+ }}
+{const _bk=window.bulk;
+ window.bulk=function(a){
+  if(['trash','move','purge','rename','restore'].includes(a)){
+    const bad=selItems().filter(i=>i.kind==='folder'&&!fmg(i));
+    if(bad.length){bad.forEach(i=>sel.delete(keyOf(i)));toast(bad.length+' folder(s) skipped. '+OK,'error')}
+  }
+  return _bk.apply(this,arguments);
+ }}
+{const _dm=dropMove;
+ dropMove=function(target){
+  try{
+    const k=dragK;
+    if(k){
+      const W=ws(),sa=sel.has(k),its=sa?selItems():[W.find(i=>keyOf(i)===k)].filter(Boolean);
+      const bad=its.filter(i=>i.kind==='folder'&&!fmg(i));
+      if(bad.length){
+        toast(OK,'error');
+        if(sa)bad.forEach(i=>sel.delete(keyOf(i)));
+        if(!sa||bad.length===its.length){dragK=null;return}
+      }
+    }
+  }catch(e){console.warn(e)}
+  return _dm(target);
+ }}
+{const _mt=moveTo;
+ moveTo=function(v,items){
+  const ok=(items||[]).filter(i=>i.kind!=='folder'||fmg(i));
+  if(ok.length!==(items||[]).length)toast(OK,'error');
+  if(!ok.length){closeModal();return}
+  return _mt(v,ok);
+ }}
+}catch(e){console.warn('patch-v2 #1',e)}
+
+/* =====================================================================
+   2) FOLDER SHARE LINK FOR MEMBERS (View / Comment only)
+   ===================================================================== */
+try{
+{const _mk=mkFolderLink;
+ mkFolderLink=function(it,r){
+  const o=orgOf(it),priv=it.uid===currentUser.uid||(o&&isOwner(o));
+  if(r==='writer'&&!priv)return Promise.reject(new Error('Members can only create View or Comment links'));
+  return _mk(it,r);
+ }}
+{const _ofl=openFolderLink;
+ openFolderLink=function(it){
+  _ofl(it);
+  try{
+    const o=orgOf(it),priv=it.uid===currentUser.uid||(o&&isOwner(o));
+    if(!priv){
+      const b=$$('modal-body'),s=$$('sl-role');
+      if(b&&!$$('sl-note')){
+        const p=b.querySelector('p');
+        const h='<div id="sl-note" style="margin:0 0 12px;padding:8px 10px;border-radius:8px;background:var(--soft);font-size:13px">As an organization member you can create <b>View</b> or <b>Comment</b> links only.</div>';
+        p?p.insertAdjacentHTML('afterend',h):b.insertAdjacentHTML('afterbegin',h);
+      }
+      if(s){[...s.options].forEach(op=>{if(op.value==='writer')op.remove()});if(s.onchange)s.onchange()}
+    }
+  }catch(e){console.warn(e)}
+ }}
+}catch(e){console.warn('patch-v2 #2',e)}
+
+/* =====================================================================
+   3) ORG INVITE: EXPIRY + QR CODE (logo in the middle)
+   ===================================================================== */
+/*QR-START*/
+const QR=(()=>{
+  const ECC=[-1,17,28,22,16,22,28,26,26,24,28,24,28,22,24,24,30,28,28,26,28,30,24,30,30,30,30,28,30,30,30,30,30,30,30,30,30,30,30,30,30];
+  const NB=[-1,1,1,2,4,4,4,5,6,8,8,11,11,16,16,18,16,19,21,25,25,25,34,30,32,35,37,40,42,45,48,51,54,57,60,63,66,70,74,77,81];
+  const raw=v=>{let r=(16*v+128)*v+64;if(v>=2){const a=Math.floor(v/7)+2;r-=(25*a-10)*a-55;if(v>=7)r-=36}return r};
+  const dcw=v=>Math.floor(raw(v)/8)-ECC[v]*NB[v];
+  const gm=(x,y)=>{let z=0;for(let i=7;i>=0;i--){z=(z<<1)^((z>>>7)*0x11D);z^=((y>>>i)&1)*x}return z};
+  const rsDiv=n=>{const r=new Array(n).fill(0);r[n-1]=1;let root=1;for(let i=0;i<n;i++){for(let j=0;j<r.length;j++){r[j]=gm(r[j],root);if(j+1<r.length)r[j]^=r[j+1]}root=gm(root,2)}return r};
+  const rsRem=(d,div)=>{const r=div.map(()=>0);for(const b of d){const f=b^r.shift();r.push(0);div.forEach((c,i)=>{r[i]^=gm(c,f)})}return r};
+  const apos=v=>{if(v===1)return[];const n=Math.floor(v/7)+2,st=v===32?26:Math.ceil((v*4+4)/(n*2-2))*2,res=[6];for(let i=0,p=v*4+10;i<n-1;i++,p-=st)res.splice(1,0,p);return res};
+  function encode(text){
+    const bytes=Array.from(new TextEncoder().encode(text));
+    let ver=1;
+    for(;;ver++){if(ver>22)throw new Error('Text too long for QR');if(4+(ver<=9?8:16)+bytes.length*8<=dcw(ver)*8)break}
+    const bits=[],put=(v,n)=>{for(let i=n-1;i>=0;i--)bits.push((v>>>i)&1)};
+    put(4,4);put(bytes.length,ver<=9?8:16);bytes.forEach(b=>put(b,8));
+    const cap=dcw(ver)*8;put(0,Math.min(4,cap-bits.length));put(0,(8-bits.length%8)%8);
+    for(let p=0xEC;bits.length<cap;p^=0xEC^0x11)put(p,8);
+    const data=[];for(let i=0;i<bits.length;i+=8){let v=0;for(let j=0;j<8;j++)v=(v<<1)|bits[i+j];data.push(v)}
+    const nb=NB[ver],eb=ECC[ver],rc=Math.floor(raw(ver)/8),ns=nb-rc%nb,sl=Math.floor(rc/nb),dv=rsDiv(eb),blocks=[];
+    for(let i=0,k=0;i<nb;i++){const d=data.slice(k,k+sl-eb+(i<ns?0:1));k+=d.length;const e=rsRem(d,dv);if(i<ns)d.push(0);blocks.push(d.concat(e))}
+    const out=[];for(let i=0;i<blocks[0].length;i++)blocks.forEach((b,j)=>{if(i!==sl-eb||j>=ns)out.push(b[i])});
+    const size=ver*4+17,m=Array.from({length:size},()=>new Array(size).fill(false)),fn=Array.from({length:size},()=>new Array(size).fill(false));
+    const setF=(x,y,d)=>{m[y][x]=d;fn[y][x]=true};
+    for(let i=0;i<size;i++){setF(6,i,i%2===0);setF(i,6,i%2===0)}
+    const finder=(x,y)=>{for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const d=Math.max(Math.abs(dx),Math.abs(dy)),xx=x+dx,yy=y+dy;if(xx>=0&&xx<size&&yy>=0&&yy<size)setF(xx,yy,d!==2&&d!==4)}};
+    finder(3,3);finder(size-4,3);finder(3,size-4);
+    const ap=apos(ver),na=ap.length;
+    for(let i=0;i<na;i++)for(let j=0;j<na;j++){if(!((i===0&&j===0)||(i===0&&j===na-1)||(i===na-1&&j===0)))for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)setF(ap[i]+dx,ap[j]+dy,Math.max(Math.abs(dx),Math.abs(dy))!==1)}
+    const gb=(x,i)=>((x>>>i)&1)!==0;
+    const fmt=mask=>{
+      const d=(2<<3)|mask;let r=d;for(let i=0;i<10;i++)r=(r<<1)^((r>>>9)*0x537);
+      const bs=((d<<10)|r)^0x5412;
+      for(let i=0;i<=5;i++)setF(8,i,gb(bs,i));setF(8,7,gb(bs,6));setF(8,8,gb(bs,7));setF(7,8,gb(bs,8));
+      for(let i=9;i<15;i++)setF(14-i,8,gb(bs,i));
+      for(let i=0;i<8;i++)setF(size-1-i,8,gb(bs,i));
+      for(let i=8;i<15;i++)setF(8,size-15+i,gb(bs,i));
+      setF(8,size-8,true);
+    };
+    fmt(0);
+    if(ver>=7){let r=ver;for(let i=0;i<12;i++)r=(r<<1)^((r>>>11)*0x1F25);const bs=(ver<<12)|r;for(let i=0;i<18;i++){const b=gb(bs,i),a=size-11+i%3,c=Math.floor(i/3);setF(a,c,b);setF(c,a,b)}}
+    let bi=0;
+    for(let right=size-1;right>=1;right-=2){if(right===6)right=5;
+      for(let vert=0;vert<size;vert++)for(let j=0;j<2;j++){const x=right-j,up=((right+1)&2)===0,y=up?size-1-vert:vert;
+        if(!fn[y][x]&&bi<out.length*8){m[y][x]=gb(out[bi>>>3],7-(bi&7));bi++}}}
+    const mask=k=>{for(let y=0;y<size;y++)for(let x=0;x<size;x++){let inv;
+      switch(k){case 0:inv=(x+y)%2===0;break;case 1:inv=y%2===0;break;case 2:inv=x%3===0;break;case 3:inv=(x+y)%3===0;break;
+        case 4:inv=(Math.floor(x/3)+Math.floor(y/2))%2===0;break;case 5:inv=x*y%2+x*y%3===0;break;
+        case 6:inv=(x*y%2+x*y%3)%2===0;break;default:inv=((x+y)%2+x*y%3)%2===0}
+      if(!fn[y][x]&&inv)m[y][x]=!m[y][x]}};
+    const pen=()=>{
+      let r=0,dark=0;
+      const line=g=>{let run=1;for(let i=1;i<=size;i++){if(i<size&&g(i)===g(i-1))run++;else{if(run>=5)r+=run-2;run=1}}};
+      for(let y=0;y<size;y++)line(i=>m[y][i]);
+      for(let x=0;x<size;x++)line(i=>m[i][x]);
+      for(let y=0;y<size-1;y++)for(let x=0;x<size-1;x++){const c=m[y][x];if(c===m[y][x+1]&&c===m[y+1][x]&&c===m[y+1][x+1])r+=3}
+      const pat=(s)=>{const A='10111010000',B='00001011101';let i=-1;while((i=s.indexOf(A,i+1))>=0)r+=40;i=-1;while((i=s.indexOf(B,i+1))>=0)r+=40};
+      for(let y=0;y<size;y++){pat(m[y].map(v=>v?'1':'0').join(''));let c='';for(let x=0;x<size;x++)c+=m[x][y]?'1':'0';pat(c);for(let x=0;x<size;x++)if(m[y][x])dark++}
+      const tot=size*size;r+=(Math.ceil(Math.abs(dark*20-tot*10)/tot)-1)*10;return r};
+    let best=0,bp=Infinity;
+    for(let k=0;k<8;k++){mask(k);fmt(k);const p=pen();if(p<bp){bp=p;best=k}mask(k)}
+    mask(best);fmt(best);
+    return{size,ver,get:(x,y)=>m[y][x]};
+  }
+  return{encode};
+})();
+/*QR-END*/
+const loadImg=u=>new Promise((res,rej)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>res(i);i.onerror=()=>rej(new Error('logo'));i.src=u});
+/* returns {canvas,withLogo}. ECC level H + logo covers < 6% of the area => safe to scan */
+async function makeQR(text,logoUrl,noLogo){
+  const q=QR.encode(text),n=q.size,quiet=4,sc=Math.max(4,Math.ceil(1000/(n+quiet*2))),W=(n+quiet*2)*sc;
+  const c=document.createElement('canvas');c.width=c.height=W;const x=c.getContext('2d');
+  x.fillStyle='#fff';x.fillRect(0,0,W,W);x.fillStyle='#0b1220';
+  for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.get(k,r))x.fillRect((k+quiet)*sc,(r+quiet)*sc,sc,sc);
+  let withLogo=false;
+  if(logoUrl&&!noLogo){
+    try{
+      const img=await loadImg(logoUrl),L=Math.round(n*sc*0.18),P=L+2*sc,o=(W-P)/2,rad=Math.round(sc*1.6);
+      x.fillStyle='#fff';x.beginPath();
+      if(x.roundRect)x.roundRect(o,o,P,P,rad);else x.rect(o,o,P,P);
+      x.fill();
+      x.save();x.beginPath();const lo=(W-L)/2;
+      if(x.roundRect)x.roundRect(lo,lo,L,L,Math.round(rad*.7));else x.rect(lo,lo,L,L);
+      x.clip();
+      const s=Math.min(img.width,img.height),sx=(img.width-s)/2,sy=(img.height-s)/2;
+      x.drawImage(img,sx,sy,s,s,lo,lo,L,L);x.restore();withLogo=true;
+    }catch(e){console.warn('QR logo not embedded',e)}
+  }
+  return{canvas:c,withLogo};
+}
+const scanTest=async(c,url)=>{try{if(!('BarcodeDetector' in window))return null;const bd=new BarcodeDetector({formats:['qr_code']});const r=await bd.detect(c);return r.length&&r[0].rawValue===url}catch{return null}};
+try{
+const fmtExp=v=>{if(!v)return{t:'Never expires (until the link is reset)',c:''};const d=new Date(v).toLocaleString();return v<Date.now()?{t:'Expired on '+d,c:'color:var(--error)'}:{t:'Expires on '+d,c:''}};
+const ymd=v=>{const d=new Date(v),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())};
+async function decorateMembers(id){
+  const o=organizations.find(x=>x.id===id);if(!o)return;
+  const inp=$$('inv-link');if(!inp||$$('inv-x'))return;
+  const anchor=inp.closest('.field');if(!anchor)return;
+  const own=isOwner(o);
+  anchor.insertAdjacentHTML('afterend',
+   '<div id="inv-x" style="margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:10px">'
+   +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:13px">Invite link expiry</b><span id="inv-exp-st" class="chip">Loading…</span></div>'
+   +(own?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center"><select id="inv-exp-sel" class="sel"><option value="never">Never expire (until I reset the link)</option><option value="1">After 1 day</option><option value="7">After 7 days</option><option value="30">After 30 days</option><option value="custom">Custom date…</option></select><input type="date" id="inv-exp-date" style="display:none;padding:9px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><button class="btn" id="inv-exp-save">Save expiry</button></div>':'')
+   +'<div style="margin-top:12px"><button class="btn" id="inv-qr-b"><span class="material-symbols-outlined">qr_code_2</span> QR code</button></div><div id="inv-qr" style="text-align:center;margin-top:10px"></div></div>');
+  const st=$$('inv-exp-st');
+  let cur=null;
+  const show=v=>{const f=fmtExp(v);st.textContent=f.t;st.style.cssText=f.c};
+  try{const s=await getDoc(doc(db,'invites',o.inviteCode));cur=s.exists()?(s.data().expiresAt||null):null;show(cur)}catch(e){st.textContent='Could not load expiry'}
+  if(own){
+    const sel=$$('inv-exp-sel'),dt=$$('inv-exp-date');
+    dt.min=ymd(Date.now());
+    if(cur){sel.value='custom';dt.style.display='';dt.value=ymd(cur)}
+    sel.onchange=()=>{dt.style.display=sel.value==='custom'?'':'none'};
+    $$('inv-exp-save').onclick=async()=>{
+      let v=null;
+      if(sel.value==='custom'){if(!dt.value)return toast('Pick an expiry date','error');v=new Date(dt.value+'T23:59:59').getTime();if(!(v>Date.now()))return toast('Pick a future date','error')}
+      else if(sel.value!=='never')v=Date.now()+(+sel.value)*864e5;
+      try{await setDoc(doc(db,'invites',o.inviteCode),{expiresAt:v},{merge:true});cur=v;show(v);toast(v?'Invite expiry saved':'Invite link will never expire','success')}
+      catch(e){toast('Failed: '+e.message,'error')}
+    };
+  }
+  $$('inv-qr-b').onclick=async()=>{
+    const box=$$('inv-qr'),url=$$('inv-link').value;box.innerHTML='<span class="file-meta">Generating…</span>';
+    try{
+      let r=await makeQR(url,o.logoUrl||LOGO),note='';
+      const t=await scanTest(r.canvas,url);
+      if(t===false&&r.withLogo){r=await makeQR(url,null,true);note='Logo removed automatically because it made the QR hard to read.'}
+      else if(t===true)note='✓ Scan test passed';
+      else if(!r.withLogo)note='Logo could not be embedded (image host blocked it). The QR still works.';
+      else note='Tip: scan it once with your phone before printing.';
+      box.innerHTML='';const c=r.canvas;c.style.cssText='width:260px;max-width:100%;height:auto;border:1px solid var(--border);border-radius:10px;background:#fff';box.appendChild(c);
+      const d=document.createElement('div');d.style.cssText='margin-top:8px;font-size:12px;color:var(--muted)';d.textContent=note;box.appendChild(d);
+      const b=document.createElement('button');b.className='btn btn-primary';b.style.marginTop='8px';b.innerHTML='<span class="material-symbols-outlined">download</span> Download PNG';
+      b.onclick=()=>c.toBlob(bl=>{const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download=(o.name||'org').replace(/[^\w\-]+/g,'_')+'-invite-qr.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)},'image/png');
+      box.appendChild(b);
+    }catch(e){box.textContent='Failed: '+e.message}
+  };
+}
+{const _omm=window.openMembersModal;
+ window.openMembersModal=async function(){
+  const r=await _omm.apply(this,arguments);
+  try{await decorateMembers(arguments[0]);premMembers(arguments[0])}catch(e){console.warn(e)}
+  return r;
+ }}
+{const _rj=window.requestJoin;
+ window.requestJoin=function(){
+  if(joinInv&&joinInv.expiresAt&&Date.now()>joinInv.expiresAt){toast('This invite link has expired. Ask an admin for a new link.','error');closeModal();return}
+  return _rj.apply(this,arguments);
+ }}
+}catch(e){console.warn('patch-v2 #3',e)}
+
+/* =====================================================================
+   4) REAL-TIME COLLABORATIVE NOTES  (live sync + 3-way merge)
+   ===================================================================== */
+/*M3-START*/
+const span=(b,x)=>{let p=0;const m=Math.min(b.length,x.length);while(p<m&&b.charCodeAt(p)===x.charCodeAt(p))p++;let q=0;while(q<m-p&&b.charCodeAt(b.length-1-q)===x.charCodeAt(x.length-1-q))q++;return{s:p,e:b.length-q,t:x.slice(p,x.length-q)}};
+/* m3(base, mine, remote): merges two edits of the same base text */
+const m3=(b,a,r)=>{
+  if(a===r)return{text:a};if(a===b)return{text:r};if(r===b)return{text:a};
+  const A=span(b,a),R=span(b,r);
+  if(A.s===A.e&&R.s===R.e&&A.s===R.s)return{text:b.slice(0,A.s)+R.t+A.t+b.slice(A.s)};
+  if(A.e<=R.s)return{text:b.slice(0,A.s)+A.t+b.slice(A.e,R.s)+R.t+b.slice(R.e)};
+  if(R.e<=A.s)return{text:b.slice(0,R.s)+R.t+b.slice(R.e,A.s)+A.t+b.slice(A.e)};
+  return{text:r,conflict:true};
+};
+/*M3-END*/
+try{
+let LN=null;
+const stopLive=()=>{if(LN){LN.stopped=true;clearTimeout(LN.timer);clearTimeout(LN.retry);try{LN.unsub&&LN.unsub()}catch{}LN=null}};
+const setText=(ta,v)=>{
+  const o=ta.value;if(o===v)return;
+  const s=ta.selectionStart,e=ta.selectionEnd,st=ta.scrollTop,foc=document.activeElement===ta;
+  let p=0;const m=Math.min(o.length,v.length);while(p<m&&o.charCodeAt(p)===v.charCodeAt(p))p++;
+  let q=0;while(q<m-p&&o.charCodeAt(o.length-1-q)===v.charCodeAt(v.length-1-q))q++;
+  const d=v.length-o.length,map=x=>x<=p?x:(x>=o.length-q?x+d:v.length-q);
+  ta.value=v;if(foc){try{ta.setSelectionRange(map(s),map(e))}catch{}}ta.scrollTop=st;
+};
+const firstLine=t=>(t.split('\n')[0]||'').slice(0,60);
+function startLive(item){
+  const ta=$$('n-content'),nm=$$('n-name'),body=$$('modal-body');if(!ta||!nm||!body)return;
+  const colorSel=()=>(document.querySelector('input[name=n-color]:checked')||{}).value||'';
+  const c0=allNotes(item.id)||item;
+  const canEdit=item.uid===currentUser.uid||(item.orgId&&organizations.some(o=>o.id===item.orgId))||roleOf({...item,kind:'note'})==='writer';
+  const L={id:item.id,base:{content:c0.content||'',name:c0.name||'',color:c0.color||''},timer:0,busy:false,again:false,comp:false,pend:null,lost:null};
+  LN=L;
+  body.insertAdjacentHTML('afterbegin','<div id="ln-bar" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:10px"><span id="ln-dot" style="width:9px;height:9px;border-radius:50%;background:#16a34a"></span><span id="ln-st">'+(canEdit?'Live · changes sync instantly':'View only · live')+'</span><span id="ln-who"></span><a id="ln-rs" href="#" style="display:none;color:var(--blue)">Restore my version</a></div>');
+  const setStatus=(t,k)=>{const d=$$('ln-dot'),s=$$('ln-st');if(!d||!s)return;s.textContent=t;d.style.background=k==='ok'?'#16a34a':k==='warn'?'#f59e0b':'#dc2626'};
+  const dirty=()=>ta.value!==L.base.content||nm.value.trim()!==L.base.name||colorSel()!==L.base.color;
+  L.dirty=dirty;
+  if(!canEdit){ta.readOnly=true;nm.readOnly=true;document.querySelectorAll('input[name=n-color]').forEach(r=>r.disabled=true);const sv=$$('n-save');if(sv)sv.style.display='none'}
+  const sched=()=>{if(!canEdit||L.stopped)return;setStatus('Typing…','warn');clearTimeout(L.timer);L.timer=setTimeout(()=>L.save(),700)};
+  L.save=async()=>{
+    if(!canEdit)return;clearTimeout(L.timer);
+    if(L.busy){L.again=true;return}
+    const cur={content:ta.value,name:nm.value.trim(),color:colorSel()};
+    if(cur.content===L.base.content&&cur.name===L.base.name&&cur.color===L.base.color)return;
+    L.busy=true;setStatus('Saving…','warn');
+    try{
+      const FS=await getFS();let out;
+      await FS.runTransaction(db,async tx=>{
+        const ref=doc(db,'notes',L.id),s=await tx.get(ref);
+        if(!s.exists())throw new Error('This note was deleted');
+        const d=s.data(),sv={content:d.content||'',name:d.name||'',color:d.color||''};
+        out={
+          content:m3(L.base.content,cur.content,sv.content).text,
+          name:cur.name!==L.base.name?(cur.name||firstLine(cur.content)||'Untitled note'):(sv.name||'Untitled note'),
+          color:cur.color!==L.base.color?cur.color:sv.color
+        };
+        tx.update(ref,{content:out.content,name:out.name,color:out.color,updatedAt:serverTimestamp(),lastBy:me()});
+      });
+      L.base=out;
+      if(document.body.contains(ta)){
+        const now=ta.value;
+        if(now===cur.content){if(out.content!==now)setText(ta,out.content)}
+        else setText(ta,m3(cur.content,now,out.content).text);
+        if(out.name!==cur.name&&nm.value.trim()===cur.name)nm.value=out.name;
+      }
+      setStatus('Saved · live','ok');
+    }catch(e){
+      console.warn('live note save',e);
+      setStatus(navigator.onLine?('Save failed: '+(e.message||e)):'Offline · will retry','err');
+      if(!L.stopped)L.retry=setTimeout(()=>L.save(),4000);
+    }finally{
+      L.busy=false;
+      if(L.stopped){if(!L.fin&&dirty()){L.fin=true;L.save()}}
+      else if(L.again||dirty()){L.again=false;sched()}
+    }
+  };
+  const apply=d=>{
+    const rm={content:d.content||'',name:d.name||'',color:d.color||''},b=L.base;
+    if(rm.content===b.content&&rm.name===b.name&&rm.color===b.color)return;
+    if(rm.content!==b.content){
+      const mine=ta.value;
+      if(mine===b.content)setText(ta,rm.content);
+      else{
+        const g=m3(b.content,mine,rm.content);
+        if(g.conflict){L.lost=mine;const a=$$('ln-rs');if(a)a.style.display='';toast('Someone edited the same text. Their version was kept.','error')}
+        setText(ta,g.text);
+      }
+    }
+    if(rm.name!==b.name&&nm.value.trim()===b.name)nm.value=rm.name;
+    if(rm.color!==b.color&&colorSel()===b.color){const r=document.querySelector('input[name=n-color][value="'+rm.color+'"]');if(r)r.checked=true}
+    L.base=rm;
+    const w=$$('ln-who');if(w&&d.lastBy&&d.lastBy!==me())w.textContent='· updated by '+String(d.lastBy).split('@')[0];
+    if(dirty())sched();else setStatus(canEdit?'Live · changes sync instantly':'View only · live','ok');
+  };
+  ta.addEventListener('input',sched);nm.addEventListener('input',sched);
+  document.querySelectorAll('input[name=n-color]').forEach(r=>r.addEventListener('change',sched));
+  ta.addEventListener('compositionstart',()=>{L.comp=true});
+  ta.addEventListener('compositionend',()=>{L.comp=false;if(L.pend){const d=L.pend;L.pend=null;apply(d)}});
+  const rs=$$('ln-rs');if(rs)rs.onclick=e=>{e.preventDefault();if(L.lost!=null){setText(ta,L.lost);L.lost=null;rs.style.display='none';sched()}};
+  L.unsub=onSnapshot(doc(db,'notes',L.id),s=>{
+    if(L.stopped||!document.body.contains(ta)){stopLive();return}
+    if(!s.exists()){setStatus('This note was deleted','err');return}
+    if(L.comp){L.pend=s.data();return}
+    apply(s.data());
+  },e=>{console.warn('live note',e);setStatus('Live sync paused','err')});
+  L.stop=()=>{};
+}
+{const _onm=window.openNoteModal;
+ window.openNoteModal=function(item,ntype){
+  stopLive();
+  const r=_onm.apply(this,arguments);
+  try{if(item&&item.id&&item.ntype!=='link')startLive(item)}catch(e){console.warn(e)}
+  return r;
+ }}
+{const _sn=window.saveNote;
+ window.saveNote=async function(id,ntype){
+  if(LN&&LN.id===id&&ntype!=='link'){
+    try{const l=LN;for(let i=0;i<50&&l.busy;i++)await new Promise(r=>setTimeout(r,100));await l.save();for(let i=0;i<50&&l.busy;i++)await new Promise(r=>setTimeout(r,100));toast('Saved','success');closeModal()}catch(e){toast('Save failed: '+e.message,'error')}
+    return;
+  }
+  return _sn.apply(this,arguments);
+ }}
+{const _cm=window.closeModal;
+ window.closeModal=function(){
+  const l=LN;
+  try{if(l&&l.dirty&&l.dirty())l.save()}catch{}
+  stopLive();
+  return _cm.apply(this,arguments);
+ }}
+}catch(e){console.warn('patch-v2 #4',e)}
+
+/* =====================================================================
+   5) PREMIUM LOOK  (10+ people in the organization: members + owners)
+   ===================================================================== */
+const PREM_MIN=10;
+const isPrem=o=>!!o&&Array.isArray(o.members)&&o.members.length>=PREM_MIN;
+function premMembers(id){
+  const o=organizations.find(x=>x.id===id),b=$$('modal-body');if(!o||!b||$$('prem-note'))return;
+  const n=(o.members||[]).length;
+  const h=isPrem(o)
+    ?'<div id="prem-note" class="prem-note on"><span class="material-symbols-outlined">workspace_premium</span> Premium look unlocked · '+n+' people</div>'
+    :'<div id="prem-note" class="prem-note"><span class="material-symbols-outlined">workspace_premium</span> '+(PREM_MIN-n)+' more '+(PREM_MIN-n===1?'person':'people')+' to unlock the Premium look ('+n+'/'+PREM_MIN+')</div>';
+  b.insertAdjacentHTML('afterbegin',h);
+}
+try{
+const st=document.createElement('style');st.id='v2-style';
+st.textContent=
+ 'html.org-premium .sidebar-brand{background:linear-gradient(135deg,rgba(245,197,66,.20),rgba(201,162,39,.06) 55%,transparent);border-bottom:1px solid rgba(201,162,39,.6);position:relative;overflow:hidden}'
++'html.org-premium .sidebar-brand::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 38%,rgba(255,255,255,.38) 50%,transparent 62%);transform:translateX(-130%);animation:premShine 6s ease-in-out infinite;pointer-events:none}'
++'@keyframes premShine{0%,55%{transform:translateX(-130%)}100%{transform:translateX(130%)}}'
++'html.org-premium #org-logo-display{border-radius:9px;box-shadow:0 0 0 2px #F5C542,0 0 0 5px rgba(245,197,66,.28)}'
++'html.org-premium #org-name-display{background:linear-gradient(90deg,#B8860B,#F5C542 50%,#B8860B);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}'
++'html.org-premium .header{box-shadow:inset 0 -2px 0 rgba(245,197,66,.75)}'
++'html.org-premium .nav-item.active{box-shadow:inset 3px 0 0 #F5C542}'
++'.prem-crown{font-size:16px!important;vertical-align:-3px;margin-left:4px;color:#E0A800;-webkit-text-fill-color:#E0A800}'
++'.prem-ico{font-size:16px!important;color:#E0A800;margin-left:2px}'
++'.prem-note{display:flex;align-items:center;gap:8px;font-size:12px;padding:8px 10px;border-radius:8px;background:var(--soft);color:var(--muted);margin-bottom:12px}'
++'.prem-note .material-symbols-outlined{font-size:18px}'
++'.prem-note.on{background:linear-gradient(90deg,rgba(245,197,66,.25),rgba(245,197,66,.06));color:var(--text);font-weight:600}.prem-note.on .material-symbols-outlined{color:#E0A800}'
++'@media (prefers-reduced-motion:reduce){html.org-premium .sidebar-brand::after{animation:none}}';
+document.head.appendChild(st);
+const applyPrem=()=>{
+  const o=myOrg(),p=isPrem(o);
+  document.documentElement.classList.toggle('org-premium',p);
+  const h=$$('org-name-display');if(!h)return;
+  const ex=$$('prem-crown');
+  if(p&&!ex)h.insertAdjacentHTML('beforeend','<span id="prem-crown" class="material-symbols-outlined prem-crown" title="Premium organization">workspace_premium</span>');
+  if(!p&&ex)ex.remove();
+};
+const decorateSide=()=>{
+  document.querySelectorAll('#org-list-container .nav-item').forEach(el=>{
+    const m=(el.getAttribute('onclick')||'').match(/switchOrg\('([^']+)'\)/);if(!m)return;
+    const o=organizations.find(x=>x.id===m[1]);
+    if(isPrem(o)&&!el.querySelector('.prem-ico')){const sp=el.querySelector('span[style*="flex:1"]');if(sp)sp.insertAdjacentHTML('afterend','<span class="material-symbols-outlined prem-ico" title="Premium organization">workspace_premium</span>')}
+  });
+};
+{const _ub=updateBrand;updateBrand=function(){_ub.apply(this,arguments);try{applyPrem()}catch(e){console.warn(e)}}}
+{const _ros=renderOrgSidebar;renderOrgSidebar=function(){_ros.apply(this,arguments);try{decorateSide()}catch(e){console.warn(e)}}}
+try{applyPrem();decorateSide()}catch{}
+}catch(e){console.warn('patch-v2 #5',e)}
+}
+/*END-PATCH-v2-index*/
 </script>
 <a id="admin-fab" href="admin.html" title="Open Admin Panel"><span class="material-symbols-outlined">admin_panel_settings</span>Admin Panel</a>
 </body>
