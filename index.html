@@ -336,6 +336,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <li><div class="nav-item" data-v="starred" onclick="setView('starred')"><span class="material-symbols-outlined">star</span> Starred</div></li>
 <li><div class="nav-item" data-v="sharedby" onclick="setView('sharedby')"><span class="material-symbols-outlined">person_add</span> Shared by me</div></li>
 <li><div class="nav-item" data-v="sharedfrom" onclick="setView('sharedfrom')"><span class="material-symbols-outlined">folder_shared</span> Shared from</div></li>
+<li id="nav-guest" style="display:none"><div class="nav-item" onclick="document.getElementById('sidebar').classList.remove('open');gOpenMine()"><span class="material-symbols-outlined">group_add</span> Guest access</div></li>
 <li id="nav-requests" style="display:none"><div class="nav-item" data-v="requests" onclick="setView('requests')"><span class="material-symbols-outlined">how_to_reg</span> Join Requests <span class="badge" id="req-badge" style="display:none"></span></div></li>
 <li><div class="nav-item" data-v="trash" onclick="setView('trash')"><span class="material-symbols-outlined">delete</span> Trash</div></li>
 <li><div class="nav-item" onclick="openThemeModal()"><span class="material-symbols-outlined">palette</span> Theme</div></li>
@@ -2589,6 +2590,234 @@ try{applyPrem();decorateSide()}catch{}
 }catch(e){console.warn('patch-v2 #5',e)}
 }
 /*END-PATCH-v2-index*/
+
+/*GUEST-INVITE-PATCH v1*/
+(()=>{
+const GR={reader:'Viewer',commenter:'Commenter',writer:'Editor'};
+const G={org:null,data:null,sel:new Set(),tab:'files',q:''};
+const roleOfOrg=o=>foundersOf(o).has(me())?'super':(isOwner(o)?'admin':'member');
+const gLink=c=>`${location.origin}${location.pathname}?guest=${c}`;
+document.head.insertAdjacentHTML('beforeend','<style>.g-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.g-tab{padding:6px 12px;border:1px solid var(--border);border-radius:999px;background:var(--bg);color:var(--text);cursor:pointer;font-size:13px}.g-tab.on{background:var(--blue);color:#fff;border-color:var(--blue)}.g-list{max-height:300px;overflow:auto;border:1px solid var(--border);border-radius:10px}.g-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border);cursor:pointer}.g-row:last-child{border-bottom:0}.g-row .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#g-pop{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}#g-pop .gp-c{background:var(--surface);color:var(--text);border-radius:16px;max-width:420px;width:100%;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.35)}.g-in{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)}</style>');
+
+/* ---------- 1) INVITE CREATION (super admin / admin / member) ---------- */
+function gList(t){const d=G.data;return t==='files'?d.files:t==='folders'?d.folders:t==='links'?d.notes.filter(n=>n.ntype==='link'):d.notes.filter(n=>n.ntype!=='link')}
+function gDesc(f){const D=G.data,out=[],q=[f.id],seen=new Set([f.id]);while(q.length){const p=q.shift();for(const k of['folders','files','notes'])for(const y of D[k])if(y.parentId===p&&!seen.has(y.id)){seen.add(y.id);out.push(y);if(k==='folders')q.push(y.id)}}return out}
+function gRender(){
+  const box=$('g-list');if(!box)return;const q=G.q.toLowerCase();
+  const l=gList(G.tab).filter(x=>!q||String(x.name||'').toLowerCase().includes(q)).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
+  const ic={files:'description',folders:'folder',notes:'sticky_note_2',links:'link'}[G.tab];
+  box.innerHTML=l.length?l.map(x=>{const k=(G.tab==='folders'?'folder':G.tab==='files'?'file':'note')+':'+x.id;return`<label class="g-row"><input type="checkbox" data-k="${esc(k)}" ${G.sel.has(k)?'checked':''}><span class="material-symbols-outlined" style="font-size:20px;color:var(--muted)">${ic}</span><span class="n">${esc(x.name||'Untitled')}</span></label>`}).join(''):'<div style="padding:18px;text-align:center;color:var(--muted)">Nothing here</div>';
+  $('g-cnt').textContent=G.sel.size+' selected';
+}
+window.gOpenInvite=async orgId=>{
+  const o=organizations.find(x=>x.id===orgId);if(!o)return;
+  G.org=o;G.sel=new Set();G.tab='files';G.q='';G.data=null;
+  openModal('Invite guest · '+o.name,'<div style="padding:30px;text-align:center;color:var(--muted)">Loading…</div>','<button class="btn" onclick="closeModal()">Cancel</button>',true);
+  try{G.data={};for(const k of['files','folders','notes'])G.data[k]=snapDocs(await getDocs(query(collection(db,k),where('orgId','==',orgId)))).filter(x=>!x.trashed).map(x=>({...x,_c:k}))}
+  catch(e){closeModal();return toast('Failed: '+e.message,'error')}
+  gStep1();
+};
+function gStep1(){
+  const tabs=[['files','Files'],['notes','Notes'],['links','Links'],['folders','Folders']],b=$('modal-body');
+  b.innerHTML=`<p style="font-size:13px;color:var(--muted);margin-bottom:10px">Step 1 of 2 · Select the files, notes, links and folders the guest can access.</p><div class="g-tabs">${tabs.map(([t,l])=>`<button type="button" class="g-tab ${G.tab===t?'on':''}" data-t="${t}">${l} (${gList(t).length})</button>`).join('')}</div><input id="g-q" class="g-in" placeholder="Search…" value="${esc(G.q)}" style="margin-bottom:10px"><div class="g-list" id="g-list"></div><div id="g-cnt" class="file-meta" style="margin-top:8px"></div>`;
+  $('modal-foot').innerHTML='<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="gStep2()">Next</button>';
+  b.onclick=ev=>{const t=ev.target.closest('.g-tab');if(t){G.tab=t.dataset.t;b.querySelectorAll('.g-tab').forEach(x=>x.classList.toggle('on',x===t));gRender()}};
+  b.onchange=ev=>{const c=ev.target.closest('input[data-k]');if(c){c.checked?G.sel.add(c.dataset.k):G.sel.delete(c.dataset.k);$('g-cnt').textContent=G.sel.size+' selected'}};
+  b.oninput=ev=>{if(ev.target.id==='g-q'){G.q=ev.target.value;gRender()}};
+  gRender();
+}
+window.gStep2=()=>{
+  if(!G.sel.size)return toast('Select at least one item','error');
+  if(G.sel.size>60)return toast('Select at most 60 items','error');
+  const o=G.org,own=isOwner(o),b=$('modal-body');b.onclick=b.onchange=b.oninput=null;
+  b.innerHTML=`<p style="font-size:13px;color:var(--muted);margin-bottom:12px">Step 2 of 2 · ${G.sel.size} item(s) selected. Choose what the guest can do.</p><div class="field"><label>Access level</label><select id="g-role"><option value="reader">Viewer (view &amp; download)</option><option value="commenter">Commenter (+ comment)</option>${own?'<option value="writer">Editor (+ edit)</option>':''}</select></div><div class="field"><label>Link expires</label><select id="g-exp"><option value="0">Never</option><option value="1">After 1 day</option><option value="7">After 7 days</option><option value="30">After 30 days</option></select></div><div class="aa-box aa-state" style="font-size:13px">${own?'As a '+(roleOfOrg(o)==='super'?'Super Admin':'Admin')+', guests you invite are <b>approved automatically</b>.':'Members can invite guests with <b>View or Comment</b> access only. A Super Admin or Admin must <b>approve</b> every guest before they get access.'}</div>`;
+  $('modal-foot').innerHTML='<button class="btn" onclick="gStep1()">Back</button><button class="btn btn-primary" id="g-go" onclick="gCreate()">Create link</button>';
+};
+window.gStep1=gStep1;
+window.gCreate=async()=>{
+  const btn=$('g-go');btn.disabled=true;btn.textContent='Creating…';
+  const o=G.org,own=isOwner(o),days=+$('g-exp').value;let role=$('g-role').value;if(!own&&role==='writer')role='reader';
+  try{
+    const D=G.data,items=[],roots=[];let bad=0;
+    for(const k of G.sel){
+      const i=k.indexOf(':'),kind=k.slice(0,i),id=k.slice(i+1);
+      if(kind==='file'){const x=D.files.find(f=>f.id===id);if(x)items.push({k:'file',id,name:x.name||'',driveFileId:x.driveFileId||'',mimeType:x.mimeType||'',size:+x.size||0,thumb:x.thumb||'',ownerEmail:x.by||''})}
+      else if(kind==='note'){const x=D.notes.find(f=>f.id===id);if(x)items.push({k:'note',id,name:x.name||'',nt:x.ntype||'note'})}
+      else{
+        const x=D.folders.find(f=>f.id===id);if(!x)continue;const root=x.linkRoot||x.id;
+        const st=[x,...gDesc(x)].filter(y=>!y.linkRoot);
+        const res=await Promise.all(st.map(y=>updateDoc(doc(db,y._c,y.id),{linkRoot:root}).then(()=>1,()=>0)));bad+=res.filter(v=>!v).length;
+        items.push({k:'folder',id,name:x.name||'',root,ownerUid:x.uid||'',ownerEmail:x.by||''});if(!roots.includes(root))roots.push(root);
+      }
+    }
+    if(!items.length)throw new Error('Nothing to share');
+    const code=genCode();
+    await setDoc(doc(db,'guestInvites',code),{orgId:o.id,orgName:o.name,teamName:o.teamName||'',logoUrl:o.logoUrl||null,createdBy:me(),creatorRole:roleOfOrg(o),role,needsApproval:!own,items,itemIds:items.map(i=>i.id),roots,expiresAt:days?Date.now()+days*864e5:null,createdAt:serverTimestamp()});
+    const link=gLink(code);
+    $('modal-body').innerHTML=`<p style="margin-bottom:12px">Guest invite created · <b>${items.length}</b> item(s) · <b>${GR[role]}</b>${own?'':' · needs admin approval'}</p>${bad?`<p style="color:var(--error);font-size:13px">${bad} inner item(s) could not be prepared (uploaded by others).</p>`:''}<div class="field"><label>Guest invite link</label><input id="g-link" class="g-in" readonly value="${esc(link)}"></div><small style="color:var(--muted)">${own?'Anyone who joins with this link gets access immediately.':'Anyone who joins with this link must be approved by a Super Admin or Admin first.'}</small>`;
+    $('modal-foot').innerHTML='<button class="btn" onclick="closeModal()">Close</button><button class="btn btn-primary" onclick="gCopy()">Copy link</button>';
+    gCopy();
+  }catch(e){toast('Failed: '+e.message,'error');btn.disabled=false;btn.textContent='Create link'}
+};
+window.gCopy=async()=>{const i=$('g-link');if(!i)return;try{await navigator.clipboard.writeText(i.value)}catch{i.select();document.execCommand('copy')}toast('Invite link copied!','success')};
+
+/* ---------- org menu button ---------- */
+{const _o=window.openMembersModal;
+window.openMembersModal=async function(id){
+  await _o.apply(this,arguments);
+  const o=organizations.find(x=>x.id===id),b=$('modal-body');if(!o||!b||b.querySelector('#g-box'))return;
+  b.insertAdjacentHTML('beforeend',`<div id="g-box" class="aa-box" style="margin-top:16px"><b>Guest invite</b><small style="display:block;color:var(--muted);font-size:12px;margin:4px 0 10px">${isOwner(o)?'Share selected files, notes, links and folders with people outside the team. Guests you invite are approved automatically.':'Share selected files, notes, links and folders with a guest (View / Comment). An admin must approve the guest.'}</small><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" id="g-new"><span class="material-symbols-outlined">person_add</span> Invite guest</button>${isOwner(o)?'<button class="btn" id="g-mng"><span class="material-symbols-outlined">group</span> Manage guests</button>':''}</div></div>`);
+  $('g-new').onclick=()=>gOpenInvite(id);const m=$('g-mng');if(m)m.onclick=()=>gManage(id);
+}}
+
+/* ---------- 2) GUEST JOIN ---------- */
+let pendingGuest=null;
+{const gp=new URLSearchParams(location.search).get('guest');
+ if(gp){try{localStorage.setItem('mart_guest',gp)}catch{}const u=new URL(location.href);u.searchParams.delete('guest');history.replaceState(null,'',u.pathname+u.search+u.hash)}
+ try{pendingGuest=localStorage.getItem('mart_guest')}catch{}
+ if(pendingGuest){const b=$('invite-banner');b.textContent='You have been invited as a guest. Log in or sign up to continue.';b.style.display='block'}}
+let gInv=null;
+async function runPendingGuest(){
+  const code=pendingGuest;if(!code||!currentUser)return;pendingGuest=null;try{localStorage.removeItem('mart_guest')}catch{}
+  for(let i=0;i<16&&firstOrgLoad;i++)await new Promise(r=>setTimeout(r,250));
+  try{
+    const s=await getDoc(doc(db,'guestInvites',code));if(!s.exists())return toast('This guest invite is invalid or was removed','error');
+    const inv=s.data();if(inv.expiresAt&&Date.now()>inv.expiresAt)return toast('This guest invite has expired. Ask for a new link.','error');
+    gInv={code,...inv};
+    if(organizations.some(o=>o.id===inv.orgId)){switchOrg(inv.orgId);return toast('You are already a member of '+inv.orgName,'success')}
+    let ex=null;try{const d=await getDoc(doc(db,'guestRequests',`${code}_${me()}`));if(d.exists())ex={id:d.id,...d.data()}}catch{}
+    const head=`<div style="text-align:center"><img src="${esc(inv.logoUrl||LOGO)}" style="width:72px;height:72px;border-radius:14px;object-fit:cover"><h3 style="margin:10px 0 2px">${esc(inv.orgName)}</h3><div class="file-meta">Guest invite · ${GR[inv.role]} · ${inv.items.length} item(s)</div>`;
+    if(ex&&ex.status==='pending')return openModal('Guest invite',`${head}<p style="margin-top:12px;color:var(--muted)">Your request is waiting for approval from a Super Admin or Admin.</p></div>`,'<button class="btn btn-primary" onclick="closeModal()">OK</button>');
+    if(ex&&ex.status==='approved'){await gApply(ex,true);return gOpenMine()}
+    const list=inv.items.slice(0,8).map(i=>`<div class="share-row"><span class="material-symbols-outlined" style="font-size:16px">${i.k==='folder'?'folder':i.k==='file'?'description':i.nt==='link'?'link':'sticky_note_2'}</span><span class="em">${esc(i.name)}</span></div>`).join('')+(inv.items.length>8?`<div class="share-row">+${inv.items.length-8} more</div>`:'');
+    openModal('Guest invite',`${head}<p style="margin:12px 0;color:var(--muted)">${inv.needsApproval?'You will get access after a Super Admin or Admin approves your request.':'You can join right away.'}</p><div style="text-align:left">${list}</div></div>`,`<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="gj-btn" onclick="gJoin()">${inv.needsApproval?'Request access':'Join as guest'}</button>`);
+  }catch(e){toast('Could not open invite: '+e.message,'error')}
+}
+window.gJoin=async()=>{
+  if(!gInv)return;const btn=$('gj-btn');btn.disabled=true;btn.textContent='Please wait…';const inv=gInv;
+  try{
+    const data={code:inv.code,orgId:inv.orgId,orgName:inv.orgName,teamName:inv.teamName||'',email:me(),name:currentUser.displayName||'',photo:currentUser.photoURL||'',uid:currentUser.uid,role:inv.role,needsApproval:inv.needsApproval===true,itemIds:inv.itemIds,invitedBy:inv.createdBy,status:inv.needsApproval?'pending':'approved',createdAt:serverTimestamp()};
+    await setDoc(doc(db,'guestRequests',`${inv.code}_${me()}`),data);
+    closeModal();
+    if(inv.needsApproval)toast('Request sent! A Super Admin or Admin will review it.','success');
+    else{await gApply({id:`${inv.code}_${me()}`,...data},true);gOpenMine()}
+  }catch(e){toast('Failed: '+e.message,'error');btn.disabled=false;btn.textContent='Try again'}
+};
+const gDone=new Set();
+async function gApply(req,force){
+  if(gDone.has(req.id)&&!force)return;gDone.add(req.id);
+  try{
+    const inv=(await getDoc(doc(db,'guestInvites',req.code))).data();if(!inv){gDone.delete(req.id);return}
+    for(const it of inv.items){try{
+      const e=me();
+      if(it.k==='file'){const r=doc(db,'fileJoins',`${it.id}_${e}`);if(!(await getDoc(r)).exists())await setDoc(r,{fileId:it.id,driveFileId:it.driveFileId||'',name:it.name,mimeType:it.mimeType||'',size:+it.size||0,thumb:it.thumb||'',ownerEmail:it.ownerEmail||'',email:e,role:req.role,gcode:req.code,createdAt:serverTimestamp()})}
+      else if(it.k==='folder'){const r=doc(db,'folderJoins',`${it.root}_${e}`);if(!(await getDoc(r)).exists())await setDoc(r,{rootId:it.root,folderId:it.id,role:req.role,name:it.name,ownerUid:it.ownerUid||'',ownerEmail:it.ownerEmail||'',email:e,gcode:req.code,createdAt:serverTimestamp()})}
+      else{const r=doc(db,'guestGrants',`${it.id}_${e}`);if(!(await getDoc(r)).exists())await setDoc(r,{noteId:it.id,code:req.code,orgId:req.orgId,role:req.role,email:e,createdAt:serverTimestamp()})}
+    }catch(er){console.warn('guest item',it.name,er)}}
+    if(!force)toast('Your guest access to '+req.orgName+' was approved','success');
+  }catch(e){gDone.delete(req.id);console.warn('gApply',e)}
+}
+
+/* ---------- guest: my shared items ---------- */
+let gMine=[],gMineUn=null,gMineUid='';
+function gWatchMine(){
+  if(!currentUser){if(gMineUn){gMineUn();gMineUn=null;gMineUid=''}return}
+  if(gMineUid===currentUser.uid)return;gMineUn&&gMineUn();gMineUid=currentUser.uid;
+  gMineUn=onSnapshot(query(collection(db,'guestRequests'),where('email','==',me())),s=>{
+    gMine=snapDocs(s);const n=$('nav-guest');if(n)n.style.display=gMine.length?'':'none';
+    gMine.filter(r=>r.status==='approved').forEach(r=>gApply(r));
+  },e=>console.warn('guestMine',e));
+}
+window.gOpenMine=async()=>{
+  openModal('Guest access','<div style="padding:30px;text-align:center;color:var(--muted)">Loading…</div>','<button class="btn" onclick="closeModal()">Close</button>');
+  let reqs=[];try{reqs=snapDocs(await getDocs(query(collection(db,'guestRequests'),where('email','==',me()))))}catch(e){closeModal();return toast('Failed: '+e.message,'error')}
+  const M={};let h='';
+  if(!reqs.length)h='<p style="color:var(--muted)">No guest access yet.</p>';
+  for(const r of reqs){
+    h+=`<div class="step-t">${esc(r.orgName)} · ${GR[r.role]||r.role}${r.status==='pending'?' · waiting for approval':''}</div>`;
+    if(r.status!=='approved')continue;let inv=null;try{inv=(await getDoc(doc(db,'guestInvites',r.code))).data()}catch{}
+    if(!inv){h+='<p style="color:var(--muted)">This invite is no longer available.</p>';continue}
+    inv.items.forEach((it,i)=>{const k=r.code+':'+i;M[k]={it,role:r.role};h+=`<div class="access-row"><span class="material-symbols-outlined" style="color:var(--muted)">${it.k==='folder'?'folder':it.k==='file'?'description':it.nt==='link'?'link':'sticky_note_2'}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(it.name)}</span><button class="btn" data-o="${esc(k)}">Open</button></div>`});
+  }
+  const b=$('modal-body');b.innerHTML=h;
+  b.onclick=async ev=>{const x=ev.target.closest('[data-o]');if(!x)return;const m=M[x.dataset.o];if(m)gOpenItem(m.it,m.role)};
+};
+async function gOpenItem(it,role){
+  try{
+    if(it.k==='file'){const j=await getDoc(doc(db,'fileJoins',`${it.id}_${me()}`));if(!j.exists()||j.data().role==='none')return toast('Access to this file was removed','error');closeModal();
+      openViewer({id:it.id,fileId:it.id,kind:'file',driveFileId:it.driveFileId,name:it.name,mimeType:it.mimeType,size:it.size,thumb:it.thumb,ownerEmail:it.ownerEmail,uid:'-'},j.data().role,it.id)}
+    else if(it.k==='folder'){const j=await getDoc(doc(db,'folderJoins',`${it.root}_${me()}`));if(!j.exists()||j.data().role==='none')return toast('Access to this folder was removed','error');closeModal();pendingExt=it.id;setView('sharedfrom');openPendingExt()}
+    else{
+      const g=await getDoc(doc(db,'guestGrants',`${it.id}_${me()}`));if(!g.exists()||g.data().role==='none')return toast('Access was removed','error');
+      const n=await getDoc(doc(db,'notes',it.id));if(!n.exists())return toast('This item is no longer available','error');
+      const d=n.data(),w=g.data().role==='writer';
+      openModal(d.name||'Note',`${d.ntype==='link'&&d.url?`<p style="margin-bottom:10px"><a href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">${esc(d.url)}</a></p>`:''}<textarea id="gn-c" class="g-in" style="min-height:200px" ${w?'':'readonly'}>${esc(d.content||'')}</textarea>`,`<button class="btn" onclick="closeModal()">Close</button>${w?'<button class="btn btn-primary" id="gn-s">Save</button>':''}`,true);
+      if(w)$('gn-s').onclick=async()=>{try{await updateDoc(doc(db,'notes',it.id),{content:$('gn-c').value,updatedAt:serverTimestamp()});toast('Saved','success')}catch(e){toast('Failed: '+e.message,'error')}};
+    }
+  }catch(e){toast('Failed: '+e.message,'error')}
+}
+
+/* ---------- 3) APPROVAL POP-UP FOR SUPER ADMINS / ADMINS ---------- */
+const P={d:{},later:new Set(),un:{},sig:''};
+function pClear(){Object.values(P.un).forEach(u=>u());P.un={};P.d={};P.sig='';const e=document.getElementById('g-pop');e&&e.remove()}
+function gPop(){
+  const l=[].concat(...Object.values(P.d)).filter(r=>!P.later.has(r._t+r.id)).sort((a,b)=>ts(a)-ts(b));
+  let el=document.getElementById('g-pop');
+  if(!l.length){el&&el.remove();return}
+  const r=l[0],isG=r._t==='g';
+  if(!el){el=document.createElement('div');el.id='g-pop';document.body.appendChild(el)}
+  el.innerHTML=`<div class="gp-c"><div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">${r.photo?`<img src="${esc(r.photo)}" referrerpolicy="no-referrer" style="width:48px;height:48px;border-radius:50%;object-fit:cover">`:'<span class="material-symbols-outlined" style="font-size:44px">account_circle</span>'}<div style="min-width:0"><b>${esc(r.name||r.email)}</b><div class="file-meta" style="overflow:hidden;text-overflow:ellipsis">${esc(r.email)}</div></div></div><div style="margin-bottom:6px"><span class="chip own">${isG?'Guest request':'Join request'}</span> <span class="chip">${esc(r.orgName||'')}</span></div><p style="font-size:14px;margin:8px 0 16px">${isG?`wants to join as a <b>${GR[r.role]||r.role}</b> guest with access to <b>${(r.itemIds||[]).length}</b> item(s). Invited by ${esc(r.invitedBy||'—')}.`:'wants to join this organization as a member.'}</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" data-a="ap" style="flex:1">Approve</button><button class="btn" data-a="rj" style="flex:1;color:var(--error);border-color:var(--error)">Reject</button><button class="btn" data-a="lt">Later</button></div>${l.length>1?`<div class="file-meta" style="text-align:center;margin-top:10px">${l.length-1} more waiting</div>`:''}</div>`;
+  el.onclick=async ev=>{const b=ev.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
+    if(a==='lt'){P.later.add(r._t+r.id);return gPop()}
+    b.disabled=true;try{await gAct(r,a)}catch(e){toast('Failed: '+e.message,'error');b.disabled=false}};
+}
+async function gAct(r,a){
+  const ok=a==='ap';
+  if(r._t==='j'){
+    if(ok){try{await ensureToken()}catch{}await updateDoc(doc(db,'organizations',r.orgId),{members:arrayUnion(r.email)});await deleteDoc(doc(db,'joinRequests',r.id));toast(r.email+' approved and added','success')}
+    else{await deleteDoc(doc(db,'joinRequests',r.id));toast('Request rejected','success')}
+  }else{
+    if(ok){await updateDoc(doc(db,'guestRequests',r.id),{status:'approved',approvedBy:me(),approvedAt:Date.now()});toast(r.email+' approved as guest','success')}
+    else{await deleteDoc(doc(db,'guestRequests',r.id));toast('Guest request rejected','success')}
+  }
+}
+function pSync(){
+  if(!currentUser){if(P.sig)pClear();return}
+  const mine=organizations.filter(o=>isOwner(o)),sig=currentUser.uid+'|'+mine.map(o=>o.id).sort().join(',');
+  if(sig===P.sig)return;pClear();P.sig=sig;
+  mine.forEach(o=>{
+    P.un['j'+o.id]=onSnapshot(query(collection(db,'joinRequests'),where('orgId','==',o.id)),s=>{P.d['j'+o.id]=snapDocs(s).filter(r=>r.status==='pending'&&!(r.auto===true&&o.autoApprove===true)).map(r=>({...r,_t:'j'}));gPop()},e=>console.warn('pop-j',e));
+    P.un['g'+o.id]=onSnapshot(query(collection(db,'guestRequests'),where('orgId','==',o.id)),s=>{P.d['g'+o.id]=snapDocs(s).filter(r=>r.status==='pending').map(r=>({...r,_t:'g'}));gPop()},e=>console.warn('pop-g',e));
+  });
+}
+
+/* ---------- manage guests (admins) ---------- */
+window.gManage=async orgId=>{
+  const o=organizations.find(x=>x.id===orgId);if(!o||!isOwner(o))return;
+  openModal('Guests · '+o.name,'<div style="padding:30px;text-align:center;color:var(--muted)">Loading…</div>','<button class="btn" onclick="closeModal()">Close</button>');
+  let l=[];try{l=snapDocs(await getDocs(query(collection(db,'guestRequests'),where('orgId','==',orgId))))}catch(e){closeModal();return toast('Failed: '+e.message,'error')}
+  const b=$('modal-body');
+  b.innerHTML=l.length?l.sort((x,y)=>ts(y)-ts(x)).map(r=>`<div class="access-row"><span style="flex:1;overflow:hidden;text-overflow:ellipsis">${esc(r.email)}<br><small style="color:var(--muted)">${GR[r.role]||r.role} · ${(r.itemIds||[]).length} item(s) · by ${esc(r.invitedBy||'—')}</small></span><span class="chip ${r.status==='approved'?'own':''}">${r.status}</span>${r.status==='pending'?`<button class="btn btn-primary" data-a="ap" data-i="${esc(r.id)}">Approve</button><button class="btn" data-a="rj" data-i="${esc(r.id)}">Reject</button>`:`<button class="btn" data-a="rv" data-i="${esc(r.id)}" style="color:var(--error);border-color:var(--error)">Revoke</button>`}</div>`).join(''):'<p style="color:var(--muted)">No guests yet.</p>';
+  b.onclick=async ev=>{const x=ev.target.closest('[data-a]');if(!x)return;const r=l.find(z=>z.id===x.dataset.i);if(!r)return;x.disabled=true;
+    try{
+      if(x.dataset.a==='rv'){
+        if(!confirm('Revoke all access for '+r.email+'?')){x.disabled=false;return}
+        const inv=(await getDoc(doc(db,'guestInvites',r.code))).data();
+        for(const it of(inv&&inv.items)||[]){try{
+          if(it.k==='file')await updateDoc(doc(db,'fileJoins',`${it.id}_${r.email}`),{role:'none'});
+          else if(it.k==='folder')await updateDoc(doc(db,'folderJoins',`${it.root}_${r.email}`),{role:'none'});
+          else await updateDoc(doc(db,'guestGrants',`${it.id}_${r.email}`),{role:'none'});
+        }catch(e){console.warn(e)}}
+        await deleteDoc(doc(db,'guestRequests',r.id));toast('Guest access revoked','success');
+      }else await gAct({...r,_t:'g'},x.dataset.a);
+      gManage(orgId);
+    }catch(e){toast('Failed: '+e.message,'error');x.disabled=false}};
+};
+
+/* ---------- boot ---------- */
+setInterval(()=>{try{gWatchMine();pSync();if(pendingGuest&&currentUser)runPendingGuest()}catch(e){console.warn('guest',e)}},1200);
+})();
+
 </script>
 <a id="admin-fab" href="admin.html" title="Open Admin Panel"><span class="material-symbols-outlined">admin_panel_settings</span>Admin Panel</a>
 </body>
