@@ -438,7 +438,7 @@ html.org-premium ::-webkit-scrollbar-thumb{background:linear-gradient(#E3B341,#B
 </div></main>
 
 <div class="mobile-nav">
-<div class="mobile-nav-item" data-v="drive" onclick="setView('drive')"><span class="material-symbols-outlined">home</span>Home</div>
+<div class="mobile-nav-item" data-v="all" onclick="setView('all')"><span class="material-symbols-outlined">home</span>Home</div>
 <div class="mobile-nav-item" id="mn-org" onclick="openOrgList()"><span class="mn-ic"><span class="material-symbols-outlined">corporate_fare</span></span>Orgs</div>
 <div class="mobile-nav-item" onclick="document.getElementById('file-input').click()"><span class="material-symbols-outlined">add_circle</span>Upload</div>
 <div class="mobile-nav-item" onclick="document.getElementById('sidebar').classList.toggle('open')"><span class="material-symbols-outlined">menu</span>Menu</div>
@@ -491,7 +491,7 @@ const COL={file:'files',folder:'folders',note:'notes'};
 const COLORS=['','#F59E0B','#10B981','#3B82F6','#EC4899'];
 const store={files:{p:[],o:[],s:[]},folders:{p:[],o:[],s:[]},notes:{p:[],o:[],s:[]}};
 let sharedBy=[],sharedFrom=[],unsubS=[];
-let currentUser=null,accessToken=null,organizations=[],currentOrgId=null,currentFolderId=null,currentView='drive',searchTerm='',ctxItem=null,accessItem=null,moveItems=[];
+let currentUser=null,accessToken=null,organizations=[],currentOrgId=null,currentFolderId=null,currentView='all',searchTerm='',ctxItem=null,accessItem=null,moveItems=[];
 let unsubP=[],unsubO=[],unsubOrgs=null,unsubR=null,unsubG=null,reqKey='',joinReqs=[],firstOrgLoad=true,tokenPromise=null,pendingPreview=null,pvTimer=null,pendingFolder=new URLSearchParams(location.search).get('folder');
 let sortBy=localStorage.getItem('sort_v3')||'mod',layout=localStorage.getItem('layout')||'grid';
 let selectMode=false,curList=[];const sel=new Set();
@@ -1048,7 +1048,7 @@ function setupListeners(){
     let handled=false;
     if(firstOrgLoad){
       firstOrgLoad=false;let sv=null;try{sv=localStorage.getItem('mart_org')}catch{}
-      if(sv&&organizations.some(o=>o.id===sv)){switchOrg(sv);handled=true}
+      if(sv&&organizations.some(o=>o.id===sv)){switchOrg(sv);setView('all');handled=true}
       setTimeout(runPendingJoin,0);
     }
     if(!handled){
@@ -1646,7 +1646,7 @@ function render(){
       else card.innerHTML=`${chk}${star}<div class="file-name">${esc(x.name)}</div><div class="note-body">${esc(x.content)}</div><div class="file-meta"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">sticky_note_2</span> Note${by}</div>${more}`;
     }
     if(x.tags&&x.tags.length)card.insertAdjacentHTML('beforeend','<div class="share-det" style="flex-direction:row;flex-wrap:wrap;gap:4px">'+x.tags.map(t=>`<span class="chip">#${esc(t)}</span>`).join('')+'</div>');
-    if(searchTerm||currentView==='all')card.insertAdjacentHTML('beforeend',`<div class="file-meta" style="color:var(--blue)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">${x.orgId?'groups':'person'}</span> ${esc(x._ext?'Shared with you':orgName(x.orgId||null))}</div>`);
+    if(searchTerm||currentView==='all')card.insertAdjacentHTML('beforeend',`<div class="file-meta" style="color:var(--blue)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">${x.orgId?'groups':'person'}</span> ${esc(x._ext?((window.__gLabel&&window.__gLabel(x))||'Shared with you'):orgName(x.orgId||null))}</div>`);
     if(currentView==='drive'&&!extMode&&!selectMode){card.draggable=true;card.ondragstart=ev=>{dragK=keyOf(x);ev.dataTransfer.setData('text/plain',dragK)}}
     if(x.kind==='folder'&&currentView==='drive'){card.ondragover=ev=>{if(dragK){ev.preventDefault();card.classList.add('dragover-f')}};card.ondragleave=()=>card.classList.remove('dragover-f');card.ondrop=ev=>{ev.preventDefault();ev.stopPropagation();card.classList.remove('dragover-f');dropMove(x.id)}}
     let lp=null,lpFired=false;
@@ -2741,7 +2741,7 @@ async function runPendingGuest(){
     let ex=null;try{const d=await getDoc(doc(db,'guestRequests',`${code}_${me()}`));if(d.exists())ex={id:d.id,...d.data()}}catch{}
     const head=`<div style="text-align:center"><img src="${esc(inv.logoUrl||LOGO)}" style="width:72px;height:72px;border-radius:14px;object-fit:cover"><h3 style="margin:10px 0 2px">${esc(inv.orgName)}${inv.teamName?`<small class="tm-chip">${esc(inv.teamName)}</small>`:''}</h3><div class="file-meta">Guest invite · ${GR[inv.role]} · ${inv.items.length} item(s)</div>`;
     if(ex&&ex.status==='pending')return openModal('Guest invite',`${head}<p style="margin-top:12px;color:var(--muted)">Your request is waiting for approval from a Super Admin or Admin.</p></div>`,'<button class="btn btn-primary" onclick="closeModal()">OK</button>');
-    if(ex&&ex.status==='approved'){await gApply(ex,true);return gOpenMine()}
+    if(ex&&ex.status==='approved'){await gApply(ex,true);return gSwitch(inv.orgId,{name:inv.orgName,teamName:inv.teamName,logoUrl:inv.logoUrl})}
     const list=inv.items.slice(0,8).map(i=>`<div class="share-row"><span class="material-symbols-outlined" style="font-size:16px">${i.k==='folder'?'folder':i.k==='file'?'description':i.nt==='link'?'link':'sticky_note_2'}</span><span class="em">${esc(i.name)}</span></div>`).join('')+(inv.items.length>8?`<div class="share-row">+${inv.items.length-8} more</div>`:'');
     openModal('Guest invite',`${head}<p style="margin:12px 0;color:var(--muted)">${inv.needsApproval?'You will get access after a Super Admin or Admin approves your request.':'You can join right away.'}</p><div style="text-align:left">${list}</div></div>`,`<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="gj-btn" onclick="gJoin()">${inv.needsApproval?'Request access':'Join as guest'}</button>`);
   }catch(e){toast('Could not open invite: '+e.message,'error')}
@@ -2753,7 +2753,7 @@ window.gJoin=async()=>{
     await setDoc(doc(db,'guestRequests',`${inv.code}_${me()}`),data);
     closeModal();
     if(inv.needsApproval)toast('Request sent! A Super Admin or Admin will review it.','success');
-    else{await gApply({id:`${inv.code}_${me()}`,...data},true);gOpenMine()}
+    else{await gApply({id:`${inv.code}_${me()}`,...data},true);gSwitch(inv.orgId,{name:inv.orgName,teamName:inv.teamName,logoUrl:inv.logoUrl})}
   }catch(e){toast('Failed: '+e.message,'error');btn.disabled=false;btn.textContent='Try again'}
 };
 const gDone=new Set();
@@ -3119,6 +3119,298 @@ async function gpApply(){
  }}
 
 
+/*GUEST-ORG-PATCH v1 : guest org in the org list + admins can add guests directly*/
+let gv=null,gKeep=false,gGr={},gGrUn=null,gGrUid='',gSig='';const gTmp={},gLogo={},gNoteC={};
+
+/* ---------- A) guest organizations (built from approved guest requests) ---------- */
+function gOrgs(){
+  const m=new Map(),now=Date.now();
+  gMine.forEach(r=>{
+    if(r.status!=='approved'||organizations.some(o=>o.id===r.orgId))return;
+    const lg=r.logoUrl||gLogo[r.code]||null,c=m.get(r.orgId);
+    if(!c)m.set(r.orgId,{id:r.orgId,name:r.orgName||'Organization',teamName:r.teamName||'',logoUrl:lg,role:r.role});
+    else{if(!c.logoUrl)c.logoUrl=lg;if((RANK[r.role]||0)>(RANK[c.role]||0))c.role=r.role}
+  });
+  Object.values(gTmp).forEach(t=>{if(now-t.t<15000&&!m.has(t.id)&&!organizations.some(o=>o.id===t.id))m.set(t.id,t)});
+  return[...m.values()].sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+}
+const gRowHTML=(g,modal)=>`<div class="nav-item ${gv===g.id?'active':''}" data-gorg="${esc(g.id)}" title="Guest access" onclick="${modal?'closeModal();':''}gSwitch('${esc(g.id)}')"><img src="${esc(g.logoUrl||LOGO)}" style="width:${modal?24:20}px;height:${modal?24:20}px;border-radius:${modal?6:4}px;object-fit:cover"><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(g.name)}<small class="tm-chip">Guest</small></span></div>`;
+
+const _sw=window.switchOrg;
+window.switchOrg=function(){gv=null;return _sw.apply(this,arguments)};
+window.gSwitch=function(id,info){
+  if(info)gTmp[id]={id,name:info.name||'Organization',teamName:info.teamName||'',logoUrl:info.logoUrl||null,role:'reader',t:Date.now()};
+  if(!gOrgs().some(x=>x.id===id))return toast('Guest access not found','error');
+  const sb=document.getElementById('sidebar');sb&&sb.classList.remove('open');
+  _sw(null);gv=id;gKeep=true;updateBrand();renderOrgSidebar();setView('sharedfrom');
+};
+{const _s=window.setView;
+ window.setView=function(v){
+  if(gv&&(v!=='sharedfrom'||!gKeep)){gv=null;try{updateBrand();renderOrgSidebar()}catch(e){}}
+  gKeep=false;return _s.apply(this,arguments);
+ }}
+$('breadcrumbs').addEventListener('click',e=>{
+  const c=e.target.closest('[data-f]');
+  if(gv&&extMode&&c&&!c.dataset.f){e.stopImmediatePropagation();gKeep=true;setView('sharedfrom')}
+},true);
+
+{const _r=renderOrgSidebar;
+ renderOrgSidebar=function(){
+  _r.apply(this,arguments);
+  try{
+    const c=$('org-list-container'),gs=gOrgs();if(!c)return;
+    if(gv)c.querySelectorAll('.nav-item.active').forEach(e=>e.classList.remove('active'));
+    if(gs.length&&!c.querySelector('[data-gorg]')&&c.lastElementChild)c.lastElementChild.insertAdjacentHTML('beforebegin',gs.map(g=>gRowHTML(g)).join(''));
+  }catch(e){console.warn('guest org list',e)}
+ }}
+{const _o=window.openOrgList;
+ window.openOrgList=function(){
+  _o.apply(this,arguments);
+  try{
+    const gs=gOrgs(),b=$('modal-body');if(!gs.length||!b||!b.lastElementChild)return;
+    if(gv)b.querySelectorAll('.nav-item.active').forEach(e=>e.classList.remove('active'));
+    b.lastElementChild.insertAdjacentHTML('beforebegin',gs.map(g=>gRowHTML(g,1)).join(''));
+  }catch(e){console.warn(e)}
+ }}
+{const _u=updateBrand;
+ updateBrand=function(){
+  _u.apply(this,arguments);
+  try{if(gv){const g=gOrgs().find(x=>x.id===gv);if(g){$('org-name-display').textContent=g.name;$('org-sub').textContent='Guest access';$('org-logo-display').src=g.logoUrl||LOGO}}}catch(e){}
+ }}
+{const _r=render;
+ render=function(){
+  _r.apply(this,arguments);
+  try{
+    if(!gv)return;
+    document.querySelectorAll('[data-v]').forEach(e=>e.classList.remove('active'));
+    if(extMode&&currentView==='drive'){const g=gOrgs().find(x=>x.id===gv),t=$('page-title');if(g&&t)t.innerHTML=esc(g.name)+'<small class="tm-chip">Guest</small>'}
+  }catch(e){}
+ }}
+{const _b=renderBreadcrumbs;
+ renderBreadcrumbs=function(){
+  _b.apply(this,arguments);
+  try{if(gv&&extMode){const g=gOrgs().find(x=>x.id===gv),s=$('breadcrumbs').querySelector('span[data-f=""]');if(g&&s)s.textContent=g.name}}catch(e){}
+ }}
+
+/* ---------- B) inside the guest organization: everything this guest can access ---------- */
+{const _s=renderShares;renderShares=function(){return(gv&&currentView==='sharedfrom')?gRoot():_s.apply(this,arguments)}}
+function gRoot(){
+  const g=gOrgs().find(z=>z.id===gv);if(!g)return;
+  const sIds=new Set(store.folders.s.map(f=>f.id)),top=x=>!x.folderId||!sIds.has(x.folderId),co={},seen=new Set(),list=[];
+  gMine.forEach(r=>{co[r.code]=r.orgId});
+  topExt().filter(f=>f.orgId===gv).forEach(f=>list.push({x:f,t:'folder'}));
+  [['files','file'],['notes','note']].forEach(([c,k])=>store[c].s.forEach(x=>{
+    if(x.trashed||x.orgId!==gv)return;seen.add(x.id);
+    if(top(x))list.push({x:{...x,kind:k,_ext:true},t:k});
+  }));
+  fileJoins.forEach(j=>{if(j.role==='none'||co[j.gcode]!==gv||seen.has(j.fileId))return;seen.add(j.fileId);list.push({x:{...j,kind:'sfrom',by:j.ownerEmail},t:'sfrom'})});
+  Object.values(gGr).forEach(r=>{
+    if(r.orgId!==gv||r.role==='none'||seen.has(r.noteId))return;
+    const n=gNoteC[r.noteId];
+    if(n===undefined){
+      gNoteC[r.noteId]=null;
+      getDoc(doc(db,'notes',r.noteId)).then(s=>{gNoteC[r.noteId]=s.exists()?{id:s.id,...s.data()}:false;if(gv&&currentView==='sharedfrom'&&!extMode)render()}).catch(()=>{gNoteC[r.noteId]=false});
+      return;
+    }
+    if(n)list.push({x:{...n,kind:'note',_gn:r.role},t:'note'});
+  });
+  list.sort((a,b)=>(b.t==='folder')-(a.t==='folder')||String(a.x.name||'').localeCompare(String(b.x.name||'')));
+  curList=list.map(i=>i.x);
+  $('bulkbar').style.display='none';$('dropzone').style.display='none';$('storage-card').style.display='none';
+  $('page-title').innerHTML=esc(g.name)+'<small class="tm-chip">Guest</small>';
+  $('page-meta').textContent=list.length+(list.length===1?' item':' items')+' · Guest access';
+  const grid=$('files-grid');grid.className='files-grid '+(layout==='list'?'list':'');grid.innerHTML='';
+  if(!list.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Nothing has been shared with you in this organization yet.</div>';return}
+  list.forEach(({x,t})=>{
+    const card=document.createElement('div');card.className='file-card';
+    const chip=r=>`<div class="share-det"><div class="share-row"><span class="chip">${roleLabel(r)}</span><span>${t==='folder'?'Folder':t==='note'?(x.ntype==='link'?'Link':'Note'):fmtSize(x.size)}</span></div></div>`;
+    if(t==='folder'){
+      card.innerHTML=`<div class="file-icon-wrap"><span class="material-symbols-outlined" style="color:#F59E0B">folder_shared</span></div><div class="file-name" title="${esc(x.name)}">${esc(x.name)}</div><div class="file-meta">From: ${esc(x.by||'—')}</div>${chip(x.role)}${MORE}`;
+      card.onclick=()=>openFolder(x.id);
+    }else if(t==='file'||t==='sfrom'){
+      const r=t==='sfrom'?x.role:roleOf(x);
+      card.innerHTML=`<div class="file-icon-wrap${(x.thumb||(x.mimeType||'').includes('image'))?' pv':''}">${fileIcon(x.mimeType,x.driveFileId,x.thumb)}</div><div class="file-name" title="${esc(x.name)}">${esc(x.name)}</div><div class="file-meta">From: ${esc(x.ownerEmail||x.by||'—')}</div>${chip(r)}${MORE}`;
+      card.onclick=()=>previewFile(x);
+    }else{
+      const r=x._gn||roleOf(x),lk=x.ntype==='link';
+      card.classList.add('note-card');if(x.color)card.style.setProperty('--c',x.color);
+      card.innerHTML=`<div class="file-name" title="${esc(x.name)}">${esc(x.name)}</div><div class="note-body">${esc(lk?x.url:x.content)}</div><div class="file-meta"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">${lk?'link':'sticky_note_2'}</span> ${lk?'Link':'Note'} · ${roleLabel(r)}</div>${x._gn?'':MORE}`;
+      card.onclick=()=>x._gn?gOpenItem({k:'note',id:x.id,name:x.name,nt:x.ntype||'note'},x._gn):openNote(x);
+    }
+    const mo=card.querySelector('.more');
+    if(mo){mo.onclick=e=>{e.stopPropagation();openContextMenu(e,x)};card.addEventListener('contextmenu',e=>{e.preventDefault();openContextMenu(e,x)})}
+    grid.appendChild(card);
+  });
+}
+function gWatchGr(){
+  if(!currentUser){if(gGrUn){gGrUn();gGrUn=null;gGrUid='';gGr={}}return}
+  if(gGrUid===currentUser.uid)return;gGrUn&&gGrUn();gGrUid=currentUser.uid;
+  gGrUn=onSnapshot(query(collection(db,'guestGrants'),where('email','==',me())),s=>{
+    gGr={};snapDocs(s).forEach(x=>{gGr[x.noteId]=x});
+    if(gv&&currentView==='sharedfrom'&&!extMode)render();
+  },e=>console.warn('guestGrants',e));
+}
+setInterval(()=>{try{
+  if(!currentUser){gv=null;return}
+  gWatchGr();
+  gMine.forEach(r=>{if(r.status==='approved'&&!r.logoUrl&&gLogo[r.code]===undefined){gLogo[r.code]=null;getDoc(doc(db,'guestInvites',r.code)).then(s=>{gLogo[r.code]=(s.exists()&&s.data().logoUrl)||'';gSig=''}).catch(()=>{})}});
+  const gs=gOrgs(),sig=gs.map(g=>g.id+'|'+g.name+'|'+g.logoUrl).join(';')+'#'+organizations.length+'#'+(gv||'');
+  if(sig!==gSig){gSig=sig;renderOrgSidebar();if(gv)updateBrand()}
+  if(gv&&!gs.some(g=>g.id===gv)){gv=null;toast('Your guest access to this organization was removed','error');switchOrg(null)}
+}catch(e){console.warn('guest org',e)}},1200);
+
+/* ---------- C) Super Admin / Admin: add a guest directly (no invite link, no login needed) ---------- */
+async function gBuild(){
+  const D=G.data,items=[],roots=[];let bad=0;
+  for(const k of G.sel){
+    const i=k.indexOf(':'),kind=k.slice(0,i),id=k.slice(i+1);
+    if(kind==='file'){const x=D.files.find(f=>f.id===id);if(x)items.push({k:'file',id,name:x.name||'',driveFileId:x.driveFileId||'',mimeType:x.mimeType||'',size:+x.size||0,thumb:x.thumb||'',ownerEmail:x.by||''})}
+    else if(kind==='note'){const x=D.notes.find(f=>f.id===id);if(x)items.push({k:'note',id,name:x.name||'',nt:x.ntype||'note'})}
+    else{
+      const x=D.folders.find(f=>f.id===id);if(!x)continue;const root=x.linkRoot||x.id;
+      const st=[x,...gDesc(x)].filter(y=>!y.linkRoot);
+      const res=await Promise.all(st.map(y=>updateDoc(doc(db,y._c,y.id),{linkRoot:root}).then(()=>1,()=>0)));bad+=res.filter(v=>!v).length;
+      items.push({k:'folder',id,name:x.name||'',root,ownerUid:x.uid||'',ownerEmail:x.by||''});if(!roots.includes(root))roots.push(root);
+    }
+  }
+  if(!items.length)throw new Error('Nothing to share');
+  return{items,roots,bad};
+}
+const _oi=window.gOpenInvite;
+window.gOpenInvite=function(){G.direct=false;return _oi.apply(this,arguments)};
+window.gOpenDirect=async function(id){
+  const o=organizations.find(x=>x.id===id);
+  if(!o||!isOwner(o))return toast('Only Super Admins and Admins can add guests directly','error');
+  G.direct=true;G.emails='';await _oi(id);
+  const t=$('modal-title');if(t)t.textContent='Add guest directly · '+o.name;
+};
+{const _2=window.gStep2;
+ window.gStep2=function(){
+  _2.apply(this,arguments);
+  if(!G.direct||!$('g-role')||$('gd-em'))return;
+  const b=$('modal-body'),p=b.querySelector('p');
+  (p?p.insertAdjacentHTML.bind(p,'afterend'):b.insertAdjacentHTML.bind(b,'afterbegin'))('<div class="field"><label>Guest email(s)</label><textarea id="gd-em" class="sm" placeholder="guest1@gmail.com, guest2@gmail.com"></textarea><small>Use the Google account the guest signs in with. Separate several emails with commas or new lines.</small></div>');
+  const ta=$('gd-em');ta.value=G.emails||'';ta.oninput=()=>{G.emails=ta.value};
+  const ex=$('g-exp');if(ex&&ex.closest('.field'))ex.closest('.field').remove();
+  const st=b.querySelector('.aa-state');
+  if(st)st.innerHTML='<b>Direct access.</b> The guest gets access immediately. No invite link and no sign-in is needed first. This organization appears in their organization list the next time they open the app.';
+  const go=$('g-go');if(go){go.textContent='Add guest';go.onclick=gDirectCreate}
+ }}
+async function gDirectCreate(){
+  const btn=$('g-go'),o=G.org,role=$('g-role').value;
+  const emails=[...new Set(String($('gd-em').value||'').toLowerCase().split(/[\s,;]+/).filter(Boolean))];
+  if(!emails.length)return toast('Enter at least one email','error');
+  const badE=emails.find(e=>!EMAIL_RE.test(e));if(badE)return toast('Invalid email: '+badE,'error');
+  if(emails.length>20)return toast('Add at most 20 guests at once','error');
+  const mem=(o.members||[]).map(x=>String(x).toLowerCase()),inOrg=emails.find(e=>mem.includes(e)||e===me());
+  if(inOrg)return toast(inOrg+' is already a member of this organization','error');
+  btn.disabled=true;btn.textContent='Adding…';
+  let code='';
+  try{
+    const{items,roots,bad}=await gBuild();code=genCode();
+    const ids=items.map(i=>i.id);
+    await setDoc(doc(db,'guestInvites',code),{orgId:o.id,orgName:o.name,teamName:o.teamName||'',logoUrl:o.logoUrl||null,createdBy:me(),creatorRole:roleOfOrg(o),role,needsApproval:false,direct:true,items,itemIds:ids,roots,expiresAt:null,createdAt:serverTimestamp()});
+    const ok=[],fail=[];let err='';
+    for(const email of emails){
+      try{
+        await setDoc(doc(db,'guestRequests',code+'_'+email),{code,orgId:o.id,orgName:o.name,teamName:o.teamName||'',logoUrl:o.logoUrl||null,email,name:'',photo:'',uid:'',role,needsApproval:false,itemIds:ids,invitedBy:me(),addedBy:me(),direct:true,status:'approved',approvedBy:me(),approvedAt:Date.now(),createdAt:serverTimestamp()});
+        const r={code,orgId:o.id,email};
+        for(const it of items)await setItemRole(r,it,role);
+        ok.push(email);
+      }catch(e){console.warn('direct guest',email,e);err=err||e.message;fail.push(email)}
+    }
+    if(!ok.length){await deleteDoc(doc(db,'guestInvites',code)).catch(()=>{});throw new Error(err||'Could not add guests')}
+    $('modal-body').innerHTML=`<p style="margin-bottom:10px"><b>${ok.length}</b> guest(s) added · <b>${items.length}</b> item(s) · <b>${GR[role]}</b></p>${ok.map(e=>`<div class="share-row"><span class="material-symbols-outlined" style="font-size:16px">check_circle</span><span class="em">${esc(e)}</span></div>`).join('')}${fail.length?`<p style="color:var(--error);font-size:13px;margin-top:8px">Failed: ${fail.map(esc).join(', ')}</p>`:''}${bad?`<p style="color:var(--error);font-size:13px">${bad} inner item(s) could not be prepared (uploaded by others).</p>`:''}<small style="color:var(--muted);display:block;margin-top:10px">No invite link is needed. When they sign in with this email, <b>${esc(o.name)}</b> appears in their organization list with everything you shared. Manage them under “Manage guests”.</small>`;
+    $('modal-foot').innerHTML=`<button class="btn" onclick="closeModal()">Close</button><button class="btn btn-primary" onclick="gManage('${esc(o.id)}')">Manage guests</button>`;
+  }catch(e){toast('Failed: '+e.message,'error');btn.disabled=false;btn.textContent='Add guest'}
+}
+{const _m=window.openMembersModal;
+ window.openMembersModal=async function(id){
+  await _m.apply(this,arguments);
+  try{
+    const o=organizations.find(x=>x.id===id),b=$('modal-body');
+    if(!o||!isOwner(o)||!b||b.querySelector('#g-direct'))return;
+    const n=b.querySelector('#g-new');if(!n)return;
+    n.insertAdjacentHTML('afterend','<button class="btn" id="g-direct"><span class="material-symbols-outlined">how_to_reg</span> Add guest directly</button>');
+    $('g-direct').onclick=()=>gOpenDirect(id);
+  }catch(e){console.warn('direct btn',e)}
+ }}
+{const _g=window.gManage;
+ window.gManage=async function(orgId){
+  await _g.apply(this,arguments);
+  try{
+    const f=$('modal-foot'),t=$('modal-title');
+    if(!f||!t||!/^Guests/.test(t.textContent)||f.querySelector('#gm-direct'))return;
+    f.insertAdjacentHTML('afterbegin','<button class="btn btn-primary" id="gm-direct"><span class="material-symbols-outlined">how_to_reg</span> Add guest</button>');
+    $('gm-direct').onclick=()=>gOpenDirect(orgId);
+  }catch(e){console.warn(e)}
+ }}
+/*END-GUEST-ORG-PATCH v1*/
+/*ALLFILES-PATCH v1 : All files = default section, shows everything the user can reach*/
+/* A) live listeners for every OTHER organization (the current one is already live) */
+const gAl={un:{},d:{},sig:''};let gGrSig='';
+function gAlMerge(){
+  const r={files:[],folders:[],notes:[]};
+  Object.values(gAl.d).forEach(o=>['files','folders','notes'].forEach(k=>r[k].push(...(o[k]||[]))));
+  gRes=r;if(currentView==='all'||searchTerm)render();
+}
+function gAlSync(){
+  const want=currentUser?organizations.map(o=>o.id).filter(i=>i!==currentOrgId):[];
+  const sig=(currentUser?currentUser.uid:'')+'|'+want.join(',');
+  if(sig===gAl.sig)return;gAl.sig=sig;
+  Object.keys(gAl.un).forEach(id=>{if(!want.includes(id)){gAl.un[id].forEach(u=>u());delete gAl.un[id];delete gAl.d[id]}});
+  want.forEach(id=>{
+    if(gAl.un[id])return;gAl.d[id]={};
+    gAl.un[id]=['files','folders','notes'].map(k=>onSnapshot(query(collection(db,k),where('orgId','==',id)),s=>{if(gAl.d[id]){gAl.d[id][k]=snapDocs(s);gAlMerge()}},e=>console.warn('all-'+k,e)));
+  });
+  gAlMerge();
+}
+gFetch=async function(){};   /* replaced by the live listeners above */
+
+/* B) All files list: personal + all organizations + shared + guest access */
+function allItems2(){
+  const m=new Map();
+  [['folders','folder'],['files','file'],['notes','note']].forEach(([k,kind])=>{
+    [...store[k].p,...store[k].o,...(gRes[k]||[])].forEach(x=>{if(!x.trashed)m.set(kind+x.id,{...x,kind})});
+    store[k].s.forEach(x=>{if(!x.trashed&&!m.has(kind+x.id))m.set(kind+x.id,{...x,kind,_ext:true})});
+  });
+  const co={};gMine.forEach(r=>{co[r.code]=r.orgId});
+  /* files shared one by one (shares / file links / guest access) whose document cannot be read directly */
+  const jm=new Map();
+  sharedFrom.forEach(s=>{if(s.fileId&&s.role!=='none')jm.set(s.fileId,s)});
+  fileJoins.forEach(j=>{if(j.role==='none')return;const c=jm.get(j.fileId);if(!c||(RANK[j.role]||0)>(RANK[c.role]||0))jm.set(j.fileId,j)});
+  jm.forEach((j,fid)=>{
+    if(m.has('file'+fid))return;
+    m.set('file'+fid,{id:fid,fileId:fid,kind:'file',uid:'-',_ext:true,_jrole:j.role||'reader',_gorg:co[j.gcode]||null,name:j.name||'',driveFileId:j.driveFileId,mimeType:j.mimeType||'',size:+j.size||0,thumb:j.thumb||'',by:j.ownerEmail||'',createdAt:j.createdAt});
+  });
+  /* notes / links given to a guest one by one */
+  Object.values(gGr).forEach(r=>{
+    if(r.role==='none'||m.has('note'+r.noteId))return;
+    const n=gNoteC[r.noteId];
+    if(n===undefined){
+      gNoteC[r.noteId]=null;
+      getDoc(doc(db,'notes',r.noteId)).then(s=>{gNoteC[r.noteId]=s.exists()?{id:s.id,...s.data()}:false;if(currentView==='all'||searchTerm)render()}).catch(()=>{gNoteC[r.noteId]=false});
+      return;
+    }
+    if(n&&!n.trashed)m.set('note'+r.noteId,{...n,kind:'note',_ext:true,_gn:r.role});
+  });
+  const l=[...m.values()];
+  l.sort(sortBy==='order'?ordCmp:sortBy==='date'?(a,b)=>ts(b)-ts(a):sortBy==='size'?(a,b)=>(b.size||0)-(a.size||0):sortBy==='name'?(a,b)=>String(a.name).localeCompare(String(b.name)):(a,b)=>tm(b)-tm(a));
+  return l;
+}
+window.__allItems=allItems2;
+window.__gLabel=x=>{
+  const id=x.orgId||x._gorg,g=id&&gOrgs().find(o=>o.id===id);
+  return g?'Guest · '+g.name+(g.teamName?' · '+g.teamName:''):null;
+};
+{const _p=window.previewFile;window.previewFile=x=>(x&&x._jrole)?openViewer(x,x._jrole,x.fileId||x.id):_p(x)}
+{const _n=openNote;openNote=function(x){return(x&&x._gn)?gOpenItem({k:'note',id:x.id,name:x.name,nt:x.ntype||'note'},x._gn):_n.apply(this,arguments)}}
+setInterval(()=>{try{
+  gAlSync();
+  const s=Object.values(gGr).map(r=>r.noteId+r.role).join(',');
+  if(s!==gGrSig){gGrSig=s;if(currentView==='all')render()}
+}catch(e){console.warn('all files',e)}},1200);
+/*END-ALLFILES-PATCH v1*/
 /*END-PATCH-v3-index*/
 })();
 
