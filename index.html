@@ -388,7 +388,7 @@ html.org-premium ::-webkit-scrollbar-thumb{background:linear-gradient(#E3B341,#B
 <li><div class="nav-item" data-v="starred" onclick="setView('starred')"><span class="material-symbols-outlined">star</span> Starred</div></li>
 <li><div class="nav-item" data-v="sharedby" onclick="setView('sharedby')"><span class="material-symbols-outlined">person_add</span> Shared by me</div></li>
 <li><div class="nav-item" data-v="sharedfrom" onclick="setView('sharedfrom')"><span class="material-symbols-outlined">folder_shared</span> Shared from</div></li>
-<li id="nav-guest"><div class="nav-item" onclick="document.getElementById('sidebar').classList.remove('open');gOpenMine()"><span class="material-symbols-outlined">group_add</span> Guest access</div></li>
+<li id="nav-guest" style="display:none"><div class="nav-item" onclick="document.getElementById('sidebar').classList.remove('open');gOpenMine()"><span class="material-symbols-outlined">group_add</span> Guest access</div></li>
 <li id="nav-requests" style="display:none"><div class="nav-item" data-v="requests" onclick="setView('requests')"><span class="material-symbols-outlined">how_to_reg</span> Join Requests <span class="badge" id="req-badge" style="display:none"></span></div></li>
 <li><div class="nav-item" data-v="trash" onclick="setView('trash')"><span class="material-symbols-outlined">delete</span> Trash</div></li>
 <li><div class="nav-item" onclick="openThemeModal()"><span class="material-symbols-outlined">palette</span> Theme</div></li>
@@ -491,7 +491,7 @@ const COL={file:'files',folder:'folders',note:'notes'};
 const COLORS=['','#F59E0B','#10B981','#3B82F6','#EC4899'];
 const store={files:{p:[],o:[],s:[]},folders:{p:[],o:[],s:[]},notes:{p:[],o:[],s:[]}};
 let sharedBy=[],sharedFrom=[],unsubS=[];
-let currentUser=null,accessToken=null,organizations=[],currentOrgId=null,currentFolderId=null,currentView='all',searchTerm='',ctxItem=null,accessItem=null,moveItems=[];
+let currentUser=null,accessToken=null,organizations=[],currentOrgId=null,currentFolderId=null,currentView='drive',searchTerm='',ctxItem=null,accessItem=null,moveItems=[];
 let unsubP=[],unsubO=[],unsubOrgs=null,unsubR=null,unsubG=null,reqKey='',joinReqs=[],firstOrgLoad=true,tokenPromise=null,pendingPreview=null,pvTimer=null,pendingFolder=new URLSearchParams(location.search).get('folder');
 let sortBy=localStorage.getItem('sort_v3')||'mod',layout=localStorage.getItem('layout')||'grid';
 let selectMode=false,curList=[];const sel=new Set();
@@ -1596,7 +1596,7 @@ function render(){
   const o0=myOrg(),showReq=!!(o0&&isOwner(o0));
   $('nav-requests').style.display=showReq?'':'none';$('nav-act').style.display=showReq?'':'none';
   const rb=$('req-badge');rb.textContent=joinReqs.length;rb.style.display=(showReq&&joinReqs.length)?'inline-block':'none';
-  if(currentView==='requests'&&!showReq)currentView='all';
+  if(currentView==='requests'&&!showReq)currentView='drive';
   renderBreadcrumbs();
   document.querySelectorAll('[data-v]').forEach(e=>e.classList.toggle('active',e.dataset.v===currentView));
   const special=['sharedby','sharedfrom','requests'].includes(currentView);
@@ -2777,7 +2777,7 @@ function gWatchMine(){
   if(!currentUser){if(gMineUn){gMineUn();gMineUn=null;gMineUid=''}return}
   if(gMineUid===currentUser.uid)return;gMineUn&&gMineUn();gMineUid=currentUser.uid;
   gMineUn=onSnapshot(query(collection(db,'guestRequests'),where('email','==',me())),s=>{
-    gMine=snapDocs(s);const n=$('nav-guest');if(n)n.style.display='';
+    gMine=snapDocs(s);const n=$('nav-guest');if(n)n.style.display=gMine.length?'':'none';
     gMine.filter(r=>r.status==='approved').forEach(r=>gApply(r));
   },e=>console.warn('guestMine',e));
 }
@@ -2876,16 +2876,13 @@ setInterval(()=>{try{gWatchMine();pSync();if(pendingGuest&&currentUser)runPendin
 /* ---------- 1) ALL FILES (everything except Trash, newest first) ---------- */
 TITLES.all='All files';
 EMPTY.all=['apps','Nothing here yet','Create or upload something and it will show up here.'];
-let guestAllCache=[],guestOrgFilter=null,guestOrgMeta=[],guestOrgUnsub=null,directGuestEmail='';
 function allItems(){
   const m=new Map();
   [['folders','folder'],['files','file'],['notes','note']].forEach(([k,kind])=>{
     [...store[k].p,...store[k].o,...(gRes[k]||[])].forEach(x=>{if(!x.trashed)m.set(kind+x.id,{...x,kind})});
     store[k].s.forEach(x=>{if(!x.trashed&&!m.has(kind+x.id))m.set(kind+x.id,{...x,kind,_ext:true})});
   });
-  guestAllCache.forEach(x=>{if(!x.trashed)m.set(x.kind+x.id,{...m.get(x.kind+x.id),...x})});
-  let l=[...m.values()];
-  if(guestOrgFilter)l=l.filter(x=>x._guestOrgId===guestOrgFilter);
+  const l=[...m.values()];
   l.sort(sortBy==='order'?ordCmp:sortBy==='date'?(a,b)=>ts(b)-ts(a):sortBy==='size'?(a,b)=>(b.size||0)-(a.size||0):sortBy==='name'?(a,b)=>String(a.name).localeCompare(String(b.name)):(a,b)=>tm(b)-tm(a));
   return l;
 }
@@ -3121,157 +3118,6 @@ async function gpApply(){
   }catch(e){console.warn('guest profile btn',e)}
  }}
 
-
-
-/* ---------- REQUESTED PATCH: All files + guest organizations + direct guest add ---------- */
-async function refreshGuestAll(reqs){
-  if(!currentUser)return;
-  reqs=(reqs||gMine||[]).filter(r=>r.status==='approved');
-  const out=[],seen=new Set();
-  for(const r of reqs){
-    let inv=null;
-    try{const s=await getDoc(doc(db,'guestInvites',r.code));if(s.exists())inv=s.data()}catch{}
-    if(!inv)continue;
-    const items=[...(inv.items||[]),...(r.extraItems||[]).filter(x=>x.role!=='none')];
-    for(const it of items){
-      const col=it.k==='file'?'files':it.k==='folder'?'folders':'notes',kind=it.k==='file'?'file':it.k==='folder'?'folder':'note';
-      const key=kind+':'+it.id;
-      if(seen.has(key))continue;
-      try{
-        const s=await getDoc(doc(db,col,it.id));
-        if(s.exists()&&!s.data().trashed){
-          out.push({...s.data(),id:s.id,kind,_guest:true,_guestOrgId:r.orgId,_guestOrgName:r.orgName||inv.orgName||'Guest organization'});
-          seen.add(key);
-        }
-      }catch{}
-    }
-    // Include items inside shared folder roots when Firestore permissions permit it.
-    for(const it of items.filter(x=>x.k==='folder'&&x.root)){
-      for(const col of ['folders','files','notes']){
-        try{
-          const snap=await getDocs(query(collection(db,col),where('linkRoot','==',it.root)));
-          snapDocs(snap).filter(x=>!x.trashed).forEach(x=>{
-            const kind=col==='folders'?'folder':col==='files'?'file':'note',key=kind+':'+x.id;
-            if(!seen.has(key)){out.push({...x,kind,_guest:true,_guestOrgId:r.orgId,_guestOrgName:r.orgName||inv.orgName||'Guest organization'});seen.add(key)}
-          });
-        }catch{}
-      }
-    }
-  }
-  guestAllCache=out;
-  guestOrgMeta=[];
-  for(const r of reqs){
-    if(!guestOrgMeta.some(x=>x.id===r.orgId)){
-      let inv={};try{const s=await getDoc(doc(db,'guestInvites',r.code));if(s.exists())inv=s.data()}catch{}
-      guestOrgMeta.push({id:r.orgId,name:r.orgName||inv.orgName||'Guest organization',teamName:r.teamName||inv.teamName||'',logoUrl:inv.logoUrl||null});
-    }
-  }
-  try{renderOrgSidebar()}catch{}
-  if(currentView==='all')try{render()}catch{}
-}
-
-{
-  const _rgs=renderOrgSidebar;
-  renderOrgSidebar=function(){
-    _rgs.apply(this,arguments);
-    const box=$('org-list-container');if(!box)return;
-    box.querySelectorAll('[data-guest-org]').forEach(n=>n.remove());
-    guestOrgMeta.forEach(o=>{
-      const row=document.createElement('div');
-      row.className='nav-item'+(guestOrgFilter===o.id?' active':'');
-      row.dataset.guestOrg=o.id;
-      row.style.cssText='padding-left:24px';
-      row.innerHTML=`<span class="material-symbols-outlined">group_add</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(o.name)} <small style="display:block;color:var(--muted);font-size:10px">Guest access${o.teamName?' · '+esc(o.teamName):''}</small></span>`;
-      row.onclick=()=>{guestOrgFilter=o.id;currentOrgId=null;currentFolderId=null;currentView='all';sel.clear();selectMode=false;document.querySelectorAll('[data-v]').forEach(e=>e.classList.toggle('active',e.dataset.v==='all'));renderOrgSidebar();render();document.getElementById('sidebar').classList.remove('open')};
-      box.appendChild(row);
-    });
-    if(currentView==='all'&&Date.now()-gT>60000){gT=Date.now();gFetch()}
-  };
-}
-{
-  const _sv2=window.setView;
-  window.setView=function(v){
-    if(v==='all')guestOrgFilter=null;
-    return _sv2.apply(this,arguments);
-  };
-}
-{
-  const _gw=gWatchMine;
-  gWatchMine=function(){
-    _gw.apply(this,arguments);
-    if(guestOrgUnsub){guestOrgUnsub();guestOrgUnsub=null}
-    if(!currentUser)return;
-    guestOrgUnsub=onSnapshot(query(collection(db,'guestRequests'),where('email','==',me())),async s=>{
-      gMine=snapDocs(s);
-      await Promise.all(gMine.filter(r=>r.status==='approved').map(r=>gApply(r,true).catch(()=>{})));
-      await refreshGuestAll(gMine);
-    },e=>console.warn('guest all files',e));
-  };
-}
-/* Direct add: no invite link or approval step. The recipient still needs to sign in
-   with this email because Firestore/Drive data must not be exposed anonymously. */
-async function createDirectGuest(){
-  const email=(directGuestEmail||'').trim().toLowerCase();
-  if(!EMAIL_RE.test(email))throw new Error('Enter a valid guest email');
-  if(!G.org||!isOwner(G.org))throw new Error('Only an organization Super Admin/Admin can add a guest directly');
-  const o=G.org,role=$('g-role').value,days=+$('g-exp').value,D=G.data,items=[],roots=[];let bad=0;
-  for(const k of G.sel){
-    const i=k.indexOf(':'),kind=k.slice(0,i),id=k.slice(i+1);
-    if(kind==='file'){const x=D.files.find(f=>f.id===id);if(x)items.push({k:'file',id,name:x.name||'',driveFileId:x.driveFileId||'',mimeType:x.mimeType||'',size:+x.size||0,thumb:x.thumb||'',ownerEmail:x.by||''})}
-    else if(kind==='note'){const x=D.notes.find(f=>f.id===id);if(x)items.push({k:'note',id,name:x.name||'',nt:x.ntype||'note'})}
-    else{
-      const x=D.folders.find(f=>f.id===id);if(!x)continue;const root=x.linkRoot||x.id;
-      const st=[x,...gDesc(x)].filter(y=>!y.linkRoot);
-      const res=await Promise.all(st.map(y=>updateDoc(doc(db,y._c,y.id),{linkRoot:root}).then(()=>1,()=>0)));bad+=res.filter(v=>!v).length;
-      items.push({k:'folder',id,name:x.name||'',root,ownerUid:x.uid||'',ownerEmail:x.by||''});if(!roots.includes(root))roots.push(root);
-    }
-  }
-  if(!items.length)throw new Error('Select at least one item');
-  const code=genCode();
-  await setDoc(doc(db,'guestInvites',code),{orgId:o.id,orgName:o.name,teamName:o.teamName||'',logoUrl:o.logoUrl||null,createdBy:me(),creatorRole:roleOfOrg(o),role,needsApproval:false,items,itemIds:items.map(i=>i.id),roots,expiresAt:days?Date.now()+days*864e5:null,createdAt:serverTimestamp(),direct:true});
-  const req={code,orgId:o.id,orgName:o.name,teamName:o.teamName||'',email,name:email.split('@')[0],photo:'',uid:'',role,needsApproval:false,itemIds:items.map(i=>i.id),invitedBy:me(),status:'approved',createdAt:serverTimestamp()};
-  await setDoc(doc(db,'guestRequests',`${code}_${email}`),req);
-  for(const it of items){
-    const ref=it.k==='file'?doc(db,'fileJoins',`${it.id}_${email}`):it.k==='folder'?doc(db,'folderJoins',`${it.root}_${email}`):doc(db,'guestGrants',`${it.id}_${email}`);
-    const existsSnap=await getDoc(ref).catch(()=>null);
-    const common={email,role,addedBy:me(),gcode:code,createdAt:serverTimestamp()};
-    let payload;
-    if(it.k==='file')payload={...common,fileId:it.id,driveFileId:it.driveFileId||'',name:it.name||'',mimeType:it.mimeType||'',size:+it.size||0,thumb:it.thumb||'',ownerEmail:it.ownerEmail||''};
-    else if(it.k==='folder')payload={...common,rootId:it.root,folderId:it.id,name:it.name||'',ownerUid:it.ownerUid||'',ownerEmail:it.ownerEmail||''};
-    else payload={...common,noteId:it.id,code,orgId:o.id};
-    if(existsSnap&&existsSnap.exists())await updateDoc(ref,{role});
-    else await setDoc(ref,payload);
-  }
-  directGuestEmail='';
-  closeModal();
-  toast('Guest added directly. They can use access after signing in with '+email+(bad?`; ${bad} nested items could not be prepared`:''),'success');
-}
-{
-  const _gCreate=window.gCreate;
-  window.gCreate=async function(){
-    if(!directGuestEmail)return _gCreate.apply(this,arguments);
-    const btn=$('g-go');if(btn){btn.disabled=true;btn.textContent='Adding guest…'}
-    try{await createDirectGuest()}catch(e){toast('Failed: '+(e.message||e),'error');if(btn){btn.disabled=false;btn.textContent='Add guest directly'}}
-  };
-  const _omm=window.openMembersModal;
-  window.openMembersModal=async function(id){
-    await _omm.apply(this,arguments);
-    const o=organizations.find(x=>x.id===id),b=$('modal-body');
-    if(!o||!b||!isOwner(o)||b.querySelector('#g-direct'))return;
-    const box=b.querySelector('#g-box');if(!box)return;
-    const btn=document.createElement('button');btn.className='btn';btn.id='g-direct';
-    btn.innerHTML='<span class="material-symbols-outlined">person_add_alt</span> Add guest directly';
-    btn.onclick=()=>{
-      const email=prompt('Guest email address (the guest must sign in with this email to use MART Drive):');
-      if(!email)return;
-      if(!EMAIL_RE.test(email.trim()))return toast('Enter a valid email address','error');
-      directGuestEmail=email.trim().toLowerCase();
-      gOpenInvite(id);
-    };
-    box.querySelector('div').appendChild(btn);
-  };
-}
-/* ---------- END REQUESTED PATCH ---------- */
 
 /*END-PATCH-v3-index*/
 })();
