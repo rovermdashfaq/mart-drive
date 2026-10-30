@@ -268,6 +268,58 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 })();
 </script>
+<style id="v3-style">
+/* ===== PATCH-v3 CSS ===== */
+/* 6 + 7) three-dot menus and organization buttons: always visible */
+.more{opacity:1!important;background:color-mix(in srgb,var(--surface) 88%,transparent);box-shadow:0 0 0 1px var(--border);padding:4px;width:32px;height:32px}
+.sel-on .more{display:flex!important}
+.files-grid.list .more{box-shadow:none;background:transparent}
+.org-btns{opacity:1!important}
+.org-btns .material-symbols-outlined{color:var(--blue)}
+
+/* 4) small team name next to the organization name */
+.tm-chip{display:inline-block;margin-left:6px;padding:0 7px;font-size:10px;font-weight:600;line-height:16px;border-radius:8px;background:var(--soft);color:var(--blue);vertical-align:middle;letter-spacing:.2px;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis}
+.page-title .tm-chip{font-size:12px;line-height:20px;padding:0 9px;border-radius:10px}
+.modal-head h3 .tm-chip{font-size:11px;line-height:18px}
+
+/* 5) PREMIUM look (10+ people, Super Admin can switch it off) */
+html.org-premium{--pg1:#F9E29B;--pg2:#E3B341;--pg3:#B8860B;--pglow:rgba(227,179,65,.38)}
+html.org-premium body{background-image:radial-gradient(900px 340px at 78% -90px,rgba(249,226,155,.20),transparent 70%),radial-gradient(700px 320px at 0% 100%,rgba(227,179,65,.10),transparent 70%);background-attachment:fixed}
+html.org-premium .sidebar{background:linear-gradient(180deg,rgba(249,226,155,.16),transparent 240px),var(--surface);border-right:1px solid rgba(227,179,65,.55);box-shadow:6px 0 28px -14px var(--pglow)}
+html.org-premium .sidebar-brand{position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(249,226,155,.34),rgba(227,179,65,.10) 55%,transparent);border-bottom:1px solid rgba(227,179,65,.7)}
+html.org-premium .sidebar-brand::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#B8860B,#F9E29B,#E3B341,#F9E29B,#B8860B);background-size:200% 100%;animation:premBar 5s linear infinite}
+@keyframes premBar{to{background-position:-200% 0}}
+html.org-premium #org-logo-display{border-radius:10px;box-shadow:0 0 0 2px #F9E29B,0 0 0 4px #C99A18,0 0 16px 2px var(--pglow);animation:premGlow 3.2s ease-in-out infinite}
+@keyframes premGlow{0%,100%{box-shadow:0 0 0 2px #F9E29B,0 0 0 4px #C99A18,0 0 10px 1px var(--pglow)}50%{box-shadow:0 0 0 2px #F9E29B,0 0 0 4px #C99A18,0 0 22px 5px var(--pglow)}}
+html.org-premium #org-name-display{background:linear-gradient(90deg,#9A6F00,#E3B341 45%,#9A6F00);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;font-weight:800}
+.sidebar-brand .prem-badge{display:table;margin-top:3px;padding:1px 9px;border-radius:10px;font-size:9px;font-weight:800;letter-spacing:1.6px;color:#3a2800;background:linear-gradient(135deg,#FBE7A1,#E3B341 55%,#C99A18);box-shadow:0 1px 8px rgba(227,179,65,.55)}
+html.org-premium .new-btn{background:linear-gradient(135deg,#F9E29B,#E3B341 55%,#B8860B);color:#2b1d00;box-shadow:0 6px 18px -6px var(--pglow);position:relative;overflow:hidden}
+html.org-premium .new-btn::after,html.org-premium .sidebar-brand::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 38%,rgba(255,255,255,.45) 50%,transparent 62%);transform:translateX(-130%);animation:premShine 6s ease-in-out infinite;pointer-events:none}
+html.org-premium .nav-item.active{background:linear-gradient(90deg,rgba(249,226,155,.34),transparent);box-shadow:inset 3px 0 0 #E3B341;color:var(--text)}
+html.org-premium .header{background:linear-gradient(90deg,rgba(249,226,155,.16),transparent 35%,rgba(249,226,155,.16)),var(--surface);box-shadow:inset 0 -2px 0 rgba(227,179,65,.85),0 6px 20px -14px var(--pglow)}
+html.org-premium .search-box:focus-within{box-shadow:0 0 0 2px rgba(227,179,65,.7)}
+html.org-premium .page-title{background:linear-gradient(90deg,var(--text) 30%,#C99A18 70%,var(--text));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+html.org-premium .page-title .tm-chip{-webkit-text-fill-color:#3a2800;background:linear-gradient(135deg,#FBE7A1,#E3B341);color:#3a2800}
+html.org-premium .file-card{border-color:rgba(227,179,65,.32);box-shadow:inset 0 2px 0 rgba(227,179,65,.55);transition:transform .18s,box-shadow .18s,border-color .18s}
+html.org-premium .file-card:hover{transform:translateY(-3px);border-color:#E3B341;box-shadow:inset 0 2px 0 #E3B341,0 14px 30px -14px var(--pglow)}
+html.org-premium .file-card.selected{box-shadow:0 0 0 2px var(--blue)}
+html.org-premium .file-card.note-card{box-shadow:none}
+html.org-premium .storage{border-color:rgba(227,179,65,.55);background:linear-gradient(135deg,rgba(249,226,155,.16),transparent 60%),var(--surface);box-shadow:0 10px 28px -18px var(--pglow)}
+html.org-premium .st-bar i{background:linear-gradient(90deg,#B8860B,#F9E29B,#E3B341)}
+html.org-premium .dropzone{border-color:rgba(227,179,65,.55)}
+html.org-premium .dropzone:hover,html.org-premium .dropzone.dragover{border-color:#E3B341;box-shadow:0 0 0 3px rgba(227,179,65,.18)}
+html.org-premium .btn-primary{background:linear-gradient(135deg,#E3B341,#B8860B);border-color:#B8860B;color:#241800}
+html.org-premium .modal{border-top:3px solid #E3B341;box-shadow:0 20px 60px -20px var(--pglow),var(--shadow-lg)}
+html.org-premium .chip.own{background:linear-gradient(135deg,#FBE7A1,#E3B341);color:#3a2800;border-color:#C99A18}
+html.org-premium .progress-bar-fill{background:linear-gradient(90deg,#B8860B,#F9E29B,#E3B341)}
+html.org-premium .mobile-nav{border-top:2px solid rgba(227,179,65,.8)}
+html.org-premium .mobile-nav-item.active{color:#C99A18}
+html.org-premium ::-webkit-scrollbar{width:9px;height:9px}
+html.org-premium ::-webkit-scrollbar-thumb{background:linear-gradient(#E3B341,#B8860B);border-radius:6px}
+@media (prefers-reduced-motion:reduce){html.org-premium .sidebar-brand::before,html.org-premium .new-btn::after,html.org-premium .sidebar-brand::after,html.org-premium #org-logo-display{animation:none}}
+
+
+</style>
 </head>
 <body>
 <div id="landing">
@@ -330,7 +382,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <div class="sidebar-brand" onclick="openOrgModal()"><img id="org-logo-display" src="https://i.ibb.co/zhhYdVdD/Picsart-26-10-26-09-26-17-563.jpg" alt="Logo"><div><h2 id="org-name-display">Personal Drive</h2><span id="org-sub">Tap to create organization</span></div></div>
 <button class="new-btn" onclick="document.getElementById('file-input').click()"><span class="material-symbols-outlined">add</span> Upload File</button>
 <ul class="nav-list">
-<li><div class="nav-item" data-v="drive" onclick="setView('drive')"><span class="material-symbols-outlined">folder</span> My Files</div></li>
+<li><div class="nav-item" data-v="all" onclick="setView('all')"><span class="material-symbols-outlined">apps</span> All files</div></li><li><div class="nav-item" data-v="drive" onclick="setView('drive')"><span class="material-symbols-outlined">folder</span> My Files</div></li>
 <li><div class="nav-item" data-v="notes" onclick="setView('notes')"><span class="material-symbols-outlined">sticky_note_2</span> Notes &amp; Links</div></li>
 <li><div class="nav-item" data-v="recent" onclick="setView('recent')"><span class="material-symbols-outlined">schedule</span> Recent</div></li>
 <li><div class="nav-item" data-v="starred" onclick="setView('starred')"><span class="material-symbols-outlined">star</span> Starred</div></li>
@@ -1123,7 +1175,7 @@ function renderStorage(){
     totalBox=`<div style="cursor:pointer;border:1px solid var(--blue)" onclick="openTeamStorage()" title="Click to see each member's free space"><small>Team total capacity (${t.rep.length}/${o.members.length} members) · tap for details</small><b>${fmtSize(t.cap)}</b><small>${fmtSize(t.use)} used · ${fmtSize(t.free)} free</small></div>`;
   }
   note=o?'Total counts every file uploaded by all members of this organization. Free space is your own Google Drive space, because the files you upload are stored in your Drive.':'Free space is the remaining space in your Google Drive (shared with Gmail &amp; Photos). Files in Trash still use space until deleted forever.';
-  el.innerHTML=`<div class="st-head"><span><span class="material-symbols-outlined" style="vertical-align:middle;color:var(--blue)">cloud</span> Storage · ${esc(o?o.name:'Personal Drive')}</span>${quota?`<button class="icon-btn" title="Refresh" onclick="refreshQuota()"><span class="material-symbols-outlined" style="font-size:20px">refresh</span></button>`:''}</div>
+  el.innerHTML=`<div class="st-head"><span><span class="material-symbols-outlined" style="vertical-align:middle;color:var(--blue)">cloud</span> Storage · ${esc(o?o.name:'Personal Drive')}${o&&o.teamName?`<small class="tm-chip">${esc(o.teamName)}</small>`:''}</span>${quota?`<button class="icon-btn" title="Refresh" onclick="refreshQuota()"><span class="material-symbols-outlined" style="font-size:20px">refresh</span></button>`:''}</div>
   <div class="st-grid"><div><small>Uploaded in ${o?'this organization':'Personal Drive'} (${fl.length} files)</small><b>${fmtSize(used)}</b></div><div><small>Free space (your Google Drive)</small><b>${free}</b></div>${totalBox}</div>${bar}${by}<div class="st-note">${note}</div>`;
 }
 
@@ -1160,7 +1212,7 @@ function renderOrgSidebar(){
     const own=isOwner(o);
     h+=`<div class="nav-item ${currentOrgId===o.id?'active':''}" onclick="switchOrg('${o.id}')" title="${esc(o.teamName||'')}">
       <img src="${esc(o.logoUrl||LOGO)}" style="width:20px;height:20px;border-radius:4px;object-fit:cover">
-      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(o.name)}</span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(o.name)}${o.teamName?`<small class="tm-chip">${esc(o.teamName)}</small>`:''}</span>
       <span class="org-btns"><span class="material-symbols-outlined" title="Members &amp; invite" onclick="event.stopPropagation();openMembersModal('${o.id}')">group</span>${own?`<span class="material-symbols-outlined" title="Edit" onclick="event.stopPropagation();openEditOrgModal('${o.id}')">edit</span>`:''}</span></div>`;
   });
   h+=`<div class="nav-item" style="color:var(--blue)" onclick="openOrgModal()"><span class="material-symbols-outlined">add_circle</span> Create Org. Team</div>`;
@@ -1169,7 +1221,7 @@ function renderOrgSidebar(){
   if(mi)mi.innerHTML=f0&&f0.logoUrl?`<img src="${esc(f0.logoUrl)}" style="width:24px;height:24px;border-radius:6px;object-fit:cover">`:'<span class="material-symbols-outlined">corporate_fare</span>';
 }
 window.openOrgList=()=>{
-  const row=(id,name,logo)=>`<div class="nav-item ${currentOrgId===id?'active':''}" onclick="closeModal();switchOrg(${id?`'${id}'`:'null'})"><img src="${esc(logo||LOGO)}" style="width:24px;height:24px;border-radius:6px;object-fit:cover"><span>${esc(name)}</span></div>`;
+  const row=(id,name,logo)=>`<div class="nav-item ${currentOrgId===id?'active':''}" onclick="closeModal();switchOrg(${id?`'${id}'`:'null'})"><img src="${esc(logo||LOGO)}" style="width:24px;height:24px;border-radius:6px;object-fit:cover"><span>${esc(name)}${(organizations.find(z=>z.id===id)||{}).teamName?`<small class="tm-chip">${esc(organizations.find(z=>z.id===id).teamName)}</small>`:''}</span></div>`;
   openModal('Organizations',row(null,'Personal Drive',LOGO)+organizations.map(o=>row(o.id,o.name,o.logoUrl)).join('')+`<div class="nav-item" style="color:var(--blue)" onclick="closeModal();openOrgModal()"><span class="material-symbols-outlined">add_circle</span> Create Org. Team</div>`,`<button class="btn" onclick="closeModal()">Close</button>`);
 };
 
@@ -1433,7 +1485,7 @@ window.requestJoin=async()=>{
 function renderRequests(){
   const o=myOrg();
   $('page-title').textContent=TITLES.requests;
-  $('page-meta').textContent=`${joinReqs.length} pending ${joinReqs.length===1?'request':'requests'}${o?' · '+o.name:''}`;
+  $('page-meta').textContent=`${joinReqs.length} pending ${joinReqs.length===1?'request':'requests'}${o?' · '+o.name+(o.teamName?' ('+o.teamName+')':''):''}`;
   curList=joinReqs;
   const grid=$('files-grid');grid.className='files-grid '+(layout==='list'?'list':'');grid.innerHTML='';
   if(!joinReqs.length){grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">No pending join requests.<br>Share the invite link (members icon next to the organization) to invite people.</div>`;return}
@@ -1549,7 +1601,7 @@ function render(){
   document.querySelectorAll('[data-v]').forEach(e=>e.classList.toggle('active',e.dataset.v===currentView));
   const special=['sharedby','sharedfrom','requests'].includes(currentView);
   $('sel-btn').style.display=special?'none':'flex';
-  document.querySelectorAll('.mk').forEach(b=>b.style.display=(currentView==='trash'||special||extMode)?'none':'flex');
+  document.querySelectorAll('.mk').forEach(b=>b.style.display=(currentView==='trash'||currentView==='all'||special||extMode)?'none':'flex');
   $('layout-btn').innerHTML=`<span class="material-symbols-outlined">${layout==='grid'?'view_list':'grid_view'}</span>`;
   if(special){
     $('bulkbar').style.display='none';$('dropzone').style.display='none';$('storage-card').style.display='none';
@@ -1560,12 +1612,12 @@ function render(){
   if(searchTerm&&currentView!=='trash')list=searchAll(match);
   else if(currentView==='drive')list=live.filter(x=>((x.kind==='folder'?x.parentId:x.folderId)||null)===currentFolderId);
   else if(currentView==='notes')list=live.filter(x=>x.kind==='note');
-  else if(currentView==='recent')list=live.filter(x=>x.kind!=='folder').sort((a,b)=>ts(b)-ts(a)).slice(0,50);
+  else if(currentView==='all')list=window.__allItems();else if(currentView==='recent')list=live.filter(x=>x.kind!=='folder').sort((a,b)=>ts(b)-ts(a)).slice(0,50);
   else if(currentView==='starred')list=live.filter(x=>x.starred);
   else list=W.filter(x=>x.trashed&&x.trashRoot);
   if(typeF)list=list.filter(x=>typeOk(x,typeF));if(tagF)list=list.filter(x=>(x.tags||[]).includes(tagF));
   {const tg=[...new Set(W.flatMap(x=>x.tags||[]))].sort(),ts_=$('tag-sel');ts_.innerHTML='<option value="">All tags</option>'+tg.map(t=>`<option ${t===tagF?'selected':''}>${esc(t)}</option>`).join('');ts_.style.display=tg.length?'':'none'}
-  if(currentView!=='recent')list.sort((a,b)=>(b.kind==='folder')-(a.kind==='folder')||(sortBy==='order'?ordCmp(a,b):sortBy==='date'?ts(b)-ts(a):sortBy==='mod'?tm(b)-tm(a):sortBy==='size'?(b.size||0)-(a.size||0):String(a.name).localeCompare(String(b.name))));
+  if(currentView!=='recent'&&currentView!=='all')list.sort((a,b)=>(b.kind==='folder')-(a.kind==='folder')||(sortBy==='order'?ordCmp(a,b):sortBy==='date'?ts(b)-ts(a):sortBy==='mod'?tm(b)-tm(a):sortBy==='size'?(b.size||0)-(a.size||0):String(a.name).localeCompare(String(b.name))));
   curList=list;
   const o=myOrg(),total=list.reduce((s,x)=>s+(+x.size||0),0);
   $('page-title').textContent=currentView==='drive'?(o?o.name:'My Files'):TITLES[currentView];
@@ -1594,7 +1646,7 @@ function render(){
       else card.innerHTML=`${chk}${star}<div class="file-name">${esc(x.name)}</div><div class="note-body">${esc(x.content)}</div><div class="file-meta"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">sticky_note_2</span> Note${by}</div>${more}`;
     }
     if(x.tags&&x.tags.length)card.insertAdjacentHTML('beforeend','<div class="share-det" style="flex-direction:row;flex-wrap:wrap;gap:4px">'+x.tags.map(t=>`<span class="chip">#${esc(t)}</span>`).join('')+'</div>');
-    if(searchTerm)card.insertAdjacentHTML('beforeend',`<div class="file-meta" style="color:var(--blue)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">${x.orgId?'groups':'person'}</span> ${esc(orgName(x.orgId||null))}</div>`);
+    if(searchTerm||currentView==='all')card.insertAdjacentHTML('beforeend',`<div class="file-meta" style="color:var(--blue)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">${x.orgId?'groups':'person'}</span> ${esc(x._ext?'Shared with you':orgName(x.orgId||null))}</div>`);
     if(currentView==='drive'&&!extMode&&!selectMode){card.draggable=true;card.ondragstart=ev=>{dragK=keyOf(x);ev.dataTransfer.setData('text/plain',dragK)}}
     if(x.kind==='folder'&&currentView==='drive'){card.ondragover=ev=>{if(dragK){ev.preventDefault();card.classList.add('dragover-f')}};card.ondragleave=()=>card.classList.remove('dragover-f');card.ondrop=ev=>{ev.preventDefault();ev.stopPropagation();card.classList.remove('dragover-f');dropMove(x.id)}}
     let lp=null,lpFired=false;
@@ -1602,7 +1654,7 @@ function render(){
       if(lpFired){lpFired=false;return}
       if(selectMode||e.ctrlKey||e.metaKey)return toggleSel(x);
       if(currentView==='trash')return;
-      if(searchTerm&&(x.orgId||null)!==currentOrgId){switchOrg(x.orgId||null);setTimeout(()=>x.kind==='folder'?openFolder(x.id):x.kind==='file'?previewFile(x):openNote(x),80);return}
+      if(x._ext){if(x.kind==='folder'){setView('sharedfrom');openFolder(x.id)}else{x.kind==='file'?previewFile(x):openNote(x)}return}if((searchTerm||currentView==='all')&&(x.orgId||null)!==currentOrgId){switchOrg(x.orgId||null);setTimeout(()=>x.kind==='folder'?openFolder(x.id):x.kind==='file'?previewFile(x):openNote(x),80);return}
       x.kind==='folder'?openFolder(x.id):x.kind==='file'?previewFile(x):openNote(x);
     };
     card.addEventListener('touchstart',()=>{window._lt=Date.now();lpFired=false;lp=setTimeout(()=>{lpFired=true;toggleSel(x)},550)},{passive:true});
@@ -1691,7 +1743,7 @@ document.addEventListener('keydown',e=>{
 });
 const upd=(x,data)=>updateDoc(doc(db,COL[x.kind],x.id),{...data,updatedAt:serverTimestamp()});
 const ordCmp=(a,b)=>((a.order??1e12)-(b.order??1e12))||(ts(a)-ts(b));
-const orgName=id=>id?(organizations.find(o=>o.id===id)?.name||'Organization'):'Personal Drive';
+const orgName=id=>{const o=id?organizations.find(z=>z.id===id):null;return id?(o?o.name+(o.teamName?' · '+o.teamName:''):'Organization'):'Personal Drive'};
 /* global search across Personal Drive + all joined organizations */
 let gRes={},gT=0;
 function searchAll(match){const m=new Map();[['folders','folder'],['files','file'],['notes','note']].forEach(([k,kind])=>[...store[k].p,...store[k].o,...(gRes[k]||[])].forEach(x=>{if(!x.trashed&&match(x))m.set(kind+x.id,{...x,kind})}));return[...m.values()]}
@@ -2347,6 +2399,7 @@ async function makeQR(text,logoUrl,noLogo){
   return{canvas:c,withLogo};
 }
 const scanTest=async(c,url)=>{try{if(!('BarcodeDetector' in window))return null;const bd=new BarcodeDetector({formats:['qr_code']});const r=await bd.detect(c);return r.length&&r[0].rawValue===url}catch{return null}};
+window.__makeQR=makeQR;window.__scanTest=scanTest;
 try{
 const fmtExp=v=>{if(!v)return{t:'Never expires (until the link is reset)',c:''};const d=new Date(v).toLocaleString();return v<Date.now()?{t:'Expired on '+d,c:'color:var(--error)'}:{t:'Expires on '+d,c:''}};
 const ymd=v=>{const d=new Date(v),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())};
@@ -2543,7 +2596,7 @@ function startLive(item){
    5) PREMIUM LOOK  (10+ people in the organization: members + owners)
    ===================================================================== */
 const PREM_MIN=10;
-const isPrem=o=>!!o&&Array.isArray(o.members)&&o.members.length>=PREM_MIN;
+const isPrem=o=>!!o&&Array.isArray(o.members)&&o.members.length>=PREM_MIN&&o.premiumLook!==false;
 function premMembers(id){
   const o=organizations.find(x=>x.id===id),b=$$('modal-body');if(!o||!b||$$('prem-note'))return;
   const n=(o.members||[]).length;
@@ -2601,7 +2654,7 @@ document.head.insertAdjacentHTML('beforeend','<style>.g-tabs{display:flex;gap:6p
 
 /* ---------- 1) INVITE CREATION (super admin / admin / member) ---------- */
 function gList(t){const d=G.data;return t==='files'?d.files:t==='folders'?d.folders:t==='links'?d.notes.filter(n=>n.ntype==='link'):d.notes.filter(n=>n.ntype!=='link')}
-function gDesc(f){const D=G.data,out=[],q=[f.id],seen=new Set([f.id]);while(q.length){const p=q.shift();for(const k of['folders','files','notes'])for(const y of D[k])if(y.parentId===p&&!seen.has(y.id)){seen.add(y.id);out.push(y);if(k==='folders')q.push(y.id)}}return out}
+function gDesc(f){const D=G.data,out=[],q=[f.id],seen=new Set([f.id]);while(q.length){const p=q.shift();for(const k of['folders','files','notes'])for(const y of D[k])if((k==='folders'?y.parentId:y.folderId)===p&&!seen.has(y.id)){seen.add(y.id);out.push(y);if(k==='folders')q.push(y.id)}}return out}
 function gRender(){
   const box=$('g-list');if(!box)return;const q=G.q.toLowerCase();
   const l=gList(G.tab).filter(x=>!q||String(x.name||'').toLowerCase().includes(q)).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
@@ -2686,7 +2739,7 @@ async function runPendingGuest(){
     gInv={code,...inv};
     if(organizations.some(o=>o.id===inv.orgId)){switchOrg(inv.orgId);return toast('You are already a member of '+inv.orgName,'success')}
     let ex=null;try{const d=await getDoc(doc(db,'guestRequests',`${code}_${me()}`));if(d.exists())ex={id:d.id,...d.data()}}catch{}
-    const head=`<div style="text-align:center"><img src="${esc(inv.logoUrl||LOGO)}" style="width:72px;height:72px;border-radius:14px;object-fit:cover"><h3 style="margin:10px 0 2px">${esc(inv.orgName)}</h3><div class="file-meta">Guest invite · ${GR[inv.role]} · ${inv.items.length} item(s)</div>`;
+    const head=`<div style="text-align:center"><img src="${esc(inv.logoUrl||LOGO)}" style="width:72px;height:72px;border-radius:14px;object-fit:cover"><h3 style="margin:10px 0 2px">${esc(inv.orgName)}${inv.teamName?`<small class="tm-chip">${esc(inv.teamName)}</small>`:''}</h3><div class="file-meta">Guest invite · ${GR[inv.role]} · ${inv.items.length} item(s)</div>`;
     if(ex&&ex.status==='pending')return openModal('Guest invite',`${head}<p style="margin-top:12px;color:var(--muted)">Your request is waiting for approval from a Super Admin or Admin.</p></div>`,'<button class="btn btn-primary" onclick="closeModal()">OK</button>');
     if(ex&&ex.status==='approved'){await gApply(ex,true);return gOpenMine()}
     const list=inv.items.slice(0,8).map(i=>`<div class="share-row"><span class="material-symbols-outlined" style="font-size:16px">${i.k==='folder'?'folder':i.k==='file'?'description':i.nt==='link'?'link':'sticky_note_2'}</span><span class="em">${esc(i.name)}</span></div>`).join('')+(inv.items.length>8?`<div class="share-row">+${inv.items.length-8} more</div>`:'');
@@ -2734,10 +2787,10 @@ window.gOpenMine=async()=>{
   const M={};let h='';
   if(!reqs.length)h='<p style="color:var(--muted)">No guest access yet.</p>';
   for(const r of reqs){
-    h+=`<div class="step-t">${esc(r.orgName)} · ${GR[r.role]||r.role}${r.status==='pending'?' · waiting for approval':''}</div>`;
+    h+=`<div class="step-t">${esc(r.orgName)}${r.teamName?' ('+esc(r.teamName)+')':''} · ${GR[r.role]||r.role}${r.status==='pending'?' · waiting for approval':''}</div>`;
     if(r.status!=='approved')continue;let inv=null;try{inv=(await getDoc(doc(db,'guestInvites',r.code))).data()}catch{}
     if(!inv){h+='<p style="color:var(--muted)">This invite is no longer available.</p>';continue}
-    inv.items.forEach((it,i)=>{const k=r.code+':'+i;M[k]={it,role:r.role};h+=`<div class="access-row"><span class="material-symbols-outlined" style="color:var(--muted)">${it.k==='folder'?'folder':it.k==='file'?'description':it.nt==='link'?'link':'sticky_note_2'}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(it.name)}</span><button class="btn" data-o="${esc(k)}">Open</button></div>`});
+    [...inv.items,...(r.extraItems||[]).filter(e=>e.role!=='none')].forEach((it,i)=>{const k=r.code+':'+i;M[k]={it,role:r.role};h+=`<div class="access-row"><span class="material-symbols-outlined" style="color:var(--muted)">${it.k==='folder'?'folder':it.k==='file'?'description':it.nt==='link'?'link':'sticky_note_2'}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(it.name)}</span><button class="btn" data-o="${esc(k)}">Open</button></div>`});
   }
   const b=$('modal-body');b.innerHTML=h;
   b.onclick=async ev=>{const x=ev.target.closest('[data-o]');if(!x)return;const m=M[x.dataset.o];if(m)gOpenItem(m.it,m.role)};
@@ -2766,7 +2819,7 @@ function gPop(){
   if(!l.length){el&&el.remove();return}
   const r=l[0],isG=r._t==='g';
   if(!el){el=document.createElement('div');el.id='g-pop';document.body.appendChild(el)}
-  el.innerHTML=`<div class="gp-c"><div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">${r.photo?`<img src="${esc(r.photo)}" referrerpolicy="no-referrer" style="width:48px;height:48px;border-radius:50%;object-fit:cover">`:'<span class="material-symbols-outlined" style="font-size:44px">account_circle</span>'}<div style="min-width:0"><b>${esc(r.name||r.email)}</b><div class="file-meta" style="overflow:hidden;text-overflow:ellipsis">${esc(r.email)}</div></div></div><div style="margin-bottom:6px"><span class="chip own">${isG?'Guest request':'Join request'}</span> <span class="chip">${esc(r.orgName||'')}</span></div><p style="font-size:14px;margin:8px 0 16px">${isG?`wants to join as a <b>${GR[r.role]||r.role}</b> guest with access to <b>${(r.itemIds||[]).length}</b> item(s). Invited by ${esc(r.invitedBy||'—')}.`:'wants to join this organization as a member.'}</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" data-a="ap" style="flex:1">Approve</button><button class="btn" data-a="rj" style="flex:1;color:var(--error);border-color:var(--error)">Reject</button><button class="btn" data-a="lt">Later</button></div>${l.length>1?`<div class="file-meta" style="text-align:center;margin-top:10px">${l.length-1} more waiting</div>`:''}</div>`;
+  el.innerHTML=`<div class="gp-c"><div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">${r.photo?`<img src="${esc(r.photo)}" referrerpolicy="no-referrer" style="width:48px;height:48px;border-radius:50%;object-fit:cover">`:'<span class="material-symbols-outlined" style="font-size:44px">account_circle</span>'}<div style="min-width:0"><b>${esc(r.name||r.email)}</b><div class="file-meta" style="overflow:hidden;text-overflow:ellipsis">${esc(r.email)}</div></div></div><div style="margin-bottom:6px"><span class="chip own">${isG?'Guest request':'Join request'}</span> <span class="chip">${esc(r.orgName||'')}${r.teamName?' · '+esc(r.teamName):''}</span></div><p style="font-size:14px;margin:8px 0 16px">${isG?`wants to join as a <b>${GR[r.role]||r.role}</b> guest with access to <b>${(r.itemIds||[]).length}</b> item(s). Invited by ${esc(r.invitedBy||'—')}.`:'wants to join this organization as a member.'}</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" data-a="ap" style="flex:1">Approve</button><button class="btn" data-a="rj" style="flex:1;color:var(--error);border-color:var(--error)">Reject</button><button class="btn" data-a="lt">Later</button></div>${l.length>1?`<div class="file-meta" style="text-align:center;margin-top:10px">${l.length-1} more waiting</div>`:''}</div>`;
   el.onclick=async ev=>{const b=ev.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
     if(a==='lt'){P.later.add(r._t+r.id);return gPop()}
     b.disabled=true;try{await gAct(r,a)}catch(e){toast('Failed: '+e.message,'error');b.disabled=false}};
@@ -2803,7 +2856,7 @@ window.gManage=async orgId=>{
       if(x.dataset.a==='rv'){
         if(!confirm('Revoke all access for '+r.email+'?')){x.disabled=false;return}
         const inv=(await getDoc(doc(db,'guestInvites',r.code))).data();
-        for(const it of(inv&&inv.items)||[]){try{
+        for(const it of[...((inv&&inv.items)||[]),...(r.extraItems||[])]){try{
           if(it.k==='file')await updateDoc(doc(db,'fileJoins',`${it.id}_${r.email}`),{role:'none'});
           else if(it.k==='folder')await updateDoc(doc(db,'folderJoins',`${it.root}_${r.email}`),{role:'none'});
           else await updateDoc(doc(db,'guestGrants',`${it.id}_${r.email}`),{role:'none'});
@@ -2816,6 +2869,257 @@ window.gManage=async orgId=>{
 
 /* ---------- boot ---------- */
 setInterval(()=>{try{gWatchMine();pSync();if(pendingGuest&&currentUser)runPendingGuest()}catch(e){console.warn('guest',e)}},1200);
+
+/*PATCH-v3-index*/
+/* ===== PATCH-v3: All files · guest profile · guest QR · team names · premium toggle ===== */
+
+/* ---------- 1) ALL FILES (everything except Trash, newest first) ---------- */
+TITLES.all='All files';
+EMPTY.all=['apps','Nothing here yet','Create or upload something and it will show up here.'];
+function allItems(){
+  const m=new Map();
+  [['folders','folder'],['files','file'],['notes','note']].forEach(([k,kind])=>{
+    [...store[k].p,...store[k].o,...(gRes[k]||[])].forEach(x=>{if(!x.trashed)m.set(kind+x.id,{...x,kind})});
+    store[k].s.forEach(x=>{if(!x.trashed&&!m.has(kind+x.id))m.set(kind+x.id,{...x,kind,_ext:true})});
+  });
+  const l=[...m.values()];
+  l.sort(sortBy==='order'?ordCmp:sortBy==='date'?(a,b)=>ts(b)-ts(a):sortBy==='size'?(a,b)=>(b.size||0)-(a.size||0):sortBy==='name'?(a,b)=>String(a.name).localeCompare(String(b.name)):(a,b)=>tm(b)-tm(a));
+  return l;
+}
+window.__allItems=allItems;
+{const _sv=window.setView;
+ window.setView=function(v){
+  const r=_sv.apply(this,arguments);
+  if(v==='all'&&Date.now()-gT>60000){gT=Date.now();gFetch()}   /* also pull the other organizations */
+  return r;
+ }}
+
+/* ---------- 4) TEAM NAME next to the organization name ---------- */
+{const _r=render;
+ render=function(){
+  _r.apply(this,arguments);
+  try{const o=myOrg(),t=$('page-title');
+    if(o&&o.teamName&&currentView==='drive'&&t&&!t.querySelector('.tm-chip'))t.insertAdjacentHTML('beforeend','<small class="tm-chip">'+esc(o.teamName)+'</small>');
+  }catch(e){}
+ }}
+{const _om=openModal;
+ openModal=function(title){
+  _om.apply(this,arguments);
+  try{
+    if(typeof title==='string'&&/(Members|Team storage|Invite guest|Guests ·)/.test(title)){
+      const o=organizations.find(z=>z.teamName&&title.includes(z.name));
+      if(o)$('modal-title').innerHTML=esc(title).replace(esc(o.name),()=>esc(o.name)+'<small class="tm-chip">'+esc(o.teamName)+'</small>');
+    }
+  }catch(e){}
+ }}
+
+/* ---------- 5) PREMIUM badge in the sidebar ---------- */
+{const _ub=updateBrand;
+ updateBrand=function(){
+  _ub.apply(this,arguments);
+  try{
+    const o=myOrg(),ok=!!o&&(o.members||[]).length>=10&&o.premiumLook!==false,s=$('org-sub'),b=$('prem-badge');
+    if(ok&&!b&&s)s.insertAdjacentHTML('afterend','<div id="prem-badge" class="prem-badge">✦ PREMIUM</div>');
+    if(!ok&&b)b.remove();
+  }catch(e){}
+ }}
+/* Super Admin: Premium look ON / OFF (inside the Members window) */
+{const _mm=window.openMembersModal;
+ window.openMembersModal=async function(id){
+  await _mm.apply(this,arguments);
+  try{
+    const o=organizations.find(x=>x.id===id),b=$('modal-body');
+    if(!o||!b||b.querySelector('#prem-tg'))return;
+    const elig=(o.members||[]).length>=10,on=o.premiumLook!==false,sup=foundersOf(o).has(me()),note=b.querySelector('#prem-note');
+    if(note&&elig&&!on){note.classList.remove('on');note.innerHTML='<span class="material-symbols-outlined">workspace_premium</span> Premium look is turned off by a Super Admin'}
+    if(sup){
+      const h='<label id="prem-tg" class="aa-row" style="margin:0 0 12px"><input type="checkbox" '+(on?'checked':'')+'><span><b>Premium look</b><small>Super Admin only. ON shows the gold Premium design when this organization has 10+ people.</small></span></label>';
+      note?note.insertAdjacentHTML('afterend',h):b.insertAdjacentHTML('afterbegin',h);
+      b.querySelector('#prem-tg input').onchange=async e=>{
+        const v=e.target.checked;
+        try{await updateDoc(doc(db,'organizations',id),{premiumLook:v});o.premiumLook=v;toast('Premium look '+(v?'ON':'OFF'),'success');openMembersModal(id)}
+        catch(er){e.target.checked=!v;toast('Failed: '+er.message,'error')}
+      };
+    }
+  }catch(e){console.warn('premium toggle',e)}
+ }}
+
+/* ---------- 3) QR code for guest invite links (generate + download) ---------- */
+async function qrInto(box,url,logo,fname){
+  box.innerHTML='<span class="file-meta">Generating…</span>';
+  try{
+    if(!window.__makeQR){
+      box.innerHTML='<img alt="QR" width="240" height="240" style="background:#fff;padding:8px;border-radius:10px;max-width:100%" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data='+encodeURIComponent(url)+'"><div class="file-meta" style="margin-top:6px">Press and hold / right-click the image to save it.</div>';
+      return;
+    }
+    let r=await window.__makeQR(url,logo),note='';
+    const t=window.__scanTest?await window.__scanTest(r.canvas,url):null;
+    if(t===false&&r.withLogo){r=await window.__makeQR(url,null,true);note='Logo removed automatically because it made the QR hard to read.'}
+    else if(t===true)note='✓ Scan test passed';
+    else if(!r.withLogo)note='Logo could not be embedded. The QR still works.';
+    const c=r.canvas;c.style.cssText='width:260px;max-width:100%;height:auto;border:1px solid var(--border);border-radius:10px;background:#fff';
+    box.innerHTML='';box.appendChild(c);
+    const d=document.createElement('div');d.style.cssText='margin-top:8px;font-size:12px;color:var(--muted)';d.textContent=note;box.appendChild(d);
+    const b=document.createElement('button');b.className='btn btn-primary';b.style.cssText='margin:8px auto 0';b.innerHTML='<span class="material-symbols-outlined">download</span> Download PNG';
+    b.onclick=()=>c.toBlob(bl=>{const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download=fname;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)},'image/png');
+    box.appendChild(b);
+  }catch(e){box.textContent='QR failed: '+e.message}
+}
+{const _gc=window.gCreate;
+ window.gCreate=async function(){
+  await _gc.apply(this,arguments);
+  try{
+    const inp=$('g-link'),b=$('modal-body');
+    if(!inp||!b||b.querySelector('#gq-box'))return;
+    b.insertAdjacentHTML('beforeend','<div id="gq-box" style="margin-top:14px;text-align:center"><button class="btn" id="gq-b"><span class="material-symbols-outlined">qr_code_2</span> QR code</button><div id="gq-out" style="margin-top:10px"></div></div>');
+    const o=G.org||{};
+    $('gq-b').onclick=()=>qrInto($('gq-out'),inp.value,o.logoUrl||LOGO,String(o.name||'org').replace(/[^\w\-]+/g,'_')+'-guest-invite-qr.png');
+  }catch(e){console.warn('guest qr',e)}
+ }}
+
+/* ---------- 2) GUEST PROFILE: admins add / remove folder, file, note, link access ---------- */
+const GP={};
+const RL=[['reader','Viewer'],['commenter','Commenter'],['writer','Editor'],['none','No access']];
+const gicon=it=>it.k==='folder'?'folder':it.k==='file'?'description':it.nt==='link'?'link':'sticky_note_2';
+const jRef=(it,em)=>it.k==='file'?doc(db,'fileJoins',it.id+'_'+em):it.k==='folder'?doc(db,'folderJoins',it.root+'_'+em):doc(db,'guestGrants',it.id+'_'+em);
+function jData(it,r,role){
+  const base={email:r.email,role,addedBy:me(),createdAt:serverTimestamp()};
+  if(it.k==='file')return{...base,fileId:it.id,driveFileId:it.driveFileId||'',name:it.name||'',mimeType:it.mimeType||'',size:+it.size||0,thumb:it.thumb||'',ownerEmail:it.ownerEmail||'',gcode:r.code};
+  if(it.k==='folder')return{...base,rootId:it.root,folderId:it.id,name:it.name||'',ownerUid:it.ownerUid||'',ownerEmail:it.ownerEmail||'',gcode:r.code};
+  return{...base,noteId:it.id,code:r.code,orgId:r.orgId};
+}
+async function setItemRole(r,it,role){
+  const ref=jRef(it,r.email),s=await getDoc(ref);
+  if(s.exists())await updateDoc(ref,{role});else await setDoc(ref,jData(it,r,role));
+}
+const saveExtra=async(r,ex)=>{await updateDoc(doc(db,'guestRequests',r.id),{extraItems:ex});r.extraItems=ex};
+const sameIt=(a,b)=>a.k===b.k&&a.id===b.id;
+const descD=(D,f)=>{
+  const out=[],q=[f.id],seen=new Set([f.id]);
+  while(q.length){const p=q.shift();
+    for(const k of['folders','files','notes'])for(const y of D[k])if((k==='folders'?y.parentId:y.folderId)===p&&!seen.has(y.id)){seen.add(y.id);out.push(y);if(k==='folders')q.push(y.id)}}
+  return out;
+};
+
+async function gProfile(orgId,reqId){
+  const o=organizations.find(x=>x.id===orgId);if(!o||!isOwner(o))return;
+  openModal('Guest profile','<div style="padding:30px;text-align:center;color:var(--muted)">Loading…</div>','<button class="btn" onclick="closeModal()">Close</button>',true);
+  try{
+    const s=await getDoc(doc(db,'guestRequests',reqId));if(!s.exists())throw new Error('Guest not found');
+    const r={id:reqId,...s.data()},is=await getDoc(doc(db,'guestInvites',r.code));
+    GP.o=o;GP.r=r;GP.inv=is.exists()?is.data():{items:[]};
+  }catch(e){closeModal();return toast('Failed: '+e.message,'error')}
+  await gpRender();
+}
+async function gpRender(){
+  const {o,r,inv}=GP,b=$('modal-body');if(!b)return;
+  const items=[...(inv.items||[]).map(it=>({...it,_src:'invite'})),...(r.extraItems||[]).map(it=>({...it,_src:'added'}))];
+  const roles=await Promise.all(items.map(it=>getDoc(jRef(it,r.email)).then(s=>s.exists()?s.data().role:null).catch(()=>null)));
+  GP.items=items;
+  const head='<div style="display:flex;gap:12px;align-items:center;margin-bottom:14px">'+(r.photo?'<img src="'+esc(r.photo)+'" referrerpolicy="no-referrer" style="width:56px;height:56px;border-radius:50%;object-fit:cover">':'<span class="material-symbols-outlined" style="font-size:52px;color:var(--muted)">account_circle</span>')+'<div style="min-width:0"><b style="font-size:16px">'+esc(r.name||r.email)+'</b><div class="file-meta">'+esc(r.email)+'</div><div style="margin-top:4px"><span class="chip own">'+esc(GR[r.role]||r.role)+'</span> <span class="chip">'+esc(r.status||'')+'</span> <span class="chip">Invited by '+esc(String(r.invitedBy||'—').split('@')[0])+'</span> <span class="chip">'+esc(o.name)+(o.teamName?' · '+esc(o.teamName):'')+'</span></div></div></div>';
+  const rows=items.length?items.map((it,i)=>{
+    const cur=roles[i]==null?r.role:roles[i];
+    return '<div class="access-row"><span class="material-symbols-outlined" style="color:var(--muted)">'+gicon(it)+'</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(it.name||'Untitled')+'<br><small style="color:var(--muted)">'+(it._src==='added'?'Added by admin':'From invite')+(roles[i]==null?' · guest has not opened it yet':'')+'</small></span><select data-gi="'+i+'">'+RL.map(([v,t])=>'<option value="'+v+'"'+(cur===v?' selected':'')+'>'+t+'</option>').join('')+'</select>'+(it._src==='added'?'<button class="icon-btn" data-gdel="'+i+'" title="Remove"><span class="material-symbols-outlined" style="font-size:18px">delete</span></button>':'')+'</div>';
+  }).join(''):'<p style="color:var(--muted)">This guest has no items yet.</p>';
+  b.innerHTML=head+'<div class="step-t">Access</div>'+rows+'<p style="font-size:12px;color:var(--muted);margin-top:10px">Change the level of an item, or choose “No access” to take it away. Use “Add items” to give this guest access to more folders, files, notes and links.</p>';
+  $('modal-foot').innerHTML='<button class="btn" id="gp-back">Back</button><button class="btn btn-primary" id="gp-add"><span class="material-symbols-outlined">add</span> Add items</button><button class="btn" onclick="closeModal()">Close</button>';
+  $('gp-back').onclick=()=>gManage(o.id);
+  $('gp-add').onclick=gpAddStart;
+  b.onchange=async ev=>{
+    const s=ev.target.closest('select[data-gi]');if(!s)return;
+    const it=GP.items[+s.dataset.gi];s.disabled=true;
+    try{
+      await setItemRole(GP.r,it,s.value);
+      if(it._src==='added')await saveExtra(GP.r,(GP.r.extraItems||[]).map(e=>sameIt(e,it)?{...e,role:s.value}:e));
+      toast('Access updated','success');
+    }catch(e){toast('Failed: '+e.message,'error')}
+    finally{s.disabled=false}
+  };
+  b.onclick=async ev=>{
+    const d=ev.target.closest('[data-gdel]');if(!d)return;
+    const it=GP.items[+d.dataset.gdel];if(!it||!confirm('Remove this guest\'s access to "'+it.name+'"?'))return;
+    d.disabled=true;
+    try{await setItemRole(GP.r,it,'none');await saveExtra(GP.r,(GP.r.extraItems||[]).filter(e=>!sameIt(e,it)));toast('Access removed','success');gpRender()}
+    catch(e){toast('Failed: '+e.message,'error');d.disabled=false}
+  };
+}
+async function gpAddStart(){
+  const o=GP.o,b=$('modal-body');
+  b.onclick=b.onchange=b.oninput=null;
+  b.innerHTML='<div style="padding:30px;text-align:center;color:var(--muted)">Loading…</div>';
+  try{
+    const D={};
+    for(const k of['files','folders','notes'])D[k]=snapDocs(await getDocs(query(collection(db,k),where('orgId','==',o.id)))).filter(x=>!x.trashed).map(x=>({...x,_c:k}));
+    GP.D=D;
+  }catch(e){toast('Failed: '+e.message,'error');return gpRender()}
+  GP.sel=new Set();GP.tab='files';GP.q='';
+  gpPick();
+}
+function gpRows(t){
+  const D=GP.D,q=(GP.q||'').toLowerCase();
+  const kind=t==='folders'?'folder':t==='files'?'file':'note';
+  const src=t==='files'?D.files:t==='folders'?D.folders:t==='links'?D.notes.filter(n=>n.ntype==='link'):D.notes.filter(n=>n.ntype!=='link');
+  const have=new Set(GP.items.map(x=>x.k+':'+x.id));
+  return src.filter(x=>!have.has(kind+':'+x.id)&&(!q||String(x.name||'').toLowerCase().includes(q))).sort((a,c)=>String(a.name||'').localeCompare(String(c.name||''))).map(x=>({x,k:kind+':'+x.id}));
+}
+function gpDraw(){
+  const box=$('gp-list');if(!box)return;
+  const ic={files:'description',folders:'folder',notes:'sticky_note_2',links:'link'}[GP.tab],rows=gpRows(GP.tab);
+  box.innerHTML=rows.length?rows.map(({x,k})=>'<label class="g-row"><input type="checkbox" data-k="'+esc(k)+'"'+(GP.sel.has(k)?' checked':'')+'><span class="material-symbols-outlined" style="font-size:20px;color:var(--muted)">'+ic+'</span><span class="n">'+esc(x.name||'Untitled')+'</span></label>').join(''):'<div style="padding:18px;text-align:center;color:var(--muted)">Nothing to add here</div>';
+  $('gp-cnt').textContent=GP.sel.size+' selected';
+}
+function gpPick(){
+  const b=$('modal-body'),r=GP.r,tabs=[['files','Files'],['notes','Notes'],['links','Links'],['folders','Folders']];
+  b.innerHTML='<p style="font-size:13px;color:var(--muted);margin-bottom:10px">Select what <b>'+esc(r.name||r.email)+'</b> should also get access to.</p><div class="g-tabs">'+tabs.map(([t,l])=>'<button type="button" class="g-tab'+(GP.tab===t?' on':'')+'" data-t="'+t+'">'+l+' ('+gpRows(t).length+')</button>').join('')+'</div><input id="gp-q" class="g-in" placeholder="Search…" value="'+esc(GP.q)+'" style="margin-bottom:10px"><div class="g-list" id="gp-list"></div><div id="gp-cnt" class="file-meta" style="margin-top:8px"></div><div class="field" style="margin-top:12px"><label>Access level</label><select id="gp-role"><option value="reader"'+(r.role==='reader'?' selected':'')+'>Viewer (view &amp; download)</option><option value="commenter"'+(r.role==='commenter'?' selected':'')+'>Commenter (+ comment)</option><option value="writer"'+(r.role==='writer'?' selected':'')+'>Editor (+ edit)</option></select></div>';
+  $('modal-foot').innerHTML='<button class="btn" id="gp-cancel">Back</button><button class="btn btn-primary" id="gp-go">Add access</button>';
+  $('gp-cancel').onclick=()=>gpRender();
+  $('gp-go').onclick=gpApply;
+  b.onclick=ev=>{const t=ev.target.closest('.g-tab');if(t){GP.tab=t.dataset.t;b.querySelectorAll('.g-tab').forEach(x=>x.classList.toggle('on',x===t));gpDraw()}};
+  b.onchange=ev=>{const c=ev.target.closest('input[data-k]');if(c){c.checked?GP.sel.add(c.dataset.k):GP.sel.delete(c.dataset.k);$('gp-cnt').textContent=GP.sel.size+' selected'}};
+  b.oninput=ev=>{if(ev.target.id==='gp-q'){GP.q=ev.target.value;gpDraw()}};
+  gpDraw();
+}
+async function gpApply(){
+  if(!GP.sel.size)return toast('Select at least one item','error');
+  if(GP.sel.size>60)return toast('Select at most 60 items at once','error');
+  const btn=$('gp-go');btn.disabled=true;btn.textContent='Adding…';
+  const role=$('gp-role').value,D=GP.D,r=GP.r,entries=[];let bad=0;
+  try{
+    for(const k of GP.sel){
+      const i=k.indexOf(':'),kind=k.slice(0,i),id=k.slice(i+1);
+      if(kind==='file'){const x=D.files.find(f=>f.id===id);if(x)entries.push({k:'file',id,name:x.name||'',driveFileId:x.driveFileId||'',mimeType:x.mimeType||'',size:+x.size||0,thumb:x.thumb||'',ownerEmail:x.by||'',role})}
+      else if(kind==='note'){const x=D.notes.find(f=>f.id===id);if(x)entries.push({k:'note',id,name:x.name||'',nt:x.ntype||'note',role})}
+      else{
+        const x=D.folders.find(f=>f.id===id);if(!x)continue;
+        const root=x.linkRoot||x.id,st=[x,...descD(D,x)].filter(y=>!y.linkRoot);
+        const res=await Promise.all(st.map(y=>updateDoc(doc(db,y._c,y.id),{linkRoot:root}).then(()=>1,()=>0)));bad+=res.filter(v=>!v).length;
+        entries.push({k:'folder',id,name:x.name||'',root,ownerUid:x.uid||'',ownerEmail:x.by||'',role});
+      }
+    }
+    if(!entries.length)throw new Error('Nothing to add');
+    for(const e of entries)await setItemRole(r,e,role);
+    await saveExtra(r,[...(r.extraItems||[]).filter(e=>!entries.some(n=>sameIt(n,e))),...entries]);
+    toast(entries.length+' item(s) added'+(bad?' ('+bad+' inner items could not be prepared)':''),bad?'error':'success');
+    await gpRender();
+  }catch(e){toast('Failed: '+e.message,'error');btn.disabled=false;btn.textContent='Add access'}
+}
+/* put a “Profile” button on every guest row of the Manage guests window */
+{const _gm=window.gManage;
+ window.gManage=async function(orgId){
+  await _gm.apply(this,arguments);
+  try{
+    const b=$('modal-body');if(!b)return;
+    b.querySelectorAll('[data-a="rv"],[data-a="ap"]').forEach(btn=>{
+      const row=btn.closest('.access-row');if(!row||row.querySelector('[data-pf]'))return;
+      btn.insertAdjacentHTML('beforebegin','<button class="btn" data-pf="'+esc(btn.dataset.i)+'" title="Open guest profile"><span class="material-symbols-outlined">manage_accounts</span> Profile</button>');
+    });
+    const prev=b.onclick;
+    b.onclick=ev=>{const p=ev.target.closest('[data-pf]');if(p){gProfile(orgId,p.dataset.pf);return}return prev&&prev.call(b,ev)};
+  }catch(e){console.warn('guest profile btn',e)}
+ }}
+
+
+/*END-PATCH-v3-index*/
 })();
 
 </script>
