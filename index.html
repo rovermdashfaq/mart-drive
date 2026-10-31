@@ -1063,6 +1063,7 @@ function setupListeners(){
     if(k==='folders'&&pendingFolder&&store.folders.p.some(f=>f.id===pendingFolder)){const f=store.folders.p.find(x=>x.id===pendingFolder);pendingFolder=null;if((f.orgId||null)===currentOrgId)currentFolderId=f.id}
     render();
     if(k==='files'){syncOrgGrants();backfillThumbs()}
+    if(k==='notes')setTimeout(backfillLinkThumbs,1500);
   },e=>console.warn(k,e)));
   unsubS.forEach(u=>u&&u());
   unsubS=[
@@ -1642,7 +1643,7 @@ function render(){
       card.innerHTML=`${chk}${star}<div class="file-icon-wrap${(x.thumb||(x.mimeType||'').includes('image'))?' pv':''}">${fileIcon(x.mimeType,x.driveFileId,x.thumb)}</div><div class="file-name" title="${esc(x.name)}">${esc(x.name)}</div><div class="file-meta">${fmtSize(x.size)}${by}</div>${more}`;
     }else{
       const p=x.preview||{};card.classList.add('note-card');if(x.color)card.style.setProperty('--c',x.color);
-      if(x.ntype==='link')card.innerHTML=`${chk}${star}<div class="lp-img">${p.image?`<img src="${esc(p.image)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:''}</div><div class="file-name" title="${esc(x.name)}">${esc(x.name)}</div><div class="lp-site">${p.logo?`<img src="${esc(p.logo)}" referrerpolicy="no-referrer" onerror="this.remove()">`:''}<span class="file-meta">${esc(p.site||x.url)}${by}</span></div>${more}`;
+      if(x.ntype==='link')card.innerHTML=`${chk}${star}<div class="lp-img">${lpImgTag(p,x.url,true)}</div><div class="file-name" title="${esc(x.name)}">${esc(x.name)}</div><div class="lp-site">${p.logo?`<img src="${esc(p.logo)}" referrerpolicy="no-referrer" onerror="this.remove()">`:''}<span class="file-meta">${esc(p.site||x.url)}${by}</span></div>${more}`;
       else card.innerHTML=`${chk}${star}<div class="file-name">${esc(x.name)}</div><div class="note-body">${esc(x.content)}</div><div class="file-meta"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">sticky_note_2</span> Note${by}</div>${more}`;
     }
     if(x.tags&&x.tags.length)card.insertAdjacentHTML('beforeend','<div class="share-det" style="flex-direction:row;flex-wrap:wrap;gap:4px">'+x.tags.map(t=>`<span class="chip">#${esc(t)}</span>`).join('')+'</div>');
@@ -2014,16 +2015,54 @@ async function applyGrant(g){
 }
 
 const normUrl=u=>{u=(u||'').trim();if(!u)return null;if(!/^https?:\/\//i.test(u))u='https://'+u;try{return new URL(u).href}catch{return null}};
+async function ogImageFallback(url){
+  try{
+    const ac=new AbortController(),t=setTimeout(()=>ac.abort(),8000);
+    const h=await(await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(url),{signal:ac.signal})).text();clearTimeout(t);
+    const d=new DOMParser().parseFromString(h,'text/html');
+    const m=d.querySelector('meta[property="og:image:secure_url"],meta[property="og:image"],meta[name="og:image"],meta[name="twitter:image"],meta[property="twitter:image"]');
+    const v=m&&m.getAttribute('content');
+    return v?new URL(v,url).href:'';
+  }catch{return''}
+}
 async function fetchPreview(url){
   const host=new URL(url).hostname,fb={title:host,description:'',image:'',logo:`https://www.google.com/s2/favicons?domain=${host}&sz=64`,site:host};
+  let r=null;
   try{
     const ac=new AbortController(),t=setTimeout(()=>ac.abort(),9000);
     const j=await(await fetch('https://api.microlink.io/?url='+encodeURIComponent(url)+'&screenshot=true',{signal:ac.signal})).json();clearTimeout(t);
-    if(j.status!=='success')return fb;const d=j.data;
-    return{title:d.title||host,description:d.description||'',image:d.image?.url||d.screenshot?.url||'',logo:d.logo?.url||fb.logo,site:d.publisher||host};
-  }catch{return fb}
+    if(j.status==='success'){const d=j.data;
+      const im=(typeof d.image==='string'?d.image:d.image?.url)||(typeof d.screenshot==='string'?d.screenshot:d.screenshot?.url)||'';
+      r={title:d.title||host,description:d.description||'',image:im,logo:(typeof d.logo==='string'?d.logo:d.logo?.url)||fb.logo,site:d.publisher||host}}
+  }catch{}
+  r=r||fb;
+  if(!r.image){const og=await ogImageFallback(url);if(og)r.image=og}
+  return r;
 }
-const lpHTML=(p,url)=>`<div class="lp-box">${p.image?`<div class="lp-img"><img src="${esc(p.image)}" referrerpolicy="no-referrer" onerror="this.remove()"></div>`:''}<div class="in"><div class="lp-site">${p.logo?`<img src="${esc(p.logo)}" referrerpolicy="no-referrer" onerror="this.remove()">`:''}${esc(p.site||'')}</div><div class="t">${esc(p.title)}</div>${p.description?`<div class="d">${esc(p.description)}</div>`:''}<div class="file-meta">${esc(url)}</div></div></div>`;
+// thumbnail: original og:image -> image proxy -> page screenshot (শেষ ভরসা)
+function lpImgList(p,url){
+  const l=[];let abs='';
+  try{abs=p.image?new URL(p.image,url).href:''}catch{}
+  if(abs){l.push(abs.replace(/^http:\/\//i,'https://'));l.push('https://wsrv.nl/?url='+encodeURIComponent(abs)+'&w=700&output=jpg')}
+  if(url)l.push('https://s.wordpress.com/mshots/v1/'+encodeURIComponent(url)+'?w=700');
+  return l;
+}
+function lpImgTag(p,url,lazy){
+  const l=lpImgList(p||{},url);if(!l.length)return'';
+  return`<img src="${esc(l[0])}" data-fb="${esc(JSON.stringify(l.slice(1)))}" ${lazy?'loading="lazy" ':''}referrerpolicy="no-referrer" onerror="lpErr(this)">`;
+}
+window.lpErr=img=>{let l=[];try{l=JSON.parse(img.dataset.fb||'[]')}catch{}if(l.length){img.dataset.fb=JSON.stringify(l.slice(1));img.src=l[0]}else img.remove()};
+// আগে সেভ করা যে লিংকগুলোর thumbnail নেই, সেগুলো একবার করে ঠিক করে দেয় (শুধু নিজের)
+const lpTried=new Set(JSON.parse(localStorage.getItem('lpTried')||'[]'));let lpBusy=false;
+async function backfillLinkThumbs(){
+  if(lpBusy||!currentUser)return;
+  const todo=store.notes.p.filter(n=>n.ntype==='link'&&n.url&&!n.trashed&&!(n.preview&&n.preview.image)&&!lpTried.has(n.id)).slice(0,5);
+  if(!todo.length)return;lpBusy=true;
+  for(const n of todo){lpTried.add(n.id);try{localStorage.setItem('lpTried',JSON.stringify([...lpTried].slice(-500)))}catch{}
+    try{const pv=await fetchPreview(n.url);if(pv.image)await updateDoc(doc(db,'notes',n.id),{preview:{...(n.preview||{}),...pv,title:(n.preview&&n.preview.title)||pv.title}})}catch(e){console.warn('lp',e)}}
+  lpBusy=false;
+}
+const lpHTML=(p,url)=>`<div class="lp-box">${lpImgTag(p,url,false)?`<div class="lp-img">${lpImgTag(p,url,false)}</div>`:''}<div class="in"><div class="lp-site">${p.logo?`<img src="${esc(p.logo)}" referrerpolicy="no-referrer" onerror="this.remove()">`:''}${esc(p.site||'')}</div><div class="t">${esc(p.title)}</div>${p.description?`<div class="d">${esc(p.description)}</div>`:''}<div class="file-meta">${esc(url)}</div></div></div>`;
 window.openNoteModal=(item,ntype)=>{
   ntype=item?item.ntype:ntype;pendingPreview=item?.preview?{url:item.url,data:item.preview}:null;
   const isLink=ntype==='link',col=item?.color||'';
@@ -3417,4 +3456,4 @@ setInterval(()=>{try{
 </script>
 <a id="admin-fab" href="admin.html" title="Open Admin Panel"><span class="material-symbols-outlined">admin_panel_settings</span>Admin Panel</a>
 </body>
-</html>
+ </html>
