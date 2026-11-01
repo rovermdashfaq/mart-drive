@@ -663,7 +663,7 @@ function openViewer(x,role,fid){
   openModal(x.name||'File',h+meta+cm,`<button class="btn" onclick="closeModal()">Close</button>${rk>=3?'<button class="btn" id="vw-rn"><span class="material-symbols-outlined">edit</span> Rename</button>':''}<button class="btn" id="vw-sh"><span class="material-symbols-outlined">share</span> Share link</button><button class="btn btn-primary" id="vw-dl"><span class="material-symbols-outlined">download</span> Download</button>`,true);
   viewing=x;{const pv=$('txt-pv');if(pv)fetch(mediaUrl(x)).then(r=>r.text()).then(t=>{pv.textContent=t.slice(0,200000);try{window.__mvHL&&window.__mvHL(pv,x)}catch(e){console.warn(e)}}).catch(()=>{pv.textContent='Preview failed. Use Download.'});const im=$('modal-body').querySelector('.preview-box img');if(im)im.onclick=()=>im.classList.toggle('zm')}
   const v=$('modal-body').querySelector('video');try{window.__mvEnhance&&window.__mvEnhance(x,id)}catch(e){console.warn(e)}
-  if(v)v.onerror=()=>{v.outerHTML=`<div class="preview-box" style="background:#fff"><iframe src="https://drive.google.com/file/d/${id}/preview" width="100%" height="480px" allow="autoplay"></iframe></div>`};
+  if(v){try{window.__mvVideoFix(v,x,id)}catch(err){console.warn(err)}}
   $('vw-dl').onclick=()=>downloadFile(x);
   $('vw-sh').onclick=()=>openShareLink({...x,fileId:fid},role);
   if(rk>=3)$('vw-rn').onclick=async()=>{const n=(prompt('New name',x.name)||'').trim();if(!n)return;try{await updateDoc(doc(db,'files',fid),{name:n});x.name=n;$('modal-title').textContent=n;toast('Renamed','success')}catch(e){toast('Failed: '+e.message,'error')}};
@@ -3649,6 +3649,67 @@ function audioView(x){
 }
 
 /* ---------- viewer hook ---------- */
+/*MV-VIDEOFIX v1 — video fallback keeps the real <video> element so Speed / ±10s / Loop / PiP keep working*/
+let _mvBlob=null;
+window.__mvVideoFix=function(v,x,id){
+  const base='https://www.googleapis.com/drive/v3/files/'+x.driveFileId+'?alt=media';
+  const urls=[];
+  if(accessToken)urls.push(base+'&access_token='+accessToken);
+  urls.push(base+'&key='+firebaseConfig.apiKey);
+  const curSrc=()=>v.getAttribute('src')||'';
+  const bar=()=>{const n=v.nextElementSibling;return n&&n.classList&&n.classList.contains('mv-bar')?n:null};
+  const stat=t=>{if(!v.isConnected)return;let s=v.parentNode.querySelector('.mv-vstat');if(!s){s=document.createElement('div');s.className='mv-info mv-vstat';s.style.margin='6px 0';(bar()||v).insertAdjacentElement('afterend',s)}s.textContent=t};
+  const unstat=()=>{const s=v.parentNode&&v.parentNode.querySelector('.mv-vstat');if(s)s.remove()};
+  const iframeFallback=()=>{
+    if(!v.isConnected)return;
+    const b=bar();if(b)b.remove();unstat();
+    const w=document.createElement('div');w.className='preview-box';w.style.background='#fff';
+    w.innerHTML='<iframe src="https://drive.google.com/file/d/'+id+'/preview" width="100%" height="480px" allow="autoplay"></iframe>';
+    v.replaceWith(w);
+    const n=document.createElement('div');n.className='mv-info';n.style.margin='6px 0';
+    n.textContent='Direct playback was blocked, so Google Drive\'s own player is shown. Speed / ±10s / Loop / PiP are not available here — sign in again with the file owner account or use Download.';
+    w.after(n);
+  };
+  const blobFallback=async()=>{
+    for(const u of urls){
+      try{
+        stat('Loading video… 0%');
+        const r=await fetch(u);if(!r.ok||!r.body)throw new Error('http '+r.status);
+        const total=+r.headers.get('content-length')||+x.size||0;
+        if(total>600*1048576)throw new Error('too large');
+        const rd=r.body.getReader(),parts=[];let got=0,last=0;
+        while(true){
+          const {done,value}=await rd.read();if(done)break;
+          if(!v.isConnected){try{rd.cancel()}catch{}return true}
+          parts.push(value);got+=value.byteLength;
+          const n=Date.now();if(n-last>300){last=n;stat('Loading video… '+(total?Math.min(99,Math.floor(got/total*100))+'% · ':'')+(got/1048576).toFixed(1)+' MB')}
+        }
+        if(!v.isConnected)return true;
+        const blob=new Blob(parts,{type:x.mimeType||'video/mp4'});
+        if(_mvBlob){try{URL.revokeObjectURL(_mvBlob)}catch{}}
+        _mvBlob=URL.createObjectURL(blob);
+        v.onerror=()=>iframeFallback();
+        v.src=_mvBlob;v.load();unstat();return true;
+      }catch(e){console.warn('video blob',e)}
+    }
+    return false;
+  };
+  let stage=0;
+  v.onerror=async()=>{
+    if(!v.isConnected)return;
+    if(stage===0){
+      stage=1;
+      const alt=urls.find(u=>curSrc().indexOf(u.split('&')[1].split('=')[0]+'=')<0);
+      if(alt){v.src=alt;v.load();return}
+    }
+    if(stage<=1){
+      stage=2;v.onerror=null;
+      const ok=await blobFallback();
+      if(!ok)iframeFallback();
+    }
+  };
+};
+
 window.__mvEnhance=function(x,id){
   const mt=x.mimeType||'';pdfState=null;
   if(mt.includes('pdf'))pdfView(x);
