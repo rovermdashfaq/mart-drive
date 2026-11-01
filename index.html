@@ -657,12 +657,12 @@ function openViewer(x,role,fid){
   else if(mt.includes('video'))h=`<video class="vid" controls playsinline preload="metadata" ${x.thumb?`poster="${esc(x.thumb)}"`:''} src="${esc(mediaUrl(x))}"></video>`;
   else if(mt.includes('pdf'))h=`<div class="preview-box" style="background:#fff"><iframe src="https://drive.google.com/file/d/${id}/preview" width="100%" height="500px"></iframe></div>`;
   if(isTxt(x))h='<pre id="txt-pv" class="preview-box" style="background:var(--bg);color:var(--text);align-items:flex-start;justify-content:flex-start;padding:12px;overflow:auto;white-space:pre-wrap;font-size:12px;text-align:left;display:block">Loading…</pre>';
-  else if(/officedocument|msword|ms-excel|ms-powerpoint/.test(mt))h=`<div class="preview-box" style="background:#fff"><iframe src="https://docs.google.com/gview?url=${encodeURIComponent('https://drive.google.com/uc?id='+id)}&embedded=true" width="100%" height="500px"></iframe></div>`;
+  else if(/officedocument|msword|ms-excel|ms-powerpoint/.test(mt))h=`<div class="preview-box" style="background:#fff"><iframe src="https://drive.google.com/file/d/${id}/preview" width="100%" height="500px"></iframe></div>`;
   const meta=`<div class="file-meta" style="margin:10px 0">${fmtSize(x.size)}${x.by||x.ownerEmail?' · '+esc(x.by||x.ownerEmail):''} · Your access: <b>${roleLabel(role)}</b></div>`;
   const cm=rk>=2?`<div class="step-t">Comments</div><div id="cm-list"></div><div style="display:flex;gap:8px;margin-top:8px"><input id="cm-in" placeholder="Write a comment…" style="flex:1;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><button class="btn btn-primary" id="cm-send">Send</button></div>`:'';
   openModal(x.name||'File',h+meta+cm,`<button class="btn" onclick="closeModal()">Close</button>${rk>=3?'<button class="btn" id="vw-rn"><span class="material-symbols-outlined">edit</span> Rename</button>':''}<button class="btn" id="vw-sh"><span class="material-symbols-outlined">share</span> Share link</button><button class="btn btn-primary" id="vw-dl"><span class="material-symbols-outlined">download</span> Download</button>`,true);
-  viewing=x;{const pv=$('txt-pv');if(pv)fetch(mediaUrl(x)).then(r=>r.text()).then(t=>{pv.textContent=t.slice(0,200000)}).catch(()=>{pv.textContent='Preview failed. Use Download.'});const im=$('modal-body').querySelector('.preview-box img');if(im)im.onclick=()=>im.classList.toggle('zm')}
-  const v=$('modal-body').querySelector('video');
+  viewing=x;{const pv=$('txt-pv');if(pv)fetch(mediaUrl(x)).then(r=>r.text()).then(t=>{pv.textContent=t.slice(0,200000);try{window.__mvHL&&window.__mvHL(pv,x)}catch(e){console.warn(e)}}).catch(()=>{pv.textContent='Preview failed. Use Download.'});const im=$('modal-body').querySelector('.preview-box img');if(im)im.onclick=()=>im.classList.toggle('zm')}
+  const v=$('modal-body').querySelector('video');try{window.__mvEnhance&&window.__mvEnhance(x,id)}catch(e){console.warn(e)}
   if(v)v.onerror=()=>{v.outerHTML=`<div class="preview-box" style="background:#fff"><iframe src="https://drive.google.com/file/d/${id}/preview" width="100%" height="480px" allow="autoplay"></iframe></div>`};
   $('vw-dl').onclick=()=>downloadFile(x);
   $('vw-sh').onclick=()=>openShareLink({...x,fileId:fid},role);
@@ -1826,7 +1826,7 @@ async function mkFolderLink(it,r){
 const EMPTY={trash:['delete','Trash is empty','Deleted items are removed automatically after the retention period set by the organization (default 30 days).'],starred:['star','No starred items','Star important items to find them fast.'],recent:['schedule','Nothing recent','Upload a file to get started.'],notes:['sticky_note_2','No notes or links yet','Use the Note or Link button above.'],drive:['cloud_upload','This folder is empty','Drag files here or click Upload.']};
 const typeOk=(x,t)=>{const m=x.mimeType||'';return x.kind==='file'&&(t==='image'?m.includes('image'):t==='video'?m.includes('video'):t==='pdf'?m.includes('pdf'):!/image|video|pdf/.test(m))};
 window.setType=v=>{typeF=v;render()};window.setTag=v=>{tagF=v;render()};
-const isTxt=x=>/^text\/|json|xml|javascript/.test(x.mimeType||'')||/\.(txt|md|json|csv|js|css|html|py|log)$/i.test(x.name||'');
+const isTxt=x=>/^text\/|json|xml|javascript/.test(x.mimeType||'')||/\.(txt|md|json|csv|js|mjs|cjs|jsx|ts|tsx|css|scss|less|html|htm|xml|svg|vue|py|java|c|h|cpp|cc|hpp|cs|go|rs|php|rb|sh|bash|zsh|sql|yml|yaml|kt|swift|ini|toml|lua|r|pl|diff|patch|log)$/i.test(x.name||'');
 /* debounced search + history */
 const SH=()=>{try{return JSON.parse(localStorage.getItem('sh')||'[]')}catch{return[]}};
 const fillSH=()=>{$('sh-list').innerHTML=SH().map(v=>`<option value="${esc(v)}">`).join('')};fillSH();
@@ -2109,7 +2109,7 @@ function openNote(x){
 window.allNotes=id=>all('notes').find(n=>n.id===id);
 
 window.handleFiles=async files=>{
-  const list=Array.from(files);if(!list.length)return;
+  let list=Array.from(files);if(!list.length)return;if(window.__mvImgPrep){try{list=await window.__mvImgPrep(list)}catch(e){console.warn(e)}if(!list.length){const fi=document.getElementById('file-input');if(fi)fi.value='';return}}
   try{await ensureToken()}catch{return toast('Please allow Google access','error')}
   const pc=$('upload-progress-container'),pf=$('progress-fill'),pp=$('progress-percent'),pn=$('progress-filename');pc.style.display='block';
   for(const file of list){
@@ -3453,6 +3453,323 @@ setInterval(()=>{try{
 /*END-PATCH-v3-index*/
 })();
 
+
+/*MV-PREVIEW-EDITOR v1 — PDF viewer, code highlight, media player, image tools*/
+(function(){
+const G=id=>document.getElementById(id);
+const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch{}};
+const tst=(m,t)=>{try{typeof toast==='function'&&toast(m,t)}catch{}};
+const _ld={};
+const loadScript=src=>_ld[src]||(_ld[src]=new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>{delete _ld[src];rej(new Error('load failed: '+src))};document.head.appendChild(s)}));
+const icon=n=>`<span class="material-symbols-outlined">${n}</span>`;
+const fsz=b=>{try{return fmtSize(b)}catch{return Math.round(b/1024)+' KB'}};
+
+/* ---------- CSS ---------- */
+const st=document.createElement('style');st.id='mv-css';st.textContent=`
+.mv-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px;background:var(--surface,#fff);border:1px solid var(--border,#ddd);border-radius:10px;margin:8px 0;color:var(--text,#222)}
+.mv-bar .mv-b,.mv-bar button{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:34px;height:34px;padding:0 8px;border:1px solid var(--border,#ddd);background:var(--bg,#f6f6f6);color:var(--text,#222);border-radius:8px;cursor:pointer;font:inherit;font-size:13px}
+.mv-bar button:hover{border-color:var(--blue,#1a73e8)}
+.mv-bar button.on{background:var(--blue,#1a73e8);color:#fff;border-color:var(--blue,#1a73e8)}
+.mv-bar .material-symbols-outlined{font-size:20px}
+.mv-bar select,.mv-bar input[type=number]{height:34px;border:1px solid var(--border,#ddd);background:var(--bg,#f6f6f6);color:var(--text,#222);border-radius:8px;padding:0 6px;font:inherit;font-size:13px}
+.mv-bar input[type=number]{width:56px;text-align:center}
+.mv-sp{flex:1}
+.mv-pdf{width:100%}
+.mv-scroll{background:#6b6b6b;border-radius:10px;overflow:auto;max-height:68vh;min-height:240px;text-align:center;padding:8px;position:relative}
+.mv-scroll canvas{background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.4);max-width:none}
+.mv-ld{color:#fff;padding:40px 0}
+.mv-audio{display:flex;flex-direction:column;align-items:center;gap:12px;padding:28px 12px;background:var(--bg,#f6f6f6);border-radius:10px;color:var(--text,#222)}
+.mv-audio>.material-symbols-outlined{font-size:56px;color:var(--blue,#1a73e8)}
+.mv-audio audio{width:100%}
+.mv-code-bar{margin:0 0 6px}
+.mv-code{color:var(--text,#222)}
+.mv-code code{background:transparent!important;padding:0!important;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
+.mv-code .hljs-comment,.mv-code .hljs-quote{color:#6a737d;font-style:italic}
+.mv-code .hljs-keyword,.mv-code .hljs-selector-tag,.mv-code .hljs-literal,.mv-code .hljs-doctag{color:#d73a49}
+.mv-code .hljs-string,.mv-code .hljs-regexp,.mv-code .hljs-addition{color:#032f62}
+.mv-code .hljs-number,.mv-code .hljs-symbol,.mv-code .hljs-bullet{color:#005cc5}
+.mv-code .hljs-title,.mv-code .hljs-section,.mv-code .hljs-function .hljs-title{color:#6f42c1}
+.mv-code .hljs-attr,.mv-code .hljs-attribute,.mv-code .hljs-variable,.mv-code .hljs-template-variable,.mv-code .hljs-property{color:#005cc5}
+.mv-code .hljs-built_in,.mv-code .hljs-type,.mv-code .hljs-class .hljs-title{color:#e36209}
+.mv-code .hljs-tag,.mv-code .hljs-name,.mv-code .hljs-selector-class,.mv-code .hljs-selector-id{color:#22863a}
+.mv-code .hljs-meta,.mv-code .hljs-deletion{color:#b31d28}
+.mv-code.mv-dk .hljs-comment,.mv-code.mv-dk .hljs-quote{color:#8b949e}
+.mv-code.mv-dk .hljs-keyword,.mv-code.mv-dk .hljs-selector-tag,.mv-code.mv-dk .hljs-literal,.mv-code.mv-dk .hljs-doctag{color:#ff7b72}
+.mv-code.mv-dk .hljs-string,.mv-code.mv-dk .hljs-regexp,.mv-code.mv-dk .hljs-addition{color:#a5d6ff}
+.mv-code.mv-dk .hljs-number,.mv-code.mv-dk .hljs-symbol,.mv-code.mv-dk .hljs-bullet,.mv-code.mv-dk .hljs-attr,.mv-code.mv-dk .hljs-attribute,.mv-code.mv-dk .hljs-variable,.mv-code.mv-dk .hljs-template-variable,.mv-code.mv-dk .hljs-property{color:#79c0ff}
+.mv-code.mv-dk .hljs-title,.mv-code.mv-dk .hljs-section,.mv-code.mv-dk .hljs-function .hljs-title{color:#d2a8ff}
+.mv-code.mv-dk .hljs-built_in,.mv-code.mv-dk .hljs-type,.mv-code.mv-dk .hljs-class .hljs-title{color:#ffa657}
+.mv-code.mv-dk .hljs-tag,.mv-code.mv-dk .hljs-name,.mv-code.mv-dk .hljs-selector-class,.mv-code.mv-dk .hljs-selector-id{color:#7ee787}
+.mv-code.mv-dk .hljs-meta,.mv-code.mv-dk .hljs-deletion{color:#ffa198}
+.mv-ov{position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:10px}
+.mv-box{background:var(--surface,#fff);color:var(--text,#222);border-radius:14px;width:min(680px,100%);max-height:96vh;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.mv-box h3{margin:0;font-size:16px}
+.mv-cwrap{background:#222;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:6px;min-height:120px}
+.mv-cwrap canvas{touch-action:none;cursor:crosshair;max-width:100%}
+.mv-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.mv-row label{font-size:13px;display:flex;align-items:center;gap:6px}
+.mv-row select,.mv-row input[type=range]{height:32px;border:1px solid var(--border,#ddd);background:var(--bg,#f6f6f6);color:var(--text,#222);border-radius:8px;padding:0 6px;font:inherit;font-size:13px}
+.mv-row input[type=range]{padding:0;height:auto}
+.mv-info{font-size:13px;color:var(--muted,#666)}
+.mv-box .mv-act{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.mv-box button{display:inline-flex;align-items:center;gap:4px;padding:8px 12px;border:1px solid var(--border,#ddd);background:var(--bg,#f6f6f6);color:var(--text,#222);border-radius:8px;cursor:pointer;font:inherit;font-size:13px}
+.mv-box button.pri{background:var(--blue,#1a73e8);color:#fff;border-color:var(--blue,#1a73e8)}
+.mv-box button .material-symbols-outlined{font-size:18px}
+`;
+document.head.appendChild(st);
+
+/* ---------- 1. PDF viewer (PDF.js) ---------- */
+const PDFJS='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+const PDFW='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+let pdfState=null;
+async function pdfView(x){
+  const body=G('modal-body');const old=body&&body.querySelector('.preview-box');if(!old)return;
+  const box=document.createElement('div');box.id='mv-pdf';box.className='mv-pdf';
+  box.innerHTML=`<div class="mv-bar">
+    <button data-a="prev" title="Previous page">${icon('chevron_left')}</button>
+    <span><input id="mv-pn" type="number" min="1" value="1"> / <b id="mv-pt">–</b></span>
+    <button data-a="next" title="Next page">${icon('chevron_right')}</button>
+    <span class="mv-sp"></span>
+    <button data-a="zo" title="Zoom out">${icon('zoom_out')}</button>
+    <span id="mv-zl" style="min-width:42px;text-align:center;font-size:13px">100%</span>
+    <button data-a="zi" title="Zoom in">${icon('zoom_in')}</button>
+    <button data-a="fit" title="Fit width">${icon('fit_width')}</button>
+  </div><div class="mv-scroll" id="mv-sc"><div class="mv-ld" id="mv-ld">Loading PDF…</div><canvas id="mv-cv" style="display:none"></canvas></div>`;
+  old.replaceWith(box);
+  const S=pdfState={box,pdf:null,n:1,z:1,seq:0,task:null};
+  const bail=()=>{if(box.isConnected)box.replaceWith(old)};
+  try{
+    await loadScript(PDFJS);
+    const lib=window.pdfjsLib;lib.GlobalWorkerOptions.workerSrc=PDFW;
+    const r=await fetch(mediaUrl(x));if(!r.ok)throw new Error('HTTP '+r.status);
+    const buf=await r.arrayBuffer();if(!box.isConnected)return;
+    S.pdf=await lib.getDocument({data:buf}).promise;
+    G('mv-pt').textContent=S.pdf.numPages;G('mv-pn').max=S.pdf.numPages;
+    G('mv-ld').style.display='none';G('mv-cv').style.display='inline-block';
+    box.addEventListener('click',e=>{const b=e.target.closest('button[data-a]');if(!b)return;pdfAct(b.dataset.a)});
+    G('mv-pn').addEventListener('change',e=>pdfGo(parseInt(e.target.value)||1));
+    pdfRender();
+  }catch(e){console.warn('pdf viewer',e);bail()}
+}
+function pdfAct(a){
+  const S=pdfState;if(!S||!S.pdf)return;
+  if(a==='prev')pdfGo(S.n-1);else if(a==='next')pdfGo(S.n+1);
+  else if(a==='zi'){S.z=Math.min(4,+(S.z+.25).toFixed(2));pdfRender()}
+  else if(a==='zo'){S.z=Math.max(.5,+(S.z-.25).toFixed(2));pdfRender()}
+  else if(a==='fit'){S.z=1;pdfRender()}
+}
+function pdfGo(n){const S=pdfState;if(!S||!S.pdf)return;n=Math.max(1,Math.min(S.pdf.numPages,n|0));G('mv-pn').value=n;if(n===S.n&&S.rendered)return;S.n=n;pdfRender();const sc=G('mv-sc');if(sc)sc.scrollTop=0}
+async function pdfRender(){
+  const S=pdfState;if(!S||!S.pdf||!S.box.isConnected)return;
+  const my=++S.seq;
+  try{
+    if(S.task){try{S.task.cancel()}catch{}}
+    const pg=await S.pdf.getPage(S.n);if(my!==S.seq)return;
+    const sc=G('mv-sc'),cv=G('mv-cv');if(!sc||!cv)return;
+    const base=pg.getViewport({scale:1});
+    const fit=Math.max(120,sc.clientWidth-18)/base.width;
+    const vp=pg.getViewport({scale:fit*S.z});
+    const dpr=Math.min(window.devicePixelRatio||1,3);
+    cv.width=Math.floor(vp.width*dpr);cv.height=Math.floor(vp.height*dpr);
+    cv.style.width=Math.floor(vp.width)+'px';cv.style.height=Math.floor(vp.height)+'px';
+    S.task=pg.render({canvasContext:cv.getContext('2d'),viewport:vp,transform:dpr!==1?[dpr,0,0,dpr,0,0]:null});
+    await S.task.promise;S.rendered=true;
+    const zl=G('mv-zl');if(zl)zl.textContent=Math.round(S.z*100)+'%';
+  }catch(e){if(!e||e.name!=='RenderingCancelledException')console.warn('pdf render',e)}
+}
+document.addEventListener('keydown',e=>{
+  if(!G('mv-pdf')||!pdfState||!pdfState.pdf)return;
+  if(e.target.closest&&e.target.closest('input,textarea,select'))return;
+  const k=e.key;
+  if(k==='ArrowRight'||k==='PageDown'){e.preventDefault();pdfAct('next')}
+  else if(k==='ArrowLeft'||k==='PageUp'){e.preventDefault();pdfAct('prev')}
+  else if(k==='+'||k==='='){pdfAct('zi')}
+  else if(k==='-'){pdfAct('zo')}
+  else if(k==='Home'){pdfGo(1)}
+  else if(k==='End'){pdfGo(pdfState.pdf.numPages)}
+},true);
+
+/* ---------- 2. Code / text viewer (highlight.js) ---------- */
+const HLJS='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+const LANG={js:'javascript',mjs:'javascript',cjs:'javascript',jsx:'javascript',ts:'typescript',tsx:'typescript',py:'python',json:'json',html:'xml',htm:'xml',xml:'xml',svg:'xml',vue:'xml',css:'css',scss:'scss',less:'less',md:'markdown',java:'java',c:'c',h:'c',cpp:'cpp',cc:'cpp',hpp:'cpp',cs:'csharp',go:'go',rs:'rust',php:'php',rb:'ruby',sh:'bash',bash:'bash',zsh:'bash',sql:'sql',yml:'yaml',yaml:'yaml',kt:'kotlin',swift:'swift',ini:'ini',toml:'ini',lua:'lua',r:'r',pl:'perl',diff:'diff',patch:'diff'};
+const isDark=()=>{const m=(getComputedStyle(document.body).backgroundColor||'').match(/\d+(\.\d+)?/g);if(!m)return false;const[r,g,b]=m.map(Number);return(0.299*r+0.587*g+0.114*b)<128};
+window.__mvHL=async function(pv,x){
+  if(!pv||!pv.isConnected)return;
+  const text=pv.textContent,ext=((x.name||'').split('.').pop()||'').toLowerCase(),lang=LANG[ext];
+  pv.classList.add('mv-code');if(isDark())pv.classList.add('mv-dk');
+  const bar=document.createElement('div');bar.className='mv-bar mv-code-bar';
+  bar.innerHTML=`<span style="font-size:13px;opacity:.8">${lang||ext||'text'} · ${text.split('\n').length} lines</span><span class="mv-sp"></span><button data-a="wrap" class="on">${icon('wrap_text')} Wrap</button><button data-a="copy">${icon('content_copy')} Copy</button>`;
+  pv.before(bar);
+  bar.addEventListener('click',e=>{const b=e.target.closest('button[data-a]');if(!b)return;
+    if(b.dataset.a==='wrap'){const on=b.classList.toggle('on');pv.style.whiteSpace=on?'pre-wrap':'pre'}
+    else{(navigator.clipboard?navigator.clipboard.writeText(text):Promise.reject()).then(()=>tst('Copied','success')).catch(()=>tst('Copy failed','error'))}});
+  if(!lang||text.length>150000)return;
+  try{
+    await loadScript(HLJS);if(!pv.isConnected||!window.hljs)return;
+    const code=document.createElement('code');code.className='hljs language-'+lang;code.textContent=text;
+    pv.textContent='';pv.appendChild(code);
+    window.hljs.highlightElement(code);
+  }catch(e){console.warn('highlight',e)}
+};
+
+/* ---------- 3. Office preview note ---------- */
+function officeNote(x){
+  const body=G('modal-body');const fr=body&&body.querySelector('.preview-box iframe');if(!fr||!x.driveFileId)return;
+  const n=document.createElement('div');n.className='mv-info';n.style.margin='6px 0';
+  n.innerHTML=`Google Drive preview · <a href="https://drive.google.com/file/d/${x.driveFileId}/view" target="_blank" rel="noopener">Open in Drive</a> if it stays blank`;
+  fr.closest('.preview-box').after(n);
+}
+
+/* ---------- 4. Audio / Video player ---------- */
+const RATES=[0.5,0.75,1,1.25,1.5,2];
+function mediaBar(el,isVideo){
+  const rate=parseFloat(LS('mv_rate'))||1;
+  const bar=document.createElement('div');bar.className='mv-bar';
+  bar.innerHTML=`<button data-a="b" title="Back 10s">${icon('replay_10')}</button><button data-a="f" title="Forward 10s">${icon('forward_10')}</button>
+  <label style="font-size:13px;display:flex;align-items:center;gap:4px">Speed <select data-a="rate">${RATES.map(r=>`<option value="${r}"${r===rate?' selected':''}>${r}x</option>`).join('')}</select></label>
+  <button data-a="loop" title="Loop">${icon('repeat')}</button>${isVideo&&document.pictureInPictureEnabled?`<button data-a="pip" title="Picture-in-Picture">${icon('picture_in_picture_alt')}</button>`:''}`;
+  el.insertAdjacentElement('afterend',bar);
+  const apply=()=>{el.defaultPlaybackRate=+bar.querySelector('select').value;el.playbackRate=+bar.querySelector('select').value};
+  apply();el.addEventListener('loadedmetadata',apply);el.addEventListener('play',apply);
+  bar.addEventListener('change',e=>{if(e.target.matches('select')){LS('mv_rate',e.target.value);apply()}});
+  bar.addEventListener('click',e=>{const b=e.target.closest('button[data-a]');if(!b)return;const a=b.dataset.a;
+    if(a==='b')el.currentTime=Math.max(0,el.currentTime-10);
+    else if(a==='f')el.currentTime=Math.min(el.duration||1e9,el.currentTime+10);
+    else if(a==='loop'){el.loop=!el.loop;b.classList.toggle('on',el.loop)}
+    else if(a==='pip'){(document.pictureInPictureElement===el?document.exitPictureInPicture():el.requestPictureInPicture()).catch(()=>tst('Picture-in-Picture not available','error'))}});
+}
+function audioView(x){
+  const body=G('modal-body');const old=body&&body.querySelector('.preview-box');if(!old)return;
+  const d=document.createElement('div');d.className='mv-audio';
+  d.innerHTML=`${icon('audiotrack')}<div style="font-size:14px;word-break:break-all;text-align:center"></div><audio controls preload="metadata"></audio>`;
+  d.children[1].textContent=x.name||'Audio';
+  const a=d.querySelector('audio');a.src=mediaUrl(x);
+  a.onerror=()=>{d.children[1].textContent='Cannot play this audio here. Use Download.'};
+  old.replaceWith(d);mediaBar(a,false);
+}
+
+/* ---------- viewer hook ---------- */
+window.__mvEnhance=function(x,id){
+  const mt=x.mimeType||'';pdfState=null;
+  if(mt.includes('pdf'))pdfView(x);
+  else if(mt.includes('audio')||/\.(mp3|wav|ogg|m4a|aac|flac|opus)$/i.test(x.name||''))audioView(x);
+  else if(mt.includes('video')){const v=G('modal-body').querySelector('video');if(v)mediaBar(v,true)}
+  else if(/officedocument|msword|ms-excel|ms-powerpoint/.test(mt))officeNote(x);
+};
+
+/* ---------- 5. Image tools before upload (crop / rotate / compress) ---------- */
+const isImg=f=>/^image\/(jpeg|png|webp|bmp)$/i.test(f.type)||(!f.type&&/\.(jpe?g|png|webp|bmp)$/i.test(f.name));
+async function loadSrc(file){
+  let bmp;
+  try{bmp=await createImageBitmap(file,{imageOrientation:'from-image'})}
+  catch{bmp=await new Promise((res,rej)=>{const im=new Image();const u=URL.createObjectURL(file);im.onload=()=>{URL.revokeObjectURL(u);res(im)};im.onerror=rej;im.src=u})}
+  const c=document.createElement('canvas');c.width=bmp.width||bmp.naturalWidth;c.height=bmp.height||bmp.naturalHeight;
+  c.getContext('2d').drawImage(bmp,0,0);if(bmp.close)bmp.close();return c;
+}
+function outMime(file,fmt){if(fmt==='jpeg')return'image/jpeg';if(fmt==='webp')return'image/webp';return/png/i.test(file.type)?'image/png':/webp/i.test(file.type)?'image/webp':'image/jpeg'}
+function renderOut(src,crop,o,mime){
+  const sx=crop?crop.x:0,sy=crop?crop.y:0,sw=crop?crop.w:src.width,sh=crop?crop.h:src.height;
+  let k=1;if(o.max&&Math.max(sw,sh)>o.max)k=o.max/Math.max(sw,sh);
+  const w=Math.max(1,Math.round(sw*k)),h=Math.max(1,Math.round(sh*k));
+  const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');
+  if(mime==='image/jpeg'){g.fillStyle='#fff';g.fillRect(0,0,w,h)}
+  g.imageSmoothingQuality='high';g.drawImage(src,sx,sy,sw,sh,0,0,w,h);
+  return new Promise(r=>c.toBlob(b=>r(b),mime,mime==='image/png'?undefined:o.q));
+}
+function newName(file,blob){
+  const ext=/png/.test(blob.type)?'png':/webp/.test(blob.type)?'webp':'jpg';
+  return file.name.replace(/\.[^.]+$/,'')+'.'+ext;
+}
+async function autoProcess(file,o){
+  const src=await loadSrc(file);const mime=outMime(file,o.fmt);
+  const b=await renderOut(src,null,o,mime);if(!b)return file;
+  if(b.size>=file.size&&!o.max&&o.fmt==='auto')return file;
+  return new File([b],newName(file,b),{type:b.type,lastModified:Date.now()});
+}
+function editOne(file,i,n){
+  return new Promise(async resolve=>{
+    let src;try{src=await loadSrc(file)}catch(e){console.warn('img load',e);tst('Cannot edit '+file.name+' — uploading original','');return resolve({a:'skip'})}
+    const ov=document.createElement('div');ov.className='mv-ov';
+    ov.innerHTML=`<div class="mv-box">
+      <h3>Image tools (${i}/${n})</h3><div class="mv-info" id="mv-fn"></div>
+      <div class="mv-cwrap"><canvas id="mv-ec"></canvas></div>
+      <div class="mv-row"><button data-a="rl">${icon('rotate_left')} Rotate</button><button data-a="rr">${icon('rotate_right')} Rotate</button><button data-a="rc">${icon('crop_free')} Reset crop</button>
+        <label>Crop <select id="mv-asp"><option value="0">Free</option><option value="1">1:1</option><option value="1.3333">4:3</option><option value="0.75">3:4</option><option value="1.7778">16:9</option></select></label></div>
+      <div class="mv-info">Drag on the image to select the crop area.</div>
+      <div class="mv-row"><label>Max size <select id="mv-max"><option value="0">Original</option><option value="3000">3000 px</option><option value="2048" selected>2048 px</option><option value="1600">1600 px</option><option value="1280">1280 px</option><option value="1024">1024 px</option></select></label>
+        <label>Format <select id="mv-fmt"><option value="auto">Auto</option><option value="jpeg">JPEG</option><option value="webp">WebP</option></select></label></div>
+      <div class="mv-row"><label style="flex:1">Quality <input id="mv-q" type="range" min="40" max="100" value="82" style="flex:1"> <b id="mv-qv">82%</b></label></div>
+      <div class="mv-info" id="mv-sz">Calculating size…</div>
+      <div class="mv-act"><button data-a="cancel">Cancel upload</button><button data-a="skipall">Skip all</button><button data-a="skip">Original</button>${n>i?`<button data-a="all">Compress rest</button>`:''}<button data-a="ok" class="pri">${icon('check')} Use & next</button></div></div>`;
+    document.body.appendChild(ov);
+    ov.querySelector('#mv-fn').textContent=file.name+' · '+fsz(file.size);
+    const cv=ov.querySelector('#mv-ec'),g=cv.getContext('2d');
+    let rot=0,crop=null,drag=null,dscale=1,timer=null;
+    const opts=()=>({max:+ov.querySelector('#mv-max').value,q:+ov.querySelector('#mv-q').value/100,fmt:ov.querySelector('#mv-fmt').value});
+    function draw(){
+      const maxW=Math.min(620,ov.querySelector('.mv-cwrap').clientWidth-12||620),maxH=Math.round(window.innerHeight*.42);
+      dscale=Math.min(1,maxW/src.width,maxH/src.height);
+      cv.width=Math.max(1,Math.round(src.width*dscale));cv.height=Math.max(1,Math.round(src.height*dscale));
+      g.drawImage(src,0,0,cv.width,cv.height);
+      if(crop){
+        g.fillStyle='rgba(0,0,0,.55)';g.fillRect(0,0,cv.width,cv.height);
+        const cx=crop.x*dscale,cy=crop.y*dscale,cw=crop.w*dscale,ch=crop.h*dscale;
+        g.drawImage(src,crop.x,crop.y,crop.w,crop.h,cx,cy,cw,ch);
+        g.strokeStyle='#fff';g.lineWidth=2;g.strokeRect(cx,cy,cw,ch);
+      }
+    }
+    function sched(){clearTimeout(timer);ov.querySelector('#mv-sz').textContent='Calculating size…';timer=setTimeout(async()=>{
+      try{const o=opts(),b=await renderOut(src,crop,o,outMime(file,o.fmt));if(!b)return;
+        const w=crop?Math.round(crop.w):src.width,h=crop?Math.round(crop.h):src.height,k=o.max&&Math.max(w,h)>o.max?o.max/Math.max(w,h):1;
+        const d=Math.round((1-b.size/file.size)*100);
+        ov.querySelector('#mv-sz').textContent=`${Math.round(w*k)}×${Math.round(h*k)} px · ${fsz(file.size)} → ${fsz(b.size)} (${d>=0?'−'+d:'+'+(-d)}%)`;
+      }catch{}},250)}
+    function rotate(dir){
+      const c=document.createElement('canvas');c.width=src.height;c.height=src.width;const x=c.getContext('2d');
+      x.translate(c.width/2,c.height/2);x.rotate(dir*Math.PI/2);x.drawImage(src,-src.width/2,-src.height/2);
+      src=c;rot=(rot+dir+4)%4;crop=null;draw();sched();
+    }
+    const pt=e=>{const r=cv.getBoundingClientRect();return{x:Math.max(0,Math.min(cv.width,(e.clientX-r.left)*cv.width/r.width)),y:Math.max(0,Math.min(cv.height,(e.clientY-r.top)*cv.height/r.height))}};
+    cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);drag=pt(e)});
+    cv.addEventListener('pointermove',e=>{
+      if(!drag)return;const p=pt(e);let dx=p.x-drag.x,dy=p.y-drag.y;const ar=+ov.querySelector('#mv-asp').value;
+      if(ar){const w=Math.abs(dx),h=Math.abs(dy);if(w/ar>h)dy=Math.sign(dy||1)*w/ar;else dx=Math.sign(dx||1)*h*ar;
+        const mx=dx>=0?cv.width-drag.x:drag.x,my=dy>=0?cv.height-drag.y:drag.y;const k=Math.min(1,mx/Math.abs(dx||1),my/Math.abs(dy||1));dx*=k;dy*=k}
+      const x0=Math.min(drag.x,drag.x+dx),y0=Math.min(drag.y,drag.y+dy);
+      crop={x:x0/dscale,y:y0/dscale,w:Math.abs(dx)/dscale,h:Math.abs(dy)/dscale};draw()});
+    const end=()=>{if(!drag)return;drag=null;if(crop&&(crop.w*dscale<8||crop.h*dscale<8))crop=null;else if(crop){crop={x:Math.round(crop.x),y:Math.round(crop.y),w:Math.max(1,Math.round(Math.min(crop.w,src.width-crop.x))),h:Math.max(1,Math.round(Math.min(crop.h,src.height-crop.y)))}}draw();sched()};
+    cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
+    ov.addEventListener('input',e=>{if(e.target.id==='mv-q')ov.querySelector('#mv-qv').textContent=e.target.value+'%';if(/^mv-(q|max|fmt)$/.test(e.target.id))sched()});
+    ov.addEventListener('change',e=>{if(e.target.id==='mv-asp'){crop=null;draw()}sched()});
+    const done=r=>{clearTimeout(timer);ov.remove();resolve(r)};
+    ov.addEventListener('click',async e=>{const b=e.target.closest('button[data-a]');if(!b)return;const a=b.dataset.a;
+      if(a==='rl')rotate(-1);else if(a==='rr')rotate(1);else if(a==='rc'){crop=null;draw();sched()}
+      else if(a==='cancel')done({a:'cancel'});else if(a==='skipall')done({a:'skipall'});else if(a==='skip')done({a:'skip'});
+      else if(a==='all')done({a:'all',o:opts()});
+      else if(a==='ok'){b.disabled=true;const o=opts(),mime=outMime(file,o.fmt);const blob=await renderOut(src,crop,o,mime);
+        const edited=rot||crop||o.max||o.fmt!=='auto';
+        if(!blob||(!edited&&blob.size>=file.size))done({a:'skip'});
+        else done({a:'use',f:new File([blob],newName(file,blob),{type:blob.type,lastModified:Date.now()})})}});
+    draw();sched();
+  });
+}
+window.__mvImgPrep=async function(list){
+  const imgs=list.filter(isImg);if(!imgs.length)return list;
+  const out=new Map();let all=null,skipAll=false,i=0;
+  for(const f of imgs){
+    i++;
+    if(skipAll)break;
+    if(all){try{out.set(f,await autoProcess(f,all))}catch(e){console.warn(e)}continue}
+    const r=await editOne(f,i,imgs.length);
+    if(r.a==='cancel')return[];
+    if(r.a==='skipall'){skipAll=true;break}
+    if(r.a==='use')out.set(f,r.f);
+    else if(r.a==='all'){all=r.o;try{out.set(f,await autoProcess(f,all))}catch(e){console.warn(e)}}
+  }
+  return list.map(f=>out.has(f)?out.get(f):f);
+};
+})();
+/*END-MV-PREVIEW-EDITOR v1*/
 </script>
 <a id="admin-fab" href="admin.html" title="Open Admin Panel"><span class="material-symbols-outlined">admin_panel_settings</span>Admin Panel</a>
 </body>
