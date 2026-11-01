@@ -654,16 +654,16 @@ function openViewer(x,role,fid){
   if(cmtUnsub){cmtUnsub();cmtUnsub=null}
   const mt=x.mimeType||'',id=x.driveFileId,rk=RANK[role]||1;let h='<div class="preview-box" style="color:#fff">Preview not available. Use Download.</div>';
   if(mt.includes('image'))h=`<div class="preview-box"><img src="https://drive.google.com/thumbnail?id=${id}&sz=w1600&authuser=0"></div>`;
-  else if(mt.includes('video'))h=`<video class="vid" controls playsinline preload="metadata" ${x.thumb?`poster="${esc(x.thumb)}"`:''} src="${esc(mediaUrl(x))}"></video>`;
+  else if(mt.includes('video'))h=`<div class="preview-box" style="background:#fff"><iframe src="https://drive.google.com/file/d/${id}/preview" width="100%" height="480px" allow="autoplay; fullscreen" allowfullscreen></iframe></div>`;
   else if(mt.includes('pdf'))h=`<div class="preview-box" style="background:#fff"><iframe src="https://drive.google.com/file/d/${id}/preview" width="100%" height="500px"></iframe></div>`;
   if(isTxt(x))h='<pre id="txt-pv" class="preview-box" style="background:var(--bg);color:var(--text);align-items:flex-start;justify-content:flex-start;padding:12px;overflow:auto;white-space:pre-wrap;font-size:12px;text-align:left;display:block">Loading…</pre>';
   else if(/officedocument|msword|ms-excel|ms-powerpoint/.test(mt))h=`<div class="preview-box" style="background:#fff"><iframe src="https://drive.google.com/file/d/${id}/preview" width="100%" height="500px"></iframe></div>`;
   const meta=`<div class="file-meta" style="margin:10px 0">${fmtSize(x.size)}${x.by||x.ownerEmail?' · '+esc(x.by||x.ownerEmail):''} · Your access: <b>${roleLabel(role)}</b></div>`;
   const cm=rk>=2?`<div class="step-t">Comments</div><div id="cm-list"></div><div style="display:flex;gap:8px;margin-top:8px"><input id="cm-in" placeholder="Write a comment…" style="flex:1;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"><button class="btn btn-primary" id="cm-send">Send</button></div>`:'';
   openModal(x.name||'File',h+meta+cm,`<button class="btn" onclick="closeModal()">Close</button>${rk>=3?'<button class="btn" id="vw-rn"><span class="material-symbols-outlined">edit</span> Rename</button>':''}<button class="btn" id="vw-sh"><span class="material-symbols-outlined">share</span> Share link</button><button class="btn btn-primary" id="vw-dl"><span class="material-symbols-outlined">download</span> Download</button>`,true);
-  viewing=x;{const pv=$('txt-pv');if(pv)fetch(mediaUrl(x)).then(r=>r.text()).then(t=>{pv.textContent=t.slice(0,200000);try{window.__mvHL&&window.__mvHL(pv,x)}catch(e){console.warn(e)}}).catch(()=>{pv.textContent='Preview failed. Use Download.'});const im=$('modal-body').querySelector('.preview-box img');if(im)im.onclick=()=>im.classList.toggle('zm')}
+  viewing=x;{const pv=$('txt-pv');if(pv)window.__mvTextInto(pv,x);const im=$('modal-body').querySelector('.preview-box img');if(im)im.onclick=()=>im.classList.toggle('zm')}
   const v=$('modal-body').querySelector('video');try{window.__mvEnhance&&window.__mvEnhance(x,id)}catch(e){console.warn(e)}
-  if(v){try{window.__mvVideoFix(v,x,id)}catch(err){console.warn(err)}}
+  
   $('vw-dl').onclick=()=>downloadFile(x);
   $('vw-sh').onclick=()=>openShareLink({...x,fileId:fid},role);
   if(rk>=3)$('vw-rn').onclick=async()=>{const n=(prompt('New name',x.name)||'').trim();if(!n)return;try{await updateDoc(doc(db,'files',fid),{name:n});x.name=n;$('modal-title').textContent=n;toast('Renamed','success')}catch(e){toast('Failed: '+e.message,'error')}};
@@ -3541,15 +3541,14 @@ async function pdfView(x){
   try{
     await loadScript(PDFJS);
     const lib=window.pdfjsLib;lib.GlobalWorkerOptions.workerSrc=PDFW;
-    const r=await fetch(mediaUrl(x));if(!r.ok)throw new Error('HTTP '+r.status);
-    const buf=await r.arrayBuffer();if(!box.isConnected)return;
+    const buf=await window.__mvBuf(x);if(!box.isConnected)return;
     S.pdf=await lib.getDocument({data:buf}).promise;
     G('mv-pt').textContent=S.pdf.numPages;G('mv-pn').max=S.pdf.numPages;
     G('mv-ld').style.display='none';G('mv-cv').style.display='inline-block';
     box.addEventListener('click',e=>{const b=e.target.closest('button[data-a]');if(!b)return;pdfAct(b.dataset.a)});
     G('mv-pn').addEventListener('change',e=>pdfGo(parseInt(e.target.value)||1));
     pdfRender();
-  }catch(e){console.warn('pdf viewer',e);bail()}
+  }catch(e){console.warn('pdf viewer',e);bail();window.__mvAuthCard(old,e,()=>pdfView(x))}
 }
 function pdfAct(a){
   const S=pdfState;if(!S||!S.pdf)return;
@@ -3644,84 +3643,108 @@ function audioView(x){
   d.innerHTML=`${icon('audiotrack')}<div style="font-size:14px;word-break:break-all;text-align:center"></div><audio controls preload="metadata"></audio>`;
   d.children[1].textContent=x.name||'Audio';
   const a=d.querySelector('audio');a.src=mediaUrl(x);
-  a.onerror=()=>{d.children[1].textContent='Cannot play this audio here. Use Download.'};
+  a.onerror=()=>window.__mvAudioErr(a,d,x);
   old.replaceWith(d);mediaBar(a,false);
 }
 
 /* ---------- viewer hook ---------- */
-/*MV-VIDEOFIX v2 — keeps the real <video> element; re-authorizes Google access when the Drive token is missing/expired*/
-let _mvBlob=null;
-window.__mvVideoFix=function(v,x,id){
+/*MV-VIEWERFIX v3 — shared Drive loader with re-authorize button; html preview, line numbers, font size; audio fallback*/
+async function mvFetch(x){
   const API='https://www.googleapis.com/drive/v3/files/'+x.driveFileId+'?alt=media';
-  const bar=()=>{const n=v.nextElementSibling;return n&&n.classList&&n.classList.contains('mv-bar')?n:null};
-  const holder=()=>v.parentNode;
-  const clearBox=()=>{const h=holder();if(!h)return;h.querySelectorAll('.mv-vstat').forEach(n=>n.remove())};
-  const box=()=>{let s=holder().querySelector('.mv-vstat');if(!s){s=document.createElement('div');s.className='mv-info mv-vstat';s.style.margin='6px 0';(bar()||v).insertAdjacentElement('afterend',s)}return s};
-  const stat=t=>{if(!v.isConnected)return;const s=box();s.textContent=t};
-  const iframeFallback=()=>{
-    if(!v.isConnected)return;
-    const b=bar();if(b)b.remove();clearBox();
-    const w=document.createElement('div');w.className='preview-box';w.style.background='#fff';
-    w.innerHTML='<iframe src="https://drive.google.com/file/d/'+id+'/preview" width="100%" height="480px" allow="autoplay"></iframe>';
-    v.replaceWith(w);
-    const n=document.createElement('div');n.className='mv-info';n.style.margin='6px 0';
-    n.textContent="Showing Google Drive's own player. Speed / ±10s / Loop / PiP are not available here.";
-    w.after(n);
+  const c=[];if(accessToken)c.push(['token',API+'&access_token='+accessToken]);
+  c.push(['key',API+'&key='+firebaseConfig.apiKey]);
+  const errs=[];let auth=!accessToken;
+  for(const [k,u] of c){
+    try{const r=await fetch(u);if(!r.ok){if(r.status===401||r.status===403)auth=true;throw new Error(k+': HTTP '+r.status)}return r}
+    catch(e){errs.push(e&&e.message||(k+': network error'))}
+  }
+  const er=new Error(errs.join(' · '));er.mvAuth=auth;throw er;
+}
+window.__mvBuf=async x=>(await mvFetch(x)).arrayBuffer();
+window.__mvAuthCard=function(anchor,e,retry){
+  if(!e||!e.mvAuth||!anchor||!anchor.isConnected)return;
+  const p=anchor.parentNode;const o=p.querySelector('.mv-authcard');if(o)o.remove();
+  const c=document.createElement('div');c.className='mv-info mv-authcard';c.style.cssText='margin:6px 0;padding:10px';
+  const t=document.createElement('div');t.textContent='Google Drive access is missing or expired, so this file could not be opened here.';
+  const d=document.createElement('div');d.style.cssText='opacity:.7;font-size:12px;margin:2px 0 8px';d.textContent=e.message||'';
+  const b=document.createElement('button');b.className='btn btn-primary';b.textContent='Allow Google access & retry';
+  b.onclick=async()=>{
+    b.disabled=true;
+    try{clearToken();await ensureToken()}catch(er){b.disabled=false;tst('Google access was not granted','error');return}
+    c.remove();retry();
   };
-  let busy=false;
-  const run=async()=>{
-    if(busy||!v.isConnected)return;busy=true;
-    const cands=[];
-    if(accessToken)cands.push(['token',API+'&access_token='+accessToken]);
-    cands.push(['key',API+'&key='+firebaseConfig.apiKey]);
-    const errs=[];let needAuth=!accessToken;
-    for(const [kind,u] of cands){
-      try{
-        stat('Loading video… 0%');
-        const r=await fetch(u);
-        if(!r.ok){if(r.status===401||r.status===403)needAuth=true;throw new Error('HTTP '+r.status)}
-        if(!r.body)throw new Error('no stream');
-        const total=+r.headers.get('content-length')||+x.size||0;
-        if(total>700*1048576)throw new Error('file too large for in-app player');
-        const rd=r.body.getReader(),parts=[];let got=0,last=0;
-        for(;;){
-          const {done,value}=await rd.read();if(done)break;
-          if(!v.isConnected){try{rd.cancel()}catch{}busy=false;return}
-          parts.push(value);got+=value.byteLength;
-          const n=Date.now();if(n-last>300){last=n;stat('Loading video… '+(total?Math.min(99,Math.floor(got/total*100))+'% · ':'')+(got/1048576).toFixed(1)+' MB')}
-        }
-        if(!v.isConnected){busy=false;return}
-        const blob=new Blob(parts,{type:x.mimeType||'video/mp4'});
-        if(_mvBlob){try{URL.revokeObjectURL(_mvBlob)}catch{}}
-        _mvBlob=URL.createObjectURL(blob);
-        v.onerror=()=>{stat('Video downloaded but this browser cannot decode it. Use Download.')};
-        v.src=_mvBlob;v.load();clearBox();busy=false;return;
-      }catch(e){errs.push(kind+': '+(e&&e.message||e));console.warn('video load',kind,e)}
-    }
-    busy=false;
-    if(!v.isConnected)return;
-    const s=box();s.textContent='';
-    const p=document.createElement('div');
-    p.textContent=needAuth?'Google Drive access is missing or expired, so the video cannot be streamed.':'The video could not be loaded.';
-    const d=document.createElement('div');d.style.cssText='opacity:.7;font-size:12px;margin-top:2px';d.textContent=errs.join(' · ');
-    const row=document.createElement('div');row.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin-top:8px';
-    const b1=document.createElement('button');b1.className='btn btn-primary';b1.textContent='Allow Google access & retry';
-    b1.onclick=async()=>{
-      b1.disabled=true;
-      try{clearToken();await ensureToken()}catch(e){b1.disabled=false;tst('Google access was not granted','error');return}
-      run();
-    };
-    const b2=document.createElement('button');b2.className='btn';b2.textContent="Use Drive's player";b2.onclick=iframeFallback;
-    row.append(b1,b2);s.append(p,d,row);
-  };
-  v.onerror=()=>{v.onerror=null;run()};
+  c.append(t,d,b);anchor.insertAdjacentElement('beforebegin',c);
 };
+window.__mvTextInto=function(pv,x){
+  const go=async()=>{
+    try{
+      const r=await mvFetch(x);const t=await r.text();
+      pv.textContent=t.slice(0,200000);
+      try{if(window.__mvHL)await window.__mvHL(pv,x)}catch(e){console.warn(e)}
+    }catch(e){
+      pv.textContent='Preview failed. Use Download.';
+      window.__mvAuthCard(pv,e,()=>{pv.textContent='Loading…';go()});
+    }
+  };
+  go();
+};
+window.__mvAudioErr=function(a,d,x){
+  a.onerror=()=>{d.children[1].textContent='Cannot play this audio here. Use Download.'};
+  mvFetch(x).then(r=>r.blob()).then(b=>{if(!a.isConnected)return;a.src=URL.createObjectURL(b);a.load()})
+    .catch(e=>{window.__mvAuthCard(a,e,()=>{a.onerror=()=>window.__mvAudioErr(a,d,x);a.src=mediaUrl(x);a.load()})});
+};
+{const s=document.createElement('style');s.id='mv-css3';
+ s.textContent='.mv-nl{counter-reset:ln}.mv-nl .mv-ln{display:block;position:relative;padding-left:3.4em;min-height:1.35em}.mv-nl .mv-ln::before{counter-increment:ln;content:counter(ln);position:absolute;left:0;width:2.7em;text-align:right;opacity:.45;user-select:none}';
+ document.head.appendChild(s)}
+function mvNumberLines(html){
+  const stack=[],out=[];
+  for(const ln of html.split('\n')){
+    let s=stack.join('')+ln;const re=/<span[^>]*>|<\/span>/g;let m;
+    while((m=re.exec(ln))){if(m[0]==='</span>')stack.pop();else stack.push(m[0])}
+    out.push('<span class="mv-ln">'+s+'</span>'.repeat(stack.length+1));
+  }
+  return out.join('');
+}
+function mvExtras(pv,x,text){
+  if(!pv.isConnected)return;
+  const bar=pv.previousElementSibling;if(!bar||!bar.classList.contains('mv-code-bar'))return;
+  const ext=((x.name||'').split('.').pop()||'').toLowerCase();
+  const mk=(a,h,t)=>{const b=document.createElement('button');b.dataset.x=a;b.title=t||'';b.innerHTML=h;return b};
+  const bNum=mk('num',icon('format_list_numbered'),'Line numbers'),bM=mk('fm','A−','Smaller text'),bP=mk('fp','A+','Larger text');
+  const bHtml=/^(html?|xhtml)$/.test(ext)?mk('pv',icon('visibility')+' Preview','Run / preview this HTML'):null;
+  if(bHtml)bar.append(bHtml);bar.append(bNum,bM,bP);
+  let fs=12,plain=pv.innerHTML,numbered=false,fr=null;pv.style.fontSize=fs+'px';
+  const setNum=on=>{
+    if(on===numbered)return;numbered=on;bNum.classList.toggle('on',on);
+    if(on){plain=pv.innerHTML;const code=pv.querySelector('code');
+      pv.innerHTML=(code?'<code class="'+code.className+'">':'')+mvNumberLines(code?code.innerHTML:plain)+(code?'</code>':'');pv.classList.add('mv-nl')}
+    else{pv.innerHTML=plain;pv.classList.remove('mv-nl')}
+  };
+  bar.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-x]');if(!b)return;const a=b.dataset.x;
+    if(a==='num')setNum(!numbered);
+    else if(a==='fm'||a==='fp'){fs=Math.max(9,Math.min(22,fs+(a==='fp'?1:-1)));pv.style.fontSize=fs+'px'}
+    else if(a==='pv'){
+      if(!fr){fr=document.createElement('iframe');fr.setAttribute('sandbox','allow-scripts allow-forms allow-modals');fr.srcdoc=text;
+        fr.style.cssText='width:100%;height:480px;border:1px solid var(--border,#ddd);border-radius:10px;background:#fff;margin-top:6px';
+        pv.after(fr);pv.style.display='none';b.classList.add('on')}
+      else{fr.remove();fr=null;pv.style.display='block';b.classList.remove('on')}
+    }
+  });
+  setNum(true);
+}
+{const _hl=window.__mvHL;
+ window.__mvHL=async function(pv,x){
+   const text=pv.textContent;
+   try{await _hl(pv,x)}catch(e){console.warn(e)}
+   try{mvExtras(pv,x,text)}catch(e){console.warn('mv extras',e)}
+ }}
 
 window.__mvEnhance=function(x,id){
   const mt=x.mimeType||'';pdfState=null;
   if(mt.includes('pdf'))pdfView(x);
   else if(mt.includes('audio')||/\.(mp3|wav|ogg|m4a|aac|flac|opus)$/i.test(x.name||''))audioView(x);
-  else if(mt.includes('video')){const v=G('modal-body').querySelector('video');if(v)mediaBar(v,true)}
+  
   else if(/officedocument|msword|ms-excel|ms-powerpoint/.test(mt))officeNote(x);
 };
 
