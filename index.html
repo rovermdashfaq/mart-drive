@@ -320,8 +320,46 @@ html.org-premium ::-webkit-scrollbar-thumb{background:linear-gradient(#E3B341,#B
 
 
 </style>
+<!--SEC:head--><style id="sx-style">#sx-lock{display:none;position:fixed;inset:0;z-index:2147483600;background:var(--bg);color:var(--text);align-items:center;justify-content:center;padding:20px}
+html.has-session.app-locked #sx-lock{display:flex}
+html.has-session.app-locked body{overflow:hidden}
+.sx-ov{position:fixed;inset:0;z-index:2147483200;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px}
+.sx-card{width:100%;max-width:340px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:26px 22px;text-align:center}
+.sx-card h2,.sx-card h3{margin:6px 0 4px;font-size:18px}
+.sx-card p{margin:0 0 14px;color:var(--muted);font-size:13.5px;line-height:1.45}
+.sx-ic{font-size:40px;color:var(--blue)}
+.sx-in{display:block;width:100%;box-sizing:border-box;margin:0 0 10px;padding:12px 14px;font-size:20px;letter-spacing:6px;text-align:center;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text)}
+.sx-in::placeholder{letter-spacing:0;font-size:14px}
+.sx-err{min-height:18px;color:var(--error);font-size:12.5px;margin-bottom:8px}
+.sx-row{display:flex;gap:8px;justify-content:center}.sx-row .btn{flex:1;justify-content:center}
+.sx-link{display:block;margin-top:14px;background:none;border:0;color:var(--blue);cursor:pointer;font-size:13px;text-decoration:underline;width:100%}
+.sx-sec{border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px}
+.sx-sec h4{margin:0 0 4px;font-size:15px;display:flex;align-items:center;gap:8px}
+.sx-sec h4 .material-symbols-outlined{font-size:20px;color:var(--blue)}
+.sx-note{font-size:12.5px;color:var(--muted);line-height:1.45;margin:2px 0 10px}
+.sx-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.sx-chip{display:inline-block;font-size:11px;padding:1px 8px;border-radius:99px;border:1px solid var(--border);color:var(--muted);margin-left:6px}
+.sx-chip.on{color:var(--success);border-color:var(--success)}
+.sx-dev{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--border)}
+.sx-dev:first-of-type{border-top:0}
+.sx-dev>.material-symbols-outlined{color:var(--muted)}
+.sx-dev .sx-dt{flex:1;min-width:0;font-size:14px}.sx-dev .sx-ds{font-size:12px;color:var(--muted)}
+.sx-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--success);margin-right:5px}
+.sx-sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px}
+</style><script>(function(){try{var c=JSON.parse(localStorage.getItem("mart_lock_v1")||"null");if(!c||!c.on)return;var h=document.documentElement;if(!h.classList.contains("has-session"))return;var a=+sessionStorage.getItem("mart_last_active")||0;var lim=Math.max((c.after||0)*60000,4000);if(!a||Date.now()-a>lim)h.classList.add("app-locked")}catch(e){}})();</script><!--/SEC:head-->
 </head>
 <body>
+<!--SEC:lock--><div id="sx-lock" role="dialog" aria-modal="true" aria-label="MART Drive is locked">
+<div class="sx-card">
+<span class="material-symbols-outlined sx-ic">lock</span>
+<h2>MART Drive is locked</h2>
+<p id="sx-lock-msg">Enter your PIN to continue</p>
+<input class="sx-in" id="sx-lock-pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="PIN" aria-label="PIN">
+<div class="sx-row"><button class="btn btn-primary" id="sx-lock-go" type="button">Unlock</button></div>
+<div class="sx-row" style="margin-top:8px"><button class="btn" id="sx-lock-bio" type="button" style="display:none"><span class="material-symbols-outlined">fingerprint</span> Fingerprint / Face</button></div>
+<button class="sx-link" id="sx-lock-forgot" type="button">Forgot PIN? Verify with Google</button>
+<button class="sx-link" id="sx-lock-out" type="button" style="margin-top:6px;color:var(--muted)">Sign out</button>
+</div></div><!--/SEC:lock-->
 <div id="landing">
 <header class="ld-nav"><div class="ld-wrap ld-nav-in">
 <a class="ld-brand" href="./"><img src="https://i.ibb.co/zhhYdVdD/Picsart-26-10-26-09-26-17-563.jpg" alt="MART Drive logo"><span>MART Drive</span></a>
@@ -391,6 +429,8 @@ html.org-premium ::-webkit-scrollbar-thumb{background:linear-gradient(#E3B341,#B
 <li id="nav-guest" style="display:none"><div class="nav-item" onclick="document.getElementById('sidebar').classList.remove('open');gOpenMine()"><span class="material-symbols-outlined">group_add</span> Guest access</div></li>
 <li id="nav-requests" style="display:none"><div class="nav-item" data-v="requests" onclick="setView('requests')"><span class="material-symbols-outlined">how_to_reg</span> Join Requests <span class="badge" id="req-badge" style="display:none"></span></div></li>
 <li><div class="nav-item" data-v="trash" onclick="setView('trash')"><span class="material-symbols-outlined">delete</span> Trash</div></li>
+<!--SEC:nav--><li><div class="nav-item" data-vx="vault" onclick="openVault()"><span class="material-symbols-outlined">lock</span> Vault</div></li>
+<li><div class="nav-item" onclick="openSecurity()"><span class="material-symbols-outlined">shield_lock</span> Security</div></li><!--/SEC:nav-->
 <li><div class="nav-item" onclick="openThemeModal()"><span class="material-symbols-outlined">palette</span> Theme</div></li>
 <li><div class="nav-item" onclick="openInbox()"><span class="material-symbols-outlined">notifications</span> Notifications <span class="badge" id="inbox-badge" style="display:none"></span></div></li>
 <li><div class="nav-item" onclick="enablePush()"><span class="material-symbols-outlined">notifications_active</span> Enable push alerts</div></li>
@@ -459,6 +499,8 @@ html.org-premium ::-webkit-scrollbar-thumb{background:linear-gradient(#E3B341,#B
 <div class="ctx-item" data-a="up"><span class="material-symbols-outlined">arrow_upward</span> Move earlier</div>
 <div class="ctx-item" data-a="down"><span class="material-symbols-outlined">arrow_downward</span> Move later</div>
 <div class="ctx-item" data-a="tag"><span class="material-symbols-outlined">sell</span> Tags…</div>
+<!--SEC:ctx--><div class="ctx-item" data-a="tovault" style="display:none"><span class="material-symbols-outlined">lock</span> Move to Vault</div>
+<div class="ctx-item" data-a="fromvault" style="display:none"><span class="material-symbols-outlined">lock_open</span> Remove from Vault</div><!--/SEC:ctx-->
 <div class="ctx-item" data-a="info"><span class="material-symbols-outlined">info</span> View information</div>
 <div class="ctx-item" data-a="stopall" style="color:var(--error)"><span class="material-symbols-outlined" style="color:var(--error)">person_off</span> Stop sharing</div>
 <div class="ctx-item" data-a="trash" style="color:var(--error)"><span class="material-symbols-outlined" style="color:var(--error)">delete</span> Move to trash</div>
@@ -490,6 +532,11 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const COL={file:'files',folder:'folders',note:'notes'};
 const COLORS=['','#F59E0B','#10B981','#3B82F6','#EC4899'];
 const store={files:{p:[],o:[],s:[]},folders:{p:[],o:[],s:[]},notes:{p:[],o:[],s:[]}};
+/*SEC:vault-core*/
+const VAULT={open:false,all:{files:[],folders:[],notes:[]}};
+function vApply(){for(const k of['files','folders','notes']){const a=VAULT.all[k]||[];store[k].p=VAULT.open?a:a.filter(x=>!x.vault)}}
+function vSplit(k,list){VAULT.all[k]=list;return VAULT.open?list:list.filter(x=>!x.vault)}
+/*/SEC:vault-core*/
 let sharedBy=[],sharedFrom=[],unsubS=[];
 let currentUser=null,accessToken=null,organizations=[],currentOrgId=null,currentFolderId=null,currentView='all',searchTerm='',ctxItem=null,accessItem=null,moveItems=[];
 let unsubP=[],unsubO=[],unsubOrgs=null,unsubR=null,unsubG=null,reqKey='',joinReqs=[],firstOrgLoad=true,tokenPromise=null,pendingPreview=null,pvTimer=null,pendingFolder=new URLSearchParams(location.search).get('folder');
@@ -1059,7 +1106,7 @@ function setupListeners(){
   },e=>{console.warn('orgs',e);runPendingJoin()});
   unsubP.forEach(u=>u());
   unsubP=Object.keys(store).map(k=>onSnapshot(query(collection(db,k),where('uid','==',uid)),s=>{
-    store[k].p=snapDocs(s);if(k==='files'){loaded=true;if(!purged){purged=true;setTimeout(autoPurge,3000)}}
+    store[k].p=vSplit(k,snapDocs(s));if(k==='files'){loaded=true;if(!purged){purged=true;setTimeout(autoPurge,3000)}}
     if(k==='folders'&&pendingFolder&&store.folders.p.some(f=>f.id===pendingFolder)){const f=store.folders.p.find(x=>x.id===pendingFolder);pendingFolder=null;if((f.orgId||null)===currentOrgId)currentFolderId=f.id}
     render();
     if(k==='files'){syncOrgGrants();backfillThumbs()}
@@ -1101,12 +1148,12 @@ async function autoApprovePending(){
 }
 const all=k=>{if(extMode)return store[k].s;const m=new Map();[...store[k].p,...store[k].o].forEach(x=>m.set(x.id,x));return[...m.values()].filter(x=>(x.orgId||null)===currentOrgId)};
 const rawWs=()=>{const m=new Map();[['folders','folder'],['files','file'],['notes','note']].forEach(([k,kind])=>[...store[k].p,...store[k].o].forEach(x=>m.set(kind+x.id,{...x,kind})));return[...m.values()]};
-const inh=()=>{const f=all('folders').find(x=>x.id===currentFolderId);if(!f)return{};const o={};if(f.acl&&f.acl.length){o.acl=f.acl;o.aclEmails=f.acl.map(a=>a.e)}if(f.linkRoot)o.linkRoot=f.linkRoot;return o};
+const inh=()=>{const f=all('folders').find(x=>x.id===currentFolderId);if(!f)return VAULT.open?{vault:true}:{};const o={};if(VAULT.open)o.vault=true;if(f.acl&&f.acl.length){o.acl=f.acl;o.aclEmails=f.acl.map(a=>a.e)}if(f.linkRoot)o.linkRoot=f.linkRoot;return o};
 const topExt=()=>{const ids=new Set(store.folders.s.map(f=>f.id)),jf=new Set(liveJoins().map(j=>j.folderId));return store.folders.s.filter(f=>!f.trashed&&(jf.has(f.id)||(!ids.has(f.parentId)&&!liveJoins().some(j=>j.rootId===f.linkRoot&&j.folderId!==j.rootId)))).map(f=>{const k={...f,kind:'folder'};return{...k,ext:true,role:roleOf(k)}})};
 let wsC=null,wsK=[];
-const ws=()=>{const k=[extMode,currentOrgId,...['files','folders','notes'].flatMap(c=>[store[c].p,store[c].o,store[c].s])];
+const ws=()=>{const k=[extMode,currentOrgId,VAULT.open,...['files','folders','notes'].flatMap(c=>[store[c].p,store[c].o,store[c].s])];
   if(wsC&&k.length===wsK.length&&k.every((v,i)=>v===wsK[i]))return wsC;
-  wsK=k;return wsC=[...all('folders').map(x=>({...x,kind:'folder'})),...all('files').map(x=>({...x,kind:'file'})),...all('notes').map(x=>({...x,kind:'note'}))]};
+  wsK=k;return wsC=[...all('folders').map(x=>({...x,kind:'folder'})),...all('files').map(x=>({...x,kind:'file'})),...all('notes').map(x=>({...x,kind:'note'}))].filter(x=>!VAULT.open||x.vault)};
 
 async function publishQuota(){
   if(!quota||!currentUser||!organizations.length)return;
@@ -3861,6 +3908,386 @@ window.__mvImgPrep=async function(list){
 };
 })();
 /*END-MV-PREVIEW-EDITOR v1*/
+/*SEC:core*/
+{
+/* ====== MART Drive · Security patch: App lock, Vault, Sessions ====== */
+const enc=new TextEncoder();
+const b64={e:b=>{let s='';new Uint8Array(b).forEach(x=>s+=String.fromCharCode(x));return btoa(s)},d:s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
+const b64u={e:b=>b64.e(b).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''),d:s=>{s=String(s).replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return b64.d(s)}};
+const rnd=n=>crypto.getRandomValues(new Uint8Array(n));
+const hex=u=>[...u].map(b=>b.toString(16).padStart(2,'0')).join('');
+const secureOk=()=>!!(window.crypto&&crypto.subtle);
+const closeSidebar=()=>{const s=$('sidebar');s&&s.classList.remove('open')};
+
+/* ---- PIN hashing (PBKDF2-SHA256) + attempt throttling ---- */
+async function pbk(pin,salt,iter){const k=await crypto.subtle.importKey('raw',enc.encode(pin),'PBKDF2',false,['deriveBits']);return b64.e(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:b64.d(salt),iterations:iter},k,256))}
+async function mkPin(pin){const salt=b64.e(rnd(16)),iter=150000;return{salt,iter,hash:await pbk(pin,salt,iter)}}
+async function chkPin(pin,r){return!!(r&&r.hash)&&(await pbk(pin,r.salt,r.iter))===r.hash}
+const thr={
+  get(k){try{return JSON.parse(localStorage.getItem('mart_thr_'+k)||'{}')}catch{return{}}},
+  set(k,v){try{localStorage.setItem('mart_thr_'+k,JSON.stringify(v))}catch{}},
+  wait(k){return Math.max(0,Math.ceil(((this.get(k).until||0)-Date.now())/1000))},
+  fail(k){const t=this.get(k);t.n=(t.n||0)+1;if(t.n>=5)t.until=Date.now()+Math.min(900,30*2**(t.n-5))*1000;this.set(k,t);return t},
+  ok(k){this.set(k,{})}
+};
+
+/* ---- PIN prompt dialog ---- */
+function askPin({title,desc,confirm=false,ok='Continue',forgot=false}){
+  return new Promise(res=>{
+    const d=document.createElement('div');d.className='sx-ov';
+    d.innerHTML=`<div class="sx-card" role="dialog" aria-modal="true"><span class="material-symbols-outlined sx-ic">pin</span><h3>${esc(title)}</h3><p>${esc(desc||'')}</p>
+<input class="sx-in" id="sx-p1" type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="${confirm?'New PIN (4–12 digits)':'PIN'}">
+${confirm?'<input class="sx-in" id="sx-p2" type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="Confirm PIN">':''}
+<div class="sx-err" id="sx-pe"></div><div class="sx-row"><button class="btn" id="sx-c" type="button">Cancel</button><button class="btn btn-primary" id="sx-o" type="button">${esc(ok)}</button></div>
+${forgot?'<button class="sx-link" id="sx-f" type="button">Forgot PIN?</button>':''}</div>`;
+    document.body.appendChild(d);
+    const p1=d.querySelector('#sx-p1'),p2=d.querySelector('#sx-p2'),er=d.querySelector('#sx-pe');
+    const done=v=>{d.remove();res(v)};
+    const go=()=>{const a=p1.value.trim();
+      if(!/^\d{4,12}$/.test(a)){er.textContent='PIN must be 4–12 digits';return}
+      if(confirm&&a!==p2.value.trim()){er.textContent='PINs do not match';return}
+      done(a)};
+    d.querySelector('#sx-c').onclick=()=>done(null);d.querySelector('#sx-o').onclick=go;
+    const f=d.querySelector('#sx-f');if(f)f.onclick=()=>done('__forgot');
+    d.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')go();if(e.key==='Escape')done(null)});
+    setTimeout(()=>p1.focus(),60);
+  });
+}
+
+/* ---- WebAuthn (fingerprint / face) ---- */
+async function bioSupported(){try{return!!(window.PublicKeyCredential&&await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable())}catch{return false}}
+async function bioRegister(){
+  const cred=await navigator.credentials.create({publicKey:{challenge:rnd(32),rp:{name:'MART Drive',id:location.hostname},
+    user:{id:enc.encode(currentUser.uid).slice(0,64),name:me(),displayName:currentUser.displayName||me()},
+    pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+    authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required',residentKey:'discouraged'},timeout:60000,attestation:'none'}});
+  const r=cred.response;
+  return{id:b64u.e(cred.rawId),pk:r.getPublicKey&&r.getPublicKey()?b64u.e(r.getPublicKey()):'',alg:r.getPublicKeyAlgorithm?r.getPublicKeyAlgorithm():-7};
+}
+function derToRaw(sig){
+  let p=2;if(sig[1]&0x80)p+=sig[1]&0x7f;
+  const part=()=>{p++;const l=sig[p++];let v=sig.slice(p,p+l);p+=l;while(v.length>32&&v[0]===0)v=v.slice(1);const o=new Uint8Array(32);o.set(v,32-v.length);return o};
+  const r=part(),s=part(),out=new Uint8Array(64);out.set(r);out.set(s,32);return out;
+}
+async function bioVerify(bio){
+  const ch=rnd(32);
+  const a=await navigator.credentials.get({publicKey:{challenge:ch,rpId:location.hostname,
+    allowCredentials:[{type:'public-key',id:b64u.d(bio.id),transports:['internal','hybrid']}],userVerification:'required',timeout:60000}});
+  const r=a.response,cd=JSON.parse(new TextDecoder().decode(r.clientDataJSON));
+  if(cd.type!=='webauthn.get'||cd.challenge!==b64u.e(ch))return false;
+  const ad=new Uint8Array(r.authenticatorData);
+  if(!(ad[32]&4))return false;                         // user-verified flag
+  if(!bio.pk)return true;                               // browser gave no public key: UV result only
+  const h=new Uint8Array(await crypto.subtle.digest('SHA-256',r.clientDataJSON));
+  const data=new Uint8Array(ad.length+32);data.set(ad);data.set(h,ad.length);
+  const spki=b64u.d(bio.pk);
+  if(bio.alg===-7){const k=await crypto.subtle.importKey('spki',spki,{name:'ECDSA',namedCurve:'P-256'},false,['verify']);return crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},k,derToRaw(new Uint8Array(r.signature)),data)}
+  if(bio.alg===-257){const k=await crypto.subtle.importKey('spki',spki,{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['verify']);return crypto.subtle.verify('RSASSA-PKCS1-v1_5',k,r.signature,data)}
+  return true;
+}
+
+/* ================= 1) APP LOCK (PIN + fingerprint) ================= */
+const LK='mart_lock_v1';
+const lkGet=()=>{try{return JSON.parse(localStorage.getItem(LK)||'null')}catch{return null}};
+const lkSet=c=>{try{c?localStorage.setItem(LK,JSON.stringify(c)):localStorage.removeItem(LK)}catch{}};
+const lkMine=()=>{const c=lkGet(),u=auth.currentUser;return c&&c.on&&u&&c.uid===u.uid?c:null};
+const isLocked=()=>document.documentElement.classList.contains('app-locked');
+let lastT=0;
+function touch(force){const n=Date.now();if(!force&&n-lastT<4000)return;lastT=n;try{sessionStorage.setItem('mart_last_active',String(n))}catch{}}
+function lockMsg(t,err){const m=$('sx-lock-msg');m.textContent=t||'Enter your PIN to continue';m.style.color=err?'var(--error)':''}
+function prepLock(c){
+  $('sx-lock-pin').value='';lockMsg();$('sx-lock-bio').style.display=c.bio?'':'none';
+  setTimeout(()=>{if(c.bio&&!document.hidden)tryBio();else $('sx-lock-pin').focus()},250);
+}
+function showLock(){
+  const c=lkMine();if(!c||isLocked())return;
+  if(VAULT.open){closeVault(true);setView('drive')}
+  document.documentElement.classList.add('app-locked');prepLock(c);
+}
+let idleT=null;
+function idleReset(){clearTimeout(idleT);const c=lkMine();if(!c||isLocked()||!(c.after>0))return;idleT=setTimeout(()=>{if(lkMine()&&!document.hidden)showLock()},c.after*60000)}
+function unlockUI(){document.documentElement.classList.remove('app-locked');touch(true);idleReset()}
+async function tryPin(){
+  const c=lkMine();if(!c)return;
+  const w=thr.wait('app');if(w){lockMsg('Too many attempts. Try again in '+w+'s',true);return}
+  const v=$('sx-lock-pin').value.trim();if(!v)return;
+  if(await chkPin(v,c)){thr.ok('app');unlockUI()}
+  else{thr.fail('app');$('sx-lock-pin').value='';const w2=thr.wait('app');lockMsg(w2?'Too many attempts. Try again in '+w2+'s':'Wrong PIN',true)}
+}
+async function tryBio(){
+  const c=lkMine();if(!c||!c.bio)return;
+  try{if(await bioVerify(c.bio)){thr.ok('app');unlockUI()}else lockMsg('Biometric check failed. Use your PIN.',true)}
+  catch(e){if(e&&e.name!=='NotAllowedError'&&e.name!=='AbortError')lockMsg('Biometric unavailable. Use your PIN.',true);$('sx-lock-pin').focus()}
+}
+async function reauth(){
+  const r=await signInWithPopup(auth,makeProvider(me()));
+  if(r.user.uid!==currentUser.uid)throw new Error('Signed in with a different Google account');
+  try{saveToken(GoogleAuthProvider.credentialFromResult(r).accessToken,r.user.uid)}catch{}
+}
+$('sx-lock-go').onclick=tryPin;
+$('sx-lock-pin').addEventListener('keydown',e=>{if(e.key==='Enter')tryPin()});
+$('sx-lock-bio').onclick=tryBio;
+$('sx-lock-forgot').onclick=async()=>{
+  if(!confirm('Verify with your Google account to remove the app lock on this device?'))return;
+  try{await reauth();lkSet(null);thr.ok('app');unlockUI();toast('App lock removed. You can set a new PIN in Security.','success')}catch(e){lockMsg('Verification failed: '+(e.message||e),true)}
+};
+$('sx-lock-out').onclick=()=>{lkSet(null);unlockUI();window.logout()};
+async function verifyApp(){
+  const c=lkMine();if(!c)return true;
+  const w=thr.wait('app');if(w){toast('Too many attempts. Try again in '+w+'s','error');return false}
+  const p=await askPin({title:'Enter app PIN',desc:'Confirm your current PIN.'});if(p==null)return false;
+  if(await chkPin(p,c)){thr.ok('app');return true}
+  thr.fail('app');toast('Wrong PIN','error');return false;
+}
+let hiddenAt=0,lastIdle=0;
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){hiddenAt=Date.now();touch(true);return}
+  const away=hiddenAt?Date.now()-hiddenAt:0;hiddenAt=0;
+  if(VAULT.open&&away>60000)leaveVault('Vault locked');
+  const c=lkMine();if(c&&!isLocked()&&away>=Math.max(c.after*60000,1500))showLock();
+});
+addEventListener('pagehide',()=>touch(true));
+['pointerdown','keydown','touchstart','wheel','scroll'].forEach(ev=>addEventListener(ev,()=>{
+  if(isLocked())return;touch();const n=Date.now();if(n-lastIdle<1000)return;lastIdle=n;idleReset();if(VAULT.open)vIdle();
+},{passive:true,capture:true}));
+
+/* ================= 2) VAULT (separate PIN, hidden folder) ================= */
+let vRec,vT=null;
+async function vLoad(force){if(vRec!==undefined&&!force)return vRec;const s=await getDoc(doc(db,'userSecurity',currentUser.uid));vRec=s.exists()?(s.data().vault||null):null;return vRec}
+async function vSave(rec){await setDoc(doc(db,'userSecurity',currentUser.uid),{uid:currentUser.uid,vault:rec,updatedAt:serverTimestamp()});vRec=rec}
+function vIdle(){clearTimeout(vT);if(VAULT.open)vT=setTimeout(()=>leaveVault('Vault locked (inactive)'),5*60000)}
+function closeVault(silent){
+  if(!VAULT.open)return;VAULT.open=false;clearTimeout(vT);vApply();currentFolderId=null;
+  if(!silent&&currentUser)render();
+}
+function leaveVault(msg){closeVault(true);setView('drive');if(msg)toast(msg)}
+function enterVault(){
+  if(currentOrgId)switchOrg(null);
+  if($('modal-backdrop').classList.contains('open'))closeModal();
+  VAULT.open=true;vApply();extMode=false;currentView='drive';currentFolderId=null;searchTerm='';$('search-input').value='';sel.clear();selectMode=false;
+  closeSidebar();render();vIdle();toast('Vault unlocked','success');
+}
+async function vaultForgot(){
+  if(!confirm('Verify your Google account to set a new Vault PIN?\nYour Vault items are not deleted.'))return false;
+  await reauth();
+  const p=await askPin({title:'New Vault PIN',desc:'Choose a new PIN for the Vault.',confirm:true,ok:'Save'});if(!p)return false;
+  await vSave(await mkPin(p));thr.ok('vault');toast('Vault PIN changed','success');return true;
+}
+window.openVault=async()=>{
+  if(!currentUser)return;closeSidebar();
+  if(VAULT.open){enterVault();return}
+  if(!secureOk())return toast('The Vault needs a secure (https) connection','error');
+  let rec;try{rec=await vLoad(true)}catch(e){return toast('Cannot read Vault settings: '+e.message+' (publish the updated Firestore rules)','error')}
+  if(!rec){
+    const p=await askPin({title:'Create Vault PIN',desc:'This PIN is separate from the app lock. You will need it every time you open the Vault.',confirm:true,ok:'Create'});if(!p)return;
+    try{await vSave(await mkPin(p))}catch(e){return toast('Could not save PIN: '+e.message,'error')}
+    toast('Vault PIN created','success');enterVault();return;
+  }
+  const w=thr.wait('vault');if(w)return toast('Too many attempts. Try again in '+w+'s','error');
+  const p=await askPin({title:'Open Vault',desc:'Enter your Vault PIN.',forgot:true});
+  if(p==null)return;
+  if(p==='__forgot'){try{if(await vaultForgot())enterVault()}catch(e){toast('Verification failed: '+(e.message||e),'error')}return}
+  if(await chkPin(p,rec)){thr.ok('vault');enterVault()}
+  else{thr.fail('vault');const w2=thr.wait('vault');toast(w2?'Wrong PIN. Locked for '+w2+'s':'Wrong Vault PIN','error')}
+};
+async function vMove(items,into){
+  if(!items.length)return;
+  const W=ws(),set=new Map(),top=new Set(items.map(keyOf));
+  for(const it of items){set.set(keyOf(it),it);if(it.kind==='folder')subtree(it,W).forEach(s=>set.set(keyOf(s),s))}
+  if(into){
+    for(const x of set.values()){
+      if(x.uid!==currentUser.uid||x.orgId||x.ext){toast('Only your own Personal Drive items can go in the Vault','error');return}
+      if((x.acl&&x.acl.length)||x.linkRoot||(typeof sharedBy!=='undefined'&&sharedBy.some(s=>String(s.id||'').startsWith(x.id+'_')))){toast('Stop sharing "'+x.name+'" before moving it to the Vault','error');return}
+    }
+  }
+  try{
+    await Promise.all([...set.entries()].map(([k,x])=>{
+      const d={vault:!!into};if(top.has(k))d[x.kind==='folder'?'parentId':'folderId']=null;
+      return upd(x,d);
+    }));
+    sel.clear();selectMode=false;
+    toast(into?items.length+' item(s) moved to the Vault':'Removed from the Vault','success');
+  }catch(e){toast('Failed: '+e.message,'error')}
+}
+window.vaultBulk=into=>vMove(selItems(),into);
+$('context-menu').addEventListener('click',e=>{
+  const a=e.target.closest('.ctx-item')?.dataset.a;if(!a)return;
+  if(a==='tovault'||a==='fromvault'){e.stopImmediatePropagation();e.stopPropagation();$('context-menu').classList.remove('open');if(ctxItem)vMove([ctxItem],a==='tovault');return}
+  if(VAULT.open&&['share','access','stopall'].includes(a)){e.stopImmediatePropagation();e.stopPropagation();$('context-menu').classList.remove('open');toast('Vault items cannot be shared. Remove it from the Vault first.','error')}
+},true);
+{const _ocm=openContextMenu;
+ openContextMenu=function(e,item){
+  _ocm.apply(this,arguments);
+  try{
+    const m=$('context-menu'),can=currentUser&&item&&item.uid===currentUser.uid&&!item.ext&&['file','folder','note'].includes(item.kind)&&currentView!=='trash';
+    m.querySelector('[data-a="tovault"]').style.display=(can&&!VAULT.open&&!currentOrgId&&!item.orgId)?'flex':'none';
+    m.querySelector('[data-a="fromvault"]').style.display=(can&&VAULT.open)?'flex':'none';
+    if(VAULT.open)['share','access','stopall'].forEach(a=>{const el=m.querySelector('[data-a="'+a+'"]');if(el)el.style.display='none'});
+  }catch{}
+ }}
+{const _ub=updateBulk;
+ updateBulk=function(){
+  _ub.apply(this,arguments);
+  try{
+    if(!sel.size||currentView==='trash'||(currentOrgId&&!VAULT.open))return;
+    $('bulk-actions').insertAdjacentHTML('beforeend',VAULT.open
+      ?'<button class="btn" onclick="vaultBulk(false)"><span class="material-symbols-outlined">lock_open</span> Remove from Vault</button>'
+      :'<button class="btn" onclick="vaultBulk(true)"><span class="material-symbols-outlined">lock</span> Move to Vault</button>');
+  }catch{}
+ }}
+{const _sa=searchAll;searchAll=function(){const r=_sa.apply(this,arguments);return VAULT.open?r.filter(x=>x.vault):r}}
+{const _sv=window.setView;window.setView=function(){if(VAULT.open)closeVault(true);return _sv.apply(this,arguments)}}
+{const _r=render;
+ render=function(){
+  _r.apply(this,arguments);
+  try{
+    document.querySelectorAll('[data-vx]').forEach(e=>e.classList.toggle('active',VAULT.open));
+    if(VAULT.open){
+      document.querySelectorAll('[data-v]').forEach(e=>e.classList.remove('active'));
+      const t=$('page-title');if(t&&currentView==='drive')t.innerHTML='<span class="material-symbols-outlined" style="vertical-align:-5px;margin-right:6px">lock</span>Vault';
+      const b=$('breadcrumbs').querySelector('span[data-f=""]');if(b)b.textContent='Vault';
+    }
+  }catch{}
+ }}
+
+/* ================= 3) ACTIVE SESSIONS / LOGGED-IN DEVICES ================= */
+const SID_KEY='mart_sid';
+const getSid=()=>{let s=null;try{s=localStorage.getItem(SID_KEY)}catch{}if(!s){s=hex(rnd(9));try{localStorage.setItem(SID_KEY,s)}catch{}}return s};
+const SESS={list:[]};let sUn=[],hbT=null,forcing=false;
+const sRef=()=>doc(db,'userSessions',currentUser.uid+'_'+getSid());
+function stopSession(){sUn.forEach(u=>u&&u());sUn=[];clearInterval(hbT);hbT=null;SESS.list=[]}
+async function startSession(user){
+  stopSession();
+  const ref=doc(db,'userSessions',user.uid+'_'+getSid());
+  try{
+    const s=await getDoc(ref);
+    if(s.exists()&&s.data().revoked){forceLogout();return}
+    if(!s.exists()){
+      const u=uaInfo();
+      await setDoc(ref,{uid:user.uid,email:(user.email||'').toLowerCase(),sid:getSid(),browser:u.br,os:u.os,device:/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)?'mobile':'desktop',createdAt:serverTimestamp(),lastSeen:serverTimestamp(),revoked:false});
+      geoCountry().then(g=>{if(g&&g.code)updateDoc(ref,{country:g.code,countryName:g.name||g.code})}).catch(()=>{});
+    }else await updateDoc(ref,{lastSeen:serverTimestamp()});
+  }catch(e){console.warn('session',e);return}
+  sUn.push(onSnapshot(ref,s=>{if(s.exists()&&s.data().revoked)forceLogout()},e=>console.warn('session self',e)));
+  sUn.push(onSnapshot(query(collection(db,'userSessions'),where('uid','==',user.uid)),s=>{
+    SESS.list=s.docs.map(d=>({id:d.id,...d.data()}));
+    SESS.list.forEach(x=>{if(x.id!==user.uid+'_'+getSid()&&Date.now()-lastMs(x)>60*864e5)deleteDoc(doc(db,'userSessions',x.id)).catch(()=>{})});
+    if(secOpen())secRender();
+  },e=>console.warn('sessions',e)));
+  hbT=setInterval(()=>{if(!document.hidden)updateDoc(ref,{lastSeen:serverTimestamp()}).catch(()=>{})},180000);
+}
+const _origLogout=window.logout;
+async function endSession(){
+  try{if(currentUser){stopSession();await deleteDoc(doc(db,'userSessions',currentUser.uid+'_'+getSid()))}}catch{}
+  try{localStorage.removeItem(SID_KEY)}catch{}
+}
+window.logout=async()=>{await Promise.race([endSession(),new Promise(r=>setTimeout(r,1500))]);return _origLogout()};
+function forceLogout(){
+  if(forcing)return;forcing=true;toast('This device was signed out from another device','error');
+  setTimeout(async()=>{await Promise.race([endSession(),new Promise(r=>setTimeout(r,1500))]);_origLogout()},1200);
+}
+async function revoke(ids){const me_=getSid();await Promise.all(ids.map(id=>updateDoc(doc(db,'userSessions',id),{revoked:true,revokedAt:serverTimestamp(),revokedBy:me_})))}
+const lastMs=s=>s.lastSeen&&s.lastSeen.toMillis?s.lastSeen.toMillis():Date.now();
+const relT=t=>{const d=Date.now()-t;if(d<3e5)return'Active now';const m=Math.round(d/6e4);if(m<60)return m+' min ago';const h=Math.round(m/60);if(h<24)return h+' h ago';return Math.round(h/24)+' d ago'};
+
+onAuthStateChanged(auth,user=>{
+  if(user){
+    const c=lkMine();
+    if(!c)document.documentElement.classList.remove('app-locked');
+    else if(isLocked())prepLock(c);else{touch(true);idleReset()}
+    startSession(user);
+  }else{stopSession();document.documentElement.classList.remove('app-locked');if(VAULT.open){VAULT.open=false;clearTimeout(vT)}vRec=undefined}
+});
+
+/* ================= SECURITY SETTINGS MODAL ================= */
+const secOpen=()=>$('modal-backdrop').classList.contains('open')&&$('modal-title').textContent==='Security';
+window.openSecurity=()=>{
+  closeSidebar();
+  openModal('Security','','<button class="btn btn-primary" onclick="closeModal()">Done</button>',true);
+  secRender();vLoad(true).then(secRender).catch(()=>{});
+};
+const ACTIONS={
+  async 'lock-set'(){
+    if(!secureOk())return toast('App lock needs a secure (https) connection','error');
+    const p=await askPin({title:'Set app PIN',desc:'You will need this PIN to open MART Drive on this device.',confirm:true,ok:'Save PIN'});if(!p)return;
+    const old=lkGet(),same=old&&old.uid===currentUser.uid;
+    lkSet({uid:currentUser.uid,on:true,...(await mkPin(p)),after:same&&old.after!=null?old.after:1,bio:same?(old.bio||null):null});
+    thr.ok('app');touch(true);idleReset();toast('App lock is on','success');
+  },
+  async 'lock-change'(){if(!await verifyApp())return;await ACTIONS['lock-set']()},
+  async 'lock-off'(){if(!await verifyApp())return;lkSet(null);clearTimeout(idleT);toast('App lock turned off','success')},
+  async 'lock-now'(){closeModal();showLock()},
+  async 'bio-on'(){
+    const c=lkMine();if(!c)return;
+    if(!await bioSupported())return toast('Fingerprint / face unlock is not available on this device or browser','error');
+    c.bio=await bioRegister();lkSet(c);toast('Fingerprint / face unlock enabled','success');
+  },
+  async 'bio-off'(){const c=lkMine();if(!c)return;c.bio=null;lkSet(c);toast('Fingerprint / face unlock disabled','success')},
+  async 'vault-open'(){closeModal();window.openVault()},
+  async 'vault-set'(){closeModal();window.openVault()},
+  async 'vault-change'(){
+    const rec=await vLoad(true);if(!rec)return;
+    const w=thr.wait('vault');if(w)return toast('Too many attempts. Try again in '+w+'s','error');
+    const cur=await askPin({title:'Current Vault PIN',desc:'Enter your current Vault PIN.'});if(cur==null)return;
+    if(!await chkPin(cur,rec)){thr.fail('vault');return toast('Wrong Vault PIN','error')}
+    thr.ok('vault');
+    const p=await askPin({title:'New Vault PIN',desc:'Choose a new PIN for the Vault.',confirm:true,ok:'Save'});if(!p)return;
+    await vSave(await mkPin(p));toast('Vault PIN changed','success');
+  },
+  async 'vault-forgot'(){try{await vaultForgot()}catch(e){toast('Verification failed: '+(e.message||e),'error')}},
+  async 'sess-out'(id){if(!id||!confirm('Sign out this device?'))return;await revoke([id]);toast('Device signed out','success')},
+  async 'sess-others'(){
+    const ids=SESS.list.filter(s=>!s.revoked&&s.id!==currentUser.uid+'_'+getSid()).map(s=>s.id);
+    if(!ids.length)return toast('No other devices');
+    if(!confirm('Sign out '+ids.length+' other device(s)?'))return;await revoke(ids);toast('Other devices signed out','success');
+  },
+  async 'sess-all'(){
+    if(!confirm('Sign out from ALL devices, including this one?'))return;
+    await revoke(SESS.list.filter(s=>!s.revoked&&s.id!==currentUser.uid+'_'+getSid()).map(s=>s.id));
+    closeModal();window.logout();
+  }
+};
+function secRender(){
+  if(!secOpen())return;
+  const c=lkMine(),sec=secureOk(),myId=currentUser.uid+'_'+getSid();
+  const nV=['files','folders','notes'].reduce((n,k)=>n+(VAULT.all[k]||[]).filter(x=>x.vault).length,0);
+  const sess=SESS.list.filter(s=>!s.revoked).sort((a,b)=>lastMs(b)-lastMs(a));
+  const B=(a,label,ic,cls,id)=>`<button class="btn ${cls||''}" data-sx="${a}"${id?` data-id="${esc(id)}"`:''}><span class="material-symbols-outlined">${ic}</span> ${label}</button>`;
+  const lockHTML=c
+    ?`<p class="sx-note">App lock is <b>on</b> for this device.</p>
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px"><span style="font-size:13px">Auto-lock</span>
+<select class="sx-sel" id="sx-after">${[[0,'As soon as I leave the app'],[1,'After 1 minute'],[5,'After 5 minutes'],[15,'After 15 minutes'],[30,'After 30 minutes']].map(([v,l])=>`<option value="${v}"${(c.after||0)===v?' selected':''}>${l}</option>`).join('')}</select></div>
+<div class="sx-note" style="margin-bottom:0">Fingerprint / face unlock: <b>${c.bio?'on':'off'}</b></div>
+<div class="sx-btns">${B('lock-change','Change PIN','password')}${c.bio?B('bio-off','Disable fingerprint','fingerprint_off'):B('bio-on','Enable fingerprint / face','fingerprint')}${B('lock-now','Lock now','lock_clock')}${B('lock-off','Turn off','lock_open','',null)}</div>`
+    :`<p class="sx-note">Protect MART Drive on this device with a PIN. You can add fingerprint / face unlock afterwards. The lock is stored only on this device.</p>
+<div class="sx-btns">${B('lock-set','Set app PIN','pin','btn-primary')}</div>`;
+  const vaultHTML=`<p class="sx-note">Items you move to the Vault are hidden from All files, Recent, Starred and search. Opening the Vault needs a separate PIN. <b>${nV}</b> item(s) inside.</p>
+<div class="sx-btns">${B('vault-open',vRec?'Open Vault':'Create Vault PIN','lock','btn-primary')}${vRec?B('vault-change','Change Vault PIN','password')+B('vault-forgot','Forgot PIN','help'):''}</div>
+<p class="sx-note" style="margin-top:8px">To add items: right-click / ⋮ menu → <b>Move to Vault</b> (or select several and use the bulk bar).</p>`;
+  const sessHTML=sess.length?sess.map(s=>{
+    const me_=s.id===myId,t=lastMs(s),live=Date.now()-t<3e5;
+    return`<div class="sx-dev"><span class="material-symbols-outlined">${s.device==='mobile'?'smartphone':'computer'}</span>
+<div class="sx-dt"><b>${esc(s.browser||'Browser')} on ${esc(s.os||'Unknown')}</b>${me_?'<span class="sx-chip on">This device</span>':''}
+<div class="sx-ds">${live?'<span class="sx-dot"></span>':''}${esc(s.countryName||s.country||'Unknown location')} · ${esc(relT(t))}</div></div>
+${me_?'':`<button class="btn" data-sx="sess-out" data-id="${esc(s.id)}">Sign out</button>`}</div>`}).join('')
+    :'<p class="sx-note">Loading sessions… If this stays empty, publish the updated Firestore rules.</p>';
+  $('modal-body').innerHTML=`
+<div class="sx-sec"><h4><span class="material-symbols-outlined">lock</span>App lock <span class="sx-chip ${c?'on':''}">${c?'On':'Off'}</span></h4>${lockHTML}</div>
+<div class="sx-sec"><h4><span class="material-symbols-outlined">enhanced_encryption</span>Vault</h4>${vaultHTML}</div>
+<div class="sx-sec"><h4><span class="material-symbols-outlined">devices</span>Logged-in devices</h4>
+<div>${sessHTML}</div>
+<div class="sx-btns">${B('sess-others','Sign out other devices','devices_off')}${B('sess-all','Sign out everywhere','logout','',null)}</div>
+<p class="sx-note" style="margin-top:8px">A signed-out device is logged out the next time it is online (immediately if the app is open). If you see a device you do not recognise, sign it out and change your Google password.</p></div>`;
+  $('modal-body').onclick=async e=>{
+    const b=e.target.closest('[data-sx]');if(!b)return;const f=ACTIONS[b.dataset.sx];if(!f)return;
+    b.disabled=true;
+    try{await f(b.dataset.id)}catch(err){console.warn(err);if(!err||err.name!=='NotAllowedError')toast('Failed: '+(err&&err.message||err),'error')}
+    finally{b.disabled=false;secRender()}
+  };
+  $('modal-body').onchange=e=>{if(e.target.id==='sx-after'){const c2=lkMine();if(c2){c2.after=+e.target.value;lkSet(c2);idleReset();toast('Auto-lock updated','success')}}};
+}
+}
+/*/SEC:core*/
 </script>
 <a id="admin-fab" href="admin.html" title="Open Admin Panel"><span class="material-symbols-outlined">admin_panel_settings</span>Admin Panel</a>
 </body>
