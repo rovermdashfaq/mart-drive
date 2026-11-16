@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com; frame-src https://mart-drive.firebaseapp.com https://accounts.google.com; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Sensitive Data · MART Drive</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<script>
+  // Same theme key as MART Drive (localStorage "theme"). Only the attribute is set here.
+  try{
+    var t = localStorage.getItem('theme');
+    if(['system','light','dark','contrast','ocean','forest'].indexOf(t) !== -1) document.documentElement.setAttribute('data-theme', t);
+  }catch(e){}
+</script>
+<style>
+:root{
+  --bg:#f3f5fb;--surface:#ffffff;--surface-2:#eef2fb;--text:#18223d;--muted:#5d6883;
+  --primary:#1f4fd6;--primary-ink:#ffffff;--border:#d6deef;--danger:#c62828;--ok:#1b7f3b;
+  --warn-bg:#fff4e0;--warn-ink:#7a4a00;--shadow:0 8px 28px rgba(20,35,80,.10);
+  color-scheme:light;
+}
+html[data-theme="dark"],html[data-theme="ocean"],html[data-theme="forest"],html[data-theme="contrast"]{
+  --bg:#0e1424;--surface:#161e33;--surface-2:#1d2741;--text:#e7ecfa;--muted:#9aa6c4;
+  --primary:#6f96ff;--primary-ink:#0b1224;--border:#2a3658;--danger:#ff6b6b;--ok:#5fd38a;
+  --warn-bg:#3a2e12;--warn-ink:#ffd58a;--shadow:none;color-scheme:dark;
+}
+@media (prefers-color-scheme:dark){
+  html[data-theme="system"]{
+    --bg:#0e1424;--surface:#161e33;--surface-2:#1d2741;--text:#e7ecfa;--muted:#9aa6c4;
+    --primary:#6f96ff;--primary-ink:#0b1224;--border:#2a3658;--danger:#ff6b6b;--ok:#5fd38a;
+    --warn-bg:#3a2e12;--warn-ink:#ffd58a;--shadow:none;color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.45}
+.material-symbols-outlined{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;font-size:22px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;font-feature-settings:'liga';-webkit-font-smoothing:antialiased;vertical-align:middle;flex:none}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.grow{flex:1}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border);padding-top:calc(10px + env(safe-area-inset-top,0px))}
+.brand{font-size:17px;margin:0 6px;font-weight:700;white-space:nowrap}
+.back{display:flex;align-items:center;gap:6px;color:var(--primary);text-decoration:none;font-weight:600;white-space:nowrap;padding:6px 4px}
+.search{flex:0 1 280px;min-width:120px;margin-left:auto}
+.icon-btn{width:38px;height:38px;border-radius:10px;border:0;background:transparent;color:var(--text);display:inline-grid;place-items:center;cursor:pointer;flex:none;padding:0}
+.icon-btn:hover{background:var(--surface-2)}
+.icon-btn.sm{width:32px;height:32px}
+.icon-btn.danger{color:var(--danger)}
+.icon-btn.on{color:#d19a00}
+.only-mobile{display:none}
+
+/* ---------- layout ---------- */
+.layout{display:flex;min-height:calc(100vh - 60px)}
+.side{width:250px;flex:none;background:var(--surface);border-right:1px solid var(--border);padding:12px 10px 24px;overflow:auto;position:sticky;top:60px;height:calc(100vh - 60px)}
+.main{flex:1;min-width:0;padding:18px clamp(12px,3vw,32px) 60px}
+.scrim{position:fixed;inset:0;background:rgba(5,10,25,.4);z-index:25}
+@media (max-width:860px){
+  .only-mobile{display:inline-grid}
+  .back-txt{display:none}
+  .search{flex:1 1 auto;min-width:0}
+  .layout{display:block}
+  .side{position:fixed;top:0;left:0;bottom:0;height:auto;z-index:30;width:270px;transform:translateX(-105%);transition:transform .2s ease;padding-top:calc(16px + env(safe-area-inset-top,0px));box-shadow:var(--shadow)}
+  .side.open{transform:none}
+  .main{padding-top:14px}
+}
+@media (prefers-reduced-motion:reduce){.side{transition:none}}
+
+/* ---------- navigation ---------- */
+.nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;background:transparent;border-radius:10px;color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.nav-btn:hover{background:var(--surface-2)}
+.nav-btn.active{background:color-mix(in srgb,var(--primary) 16%,transparent);color:var(--primary);font-weight:600}
+.nav-btn.add{color:var(--primary)}
+.nav-lbl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.count{font-size:12px;color:var(--muted)}
+.nav-h{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:14px 10px 4px}
+
+/* ---------- page content ---------- */
+.page-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.page-head h2{margin:0;font-size:22px;font-weight:700}
+.hint{color:var(--muted);margin:0 0 12px;font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;min-width:0}
+.stat-ic{color:var(--primary)}
+.stat-v{font-size:22px;font-weight:700;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stat-l{color:var(--muted);font-size:13px}
+.stat-s{color:var(--muted);font-size:12px}
+.list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px 12px}
+.row-ic{color:var(--primary)}
+.row-main{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.row-title{font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row-sub{font-size:13px;color:var(--muted)}
+.empty{text-align:center;color:var(--muted);padding:44px 0;display:grid;justify-items:center;gap:8px}
+.empty .material-symbols-outlined{font-size:40px}
+
+/* ---------- buttons, inputs ---------- */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn-primary{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
+.btn-primary:hover{background:var(--primary);filter:brightness(1.08)}
+.btn-danger{color:var(--danger)}
+.link{background:none;border:0;color:var(--primary);font:inherit;cursor:pointer;padding:4px 0;text-align:left;font-weight:600}
+input,select,textarea{font:inherit;color:var(--text);background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:9px 11px;width:100%;min-width:0}
+input[type=checkbox],input[type=radio]{width:auto;padding:0;accent-color:var(--primary)}
+input[type=range]{padding:0;accent-color:var(--primary)}
+select{width:auto;min-width:0}
+select.sel,select.sort{width:auto}
+textarea{resize:vertical}
+.fld{display:grid;gap:6px;margin:0;min-width:0}
+.lbl{font-size:13px;font-weight:600;color:var(--muted)}
+.inp-row{display:flex;gap:6px;align-items:center}
+.inp-row>input,.inp-row>select{flex:1}
+.chk{display:inline-flex;gap:8px;align-items:center;font-size:14px;cursor:pointer}
+.err{color:var(--danger);font-size:14px;margin:0;min-height:1.2em}
+.warn{background:var(--warn-bg);color:var(--warn-ink);border-radius:10px;padding:10px 12px;margin:0;font-size:14px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.pre{white-space:pre-wrap;word-break:break-word}
+.btn-row,.gen-bar,.gen-opts,.row-links{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row-links{gap:18px}
+
+/* ---------- detail / secret ---------- */
+.kv{display:grid;grid-template-columns:minmax(110px,34%) 1fr;gap:10px;padding:9px 0;border-bottom:1px dashed var(--border);align-items:baseline}
+.k{color:var(--muted);font-size:13px}
+.v{min-width:0;word-break:break-word}
+.secret-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.secret{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.04em}
+.cat-tag{display:inline-flex;gap:6px;align-items:center;color:var(--primary);font-weight:600;margin-bottom:6px}
+
+/* ---------- gate ---------- */
+#gate{min-height:100vh;display:grid;place-items:center;padding:20px}
+.gate-wrap{width:100%;max-width:470px}
+.gate-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:26px;display:grid;gap:14px}
+.gate-card h1{font-size:21px;margin:0;font-weight:700}
+.gate-card .btn{justify-self:start}
+.recovery-key{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:17px;font-weight:700;background:var(--surface-2);border:1px dashed var(--primary);border-radius:12px;padding:14px;word-break:break-all;text-align:center;user-select:all}
+.recovery{display:grid;gap:12px}
+
+/* ---------- dialog ---------- */
+.dlg{border:1px solid var(--border);border-radius:16px;background:var(--surface);color:var(--text);padding:0;width:min(520px,calc(100vw - 24px));max-height:calc(100vh - 24px);box-shadow:var(--shadow)}
+.dlg.wide{width:min(780px,calc(100vw - 24px))}
+.dlg::backdrop{background:rgba(5,10,25,.55)}
+.dlg-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px 12px 18px;border-bottom:1px solid var(--border)}
+.dlg-head h2{margin:0;font-size:18px;font-weight:700}
+.dlg-body{padding:16px 18px;display:grid;gap:12px;overflow:auto;max-height:calc(100vh - 170px)}
+.dlg-foot{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--border)}
+.gen-panel{display:grid;gap:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px}
+.gen-panel[hidden]{display:none}
+.gen-out{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:15px}
+.fields{display:grid;gap:12px}
+.fdraft{padding:0;margin:0;display:grid;gap:8px;list-style:none}
+.frow{border:1px solid var(--border);border-radius:12px;padding:10px;display:grid;gap:8px;background:var(--surface-2)}
+.frow-top{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.frow-top input[type=text]{flex:1 1 140px}
+.frow-top select{flex:0 0 160px}
+.frow-opts{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.frow-opts input[type=text]{flex:1 1 200px}
+h3{font-size:15px;margin:4px 0 0}
+
+/* ---------- toast ---------- */
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:100;max-width:calc(100vw - 32px);box-shadow:var(--shadow);font-size:14px}
+.toast.error{background:var(--danger);color:#fff}
+.toast.success{background:var(--ok);color:#fff}
+</style>
+</head>
+<body>
+
+<div id="gate" hidden></div>
+
+<div id="app" hidden>
+  <header class="topbar">
+    <button class="icon-btn only-mobile" id="menuBtn" type="button" aria-label="Open menu" aria-controls="side" aria-expanded="false"><span class="material-symbols-outlined" aria-hidden="true">menu</span></button>
+    <a class="back" href="./index.html" title="Back to MART Drive"><span class="material-symbols-outlined" aria-hidden="true">arrow_back</span><span class="back-txt">MART Drive</span></a>
+    <h1 class="brand">Sensitive Data</h1>
+    <input class="search" id="search" type="search" placeholder="Search items" aria-label="Search items" autocomplete="off">
+    <button class="icon-btn" id="lockBtn" type="button" title="Lock vault" aria-label="Lock vault"><span class="material-symbols-outlined" aria-hidden="true">lock</span></button>
+    <button class="icon-btn" id="settingsBtn" type="button" title="Vault settings" aria-label="Vault settings"><span class="material-symbols-outlined" aria-hidden="true">settings</span></button>
+    <button class="icon-btn" id="logoutBtn" type="button" title="Log out" aria-label="Log out"><span class="material-symbols-outlined" aria-hidden="true">logout</span></button>
+  </header>
+  <div class="layout">
+    <aside id="side" class="side" aria-label="Vault navigation"></aside>
+    <div class="scrim" id="scrim" hidden></div>
+    <main id="main" class="main"></main>
+  </div>
+</div>
+
+<dialog id="dlg" class="dlg" aria-modal="true"></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script type="module">
+import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+/* =====================================================================
+   FIREBASE (same project as MART Drive, same Google login session)
+   The default Firestore instance uses the memory cache only, so no
+   decrypted or encrypted vault data is written to IndexedDB.
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyDUcT6hVqLHy3pYzwg1oktI7amTpF9Qj4c",
+  authDomain: "mart-drive.firebaseapp.com",
+  projectId: "mart-drive",
+  storageBucket: "mart-drive.firebasestorage.app",
+  messagingSenderId: "829348083361",
+  appId: "1:829348083361:web:d6e91ccec70c2b9d53e2e0",
+  measurementId: "G-J2ERB07TW0"
+};
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* =====================================================================
+   CONSTANTS
+   ===================================================================== */
+const PBKDF2_ITER = 600000;     // OWASP-level PBKDF2-SHA256 iterations (stored in metadata for future upgrades)
+const MIN_MASTER = 12;
+const REVEAL_MS = 15000;        // revealed secret hides again after 15 s
+const CLIP_MS = 30000;          // clipboard clear attempt after 30 s
+const ICONS = ['category','folder','star','dns','lan','shield','vpn_key','receipt_long','flight','home','work','school','favorite','bookmark','storage','cloud','terminal','memory','badge','key','wifi','contacts','inventory_2','description','apps','devices','account_balance','credit_card','verified_user','sticky_note_2'];
+const FIELD_TYPES = [['text','Text'],['secret','Secret / password'],['number','Number'],['email','Email'],['phone','Phone'],['url','URL'],['date','Date'],['longtext','Long text'],['checkbox','Checkbox'],['select','Dropdown']];
+
+/* =====================================================================
+   BUILT-IN CATEGORIES (seeded in code; user categories are stored encrypted)
+   ===================================================================== */
+const F = (fieldId, label, type = 'text', extra = {}) => ({
+  fieldId, label, type,
+  required: !!extra.required,
+  secret: type === 'secret',
+  placeholder: extra.ph || '',
+  options: extra.options || []
+});
+const BUILTIN = [
+  { id:'passwords', name:'Passwords & Accounts', icon:'key', desc:'Login details. Use the password generator for new passwords.', fields:[
+      F('url','Website URL','url'), F('username','Username / email'), F('password','Password','secret',{required:true}),
+      F('rec_email','Recovery email','email'), F('rec_phone','Recovery phone','phone'), F('sec_notes','Security notes','longtext') ]},
+  { id:'notes', name:'Secure Notes', icon:'sticky_note_2', desc:'Private notes, diary, meeting notes and important information.', fields:[
+      F('kind','Note type','select',{options:['Private note','Diary','Meeting notes','Important information']}), F('content','Content','longtext') ]},
+  { id:'identity', name:'Personal Identity', icon:'badge', desc:'NID, passport, driving licence and student ID details.', fields:[
+      F('doc_type','Document type','select',{options:['NID','Passport','Driving License','Student ID','Other']}), F('doc_no','Document number','secret'),
+      F('issue','Issue date','date'), F('expiry','Expiry date','date'), F('notes','Notes','longtext') ]},
+  { id:'financial', name:'Financial Information', icon:'account_balance', desc:'Never store PIN, CVV or OTP here.', fields:[
+      F('institution','Bank / institution'), F('holder','Account holder'), F('acc_no','Account number','secret'), F('branch','Branch'),
+      F('wallet','bKash / Nagad / Rocket reference'), F('policy','Insurance policy details','longtext') ]},
+  { id:'cards', name:'Cards', icon:'credit_card', desc:'Never store CVV or card PIN.', fields:[
+      F('label','Card label'), F('card_no','Card number (masked)','secret',{ph:'e.g. 4111 •••• •••• 1111'}),
+      F('expiry','Expiry (MM/YY)','text',{ph:'MM/YY'}), F('holder','Card holder') ]},
+  { id:'contacts', name:'Contacts & Addresses', icon:'contacts', fields:[
+      F('phone','Phone','phone'), F('email','Email','email'), F('address','Address','longtext'), F('emergency','Emergency contact') ]},
+  { id:'software', name:'Software & Licenses', icon:'apps', fields:[
+      F('license','License / product key','secret'), F('expires','Expires','date'), F('domain','Domain / hosting URL','url'),
+      F('hosting','Hosting provider'), F('notes','Notes','longtext') ]},
+  { id:'wifi', name:'Wi-Fi & Networks', icon:'wifi', fields:[
+      F('ssid','Network name (SSID)'), F('wifi_pass','Wi-Fi password','secret'), F('router','Router address'), F('vpn','VPN / network notes','longtext') ]},
+  { id:'auth', name:'Authenticator', icon:'verified_user', desc:'A TOTP secret is as sensitive as a password. Keep it apart from your login passwords where possible.', fields:[
+      F('issuer','Issuer'), F('account','Account'), F('totp','TOTP secret','secret'), F('backup','Backup / recovery codes','secret') ]},
+  { id:'docs', name:'Documents', icon:'description', desc:'Document details and where to find the original. File attachments are not part of this version.', fields:[
+      F('doc_type','Document type'), F('ref','Reference / location'), F('desc','Description','longtext') ]},
+  { id:'records', name:'Personal Records', icon:'devices', fields:[
+      F('device','Device type'), F('imei','IMEI / serial number','secret'), F('purchase','Purchase date','date'),
+      F('warranty','Warranty until','date'), F('renewal','Renewal date','date'), F('notes','Notes','longtext') ]}
+];
+
+/* =====================================================================
+   STATE (lives only in memory; cleared on lock, logout and page close)
+   ===================================================================== */
+const S = {
+  user: null, metaUid: null, meta: null,
+  dk: null,            // AES-256-GCM vault key, non-extractable
+  items: [], cats: [],
+  sec: 'all', q: '', sort: 'updated',
+  locked: true, lastActive: Date.now(), fails: 0, lockUntil: 0, tick: null,
+  prefs: loadPrefs()
+};
+
+function loadPrefs(){
+  try{
+    const p = JSON.parse(localStorage.getItem('mart_vault_prefs') || '{}');
+    return { idle: [1,2,5,10,15,30].includes(p.idle) ? p.idle : 5, lockHidden: p.lockHidden !== false };
+  }catch(e){ return { idle: 5, lockHidden: true }; }
+}
+function savePrefs(){
+  try{ localStorage.setItem('mart_vault_prefs', JSON.stringify(S.prefs)); }catch(e){}
+}
+
+/* =====================================================================
+   SMALL HELPERS (DOM is built with textContent only, never innerHTML)
+   ===================================================================== */
+const $ = (sel, root = document) => root.querySelector(sel);
+
+function el(tag, props, ...kids){
+  const n = document.createElement(tag);
+  if(props){
+    for(const [k, v] of Object.entries(props)){
+      if(v === undefined || v === null || v === false) continue;
+      if(k === 'text') n.textContent = String(v);
+      else if(k === 'class') n.className = v;
+      else if(k.startsWith('on')) n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v === true ? '' : String(v));
+    }
+  }
+  for(const c of kids.flat()){
+    if(c === undefined || c === null || c === false) continue;
+    n.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  }
+  return n;
+}
+const ms = (name, cls = '') => el('span', { class: 'material-symbols-outlined ' + cls, 'aria-hidden': 'true', text: name });
+function iconBtn(icon, label, onclick, cls = ''){
+  return el('button', { type: 'button', class: 'icon-btn ' + cls, title: label, 'aria-label': label, onclick }, ms(icon));
+}
+const labeled = (text, node) => el('label', { class: 'fld' }, el('span', { class: 'lbl', text }), node);
+const pwInput = (ph) => el('input', { type: 'password', autocomplete: 'new-password', placeholder: ph, 'aria-label': ph, spellcheck: 'false' });
+const fmtDate = t => t ? new Date(t).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+const isEmptyVal = v => v === undefined || v === null || v === '';
+const isSecret = f => (f.type === 'secret' || f.secret === true) && f.type !== 'checkbox' && f.type !== 'select';
+
+class UserError extends Error {}
+
+function errMsg(e){
+  if(e instanceof UserError) return e.message;
+  if(e && e.name === 'OperationError') return 'Decryption failed. Check your password or key.';
+  if(e && e.code === 'permission-denied') return 'Permission denied. Make sure the updated Firestore rules are published and this account is not blocked.';
+  if(e && e.code === 'unavailable') return 'Network problem. Check your connection and try again.';
+  return 'Something went wrong. Please try again.';
+}
+
+let toastT = null;
+function toast(msg, type = ''){
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type;
+  t.hidden = false;
+  clearTimeout(toastT);
+  toastT = setTimeout(() => { t.hidden = true; }, 3500);
+}
+
+function safeHref(s){
+  try{
+    const u = new URL(/^[a-z][a-z0-9+.-]*:/i.test(s) ? s : 'https://' + s);
+    return (u.protocol === 'http:' || u.protocol === 'https:') ? u.href : null;
+  }catch(e){ return null; }
+}
+
+/* ---------- clipboard: copy, then try to clear after 30 s (only if unchanged) ---------- */
+let clipVal = null, clipT = null;
+async function copyText(text, label){
+  try{
+    await navigator.clipboard.writeText(text);
+    clipVal = text;
+    clearTimeout(clipT);
+    clipT = setTimeout(async () => {
+      try{
+        if((await navigator.clipboard.readText()) === clipVal) await navigator.clipboard.writeText('');
+      }catch(e){ /* browser refused to read or write clipboard: nothing else we can do */ }
+      clipVal = null;
+    }, CLIP_MS);
+    toast(label + ' copied. Clipboard will be cleared in 30 s if it is unchanged.', 'success');
+  }catch(e){
+    toast('Copy failed. The browser blocked clipboard access.', 'error');
+  }
+}
+
+/* =====================================================================
+   RANDOM + PASSWORD GENERATOR (uniform, no modulo bias)
+   ===================================================================== */
+const rnd = n => crypto.getRandomValues(new Uint8Array(n));
+const hex = n => Array.from(rnd(n), b => b.toString(16).padStart(2, '0')).join('');
+function randInt(n){
+  const lim = Math.floor(4294967296 / n) * n;
+  const a = new Uint32Array(1);
+  do{ crypto.getRandomValues(a); }while(a[0] >= lim);
+  return a[0] % n;
+}
+function genPassword({ len = 20, upper = true, lower = true, digits = true, symbols = true } = {}){
+  const sets = [];
+  // Ambiguous characters (0 O 1 l I) are left out on purpose.
+  if(upper) sets.push('ABCDEFGHJKLMNPQRSTUVWXYZ');
+  if(lower) sets.push('abcdefghijkmnopqrstuvwxyz');
+  if(digits) sets.push('23456789');
+  if(symbols) sets.push('!@#$%^&*-_=+?');
+  if(!sets.length) sets.push('abcdefghijkmnopqrstuvwxyz');
+  const all = sets.join('');
+  const out = [];
+  for(const s of sets) out.push(s[randInt(s.length)]);          // at least one from each chosen set
+  while(out.length < len) out.push(all[randInt(all.length)]);
+  for(let i = out.length - 1; i > 0; i--){                      // Fisher-Yates shuffle
+    const j = randInt(i + 1);
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out.join('');
+}
+function strengthLabel(pw){
+  let s = 0;
+  if(pw.length >= 12) s++;
+  if(pw.length >= 16) s++;
+  if(/[a-z]/.test(pw) && /[A-Z]/.test(pw)) s++;
+  if(/\d/.test(pw)) s++;
+  if(/[^A-Za-z0-9]/.test(pw)) s++;
+  return ['Weak','Fair','Good','Strong','Very strong','Very strong'][s];
+}
+function makeGenPanel(onUse){
+  const o = { len: 20, upper: true, lower: true, digits: true, symbols: true };
+  const out = el('input', { type: 'text', readonly: true, class: 'gen-out', autocomplete: 'off', spellcheck: 'false', 'aria-label': 'Suggested password' });
+  const str = el('span', { class: 'small muted' });
+  const lenVal = el('span', { class: 'small muted', text: '20' });
+  const len = el('input', { type: 'range', min: 8, max: 64, value: 20, 'aria-label': 'Password length' });
+  const regen = () => { out.value = genPassword(o); str.textContent = 'Strength: ' + strengthLabel(out.value); };
+  len.addEventListener('input', () => { o.len = Number(len.value); lenVal.textContent = len.value; regen(); });
+  const opt = (k, label) => {
+    const c = el('input', { type: 'checkbox' });
+    c.checked = o[k];
+    c.addEventListener('change', () => {
+      o[k] = c.checked;
+      if(!o.upper && !o.lower && !o.digits && !o.symbols){ o[k] = true; c.checked = true; toast('Select at least one character type', 'error'); }
+      regen();
+    });
+    return el('label', { class: 'chk' }, c, ' ' + label);
+  };
+  const panel = el('div', { class: 'gen-panel' },
+    out, str,
+    el('div', { class: 'gen-bar' },
+      el('button', { type: 'button', class: 'icon-btn', title: 'Generate another', 'aria-label': 'Generate another', onclick: regen }, ms('refresh')),
+      el('button', { type: 'button', class: 'icon-btn', title: 'Copy', 'aria-label': 'Copy password', onclick: () => copyText(out.value, 'Password') }, ms('content_copy')),
+      el('button', { type: 'button', class: 'btn btn-primary', onclick: () => onUse(out.value) }, 'Use this')),
+    el('label', { class: 'fld' }, el('span', { class: 'lbl', text: 'Length' }), el('div', { class: 'inp-row' }, len, lenVal)),
+    el('div', { class: 'gen-opts' }, opt('upper', 'A–Z'), opt('lower', 'a–z'), opt('digits', '0–9'), opt('symbols', '!@#$')));
+  panel.regen = regen;
+  panel.hidden = true;
+  return panel;
+}
+
+/* =====================================================================
+   CRYPTO
+   - Master password -> PBKDF2-SHA256 (600k) -> KEK (AES-GCM, non-extractable)
+   - Recovery key (160-bit random) -> HKDF-SHA256 -> KEK
+   - Random 256-bit vault key DK wrapped under both KEKs
+   - Items: AES-256-GCM, random 96-bit IV per write, AAD binds uid + record id
+   Argon2id is not used: no audited browser implementation is bundled here
+   (and loading unpinned/unverified code would be weaker than PBKDF2).
+   ===================================================================== */
+const enc = new TextEncoder(), dec = new TextDecoder();
+const b64 = u => { const a = new Uint8Array(u); let s = ''; for(let i = 0; i < a.length; i++) s += String.fromCharCode(a[i]); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+
+async function kekFromMaster(pw, salt, iter){
+  const base = await crypto.subtle.importKey('raw', enc.encode(String(pw).normalize('NFKC')), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['wrapKey', 'unwrapKey']);
+}
+async function kekFromRecovery(raw, salt){
+  const base = await crypto.subtle.importKey('raw', raw, 'HKDF', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'HKDF', hash: 'SHA-256', salt, info: enc.encode('mart-vault-recovery-v1') }, base, { name: 'AES-GCM', length: 256 }, false, ['wrapKey', 'unwrapKey']);
+}
+async function wrapDK(dk, kek){
+  const iv = rnd(12);
+  const ct = await crypto.subtle.wrapKey('raw', dk, kek, { name: 'AES-GCM', iv });
+  return { iv: b64(iv), ct: b64(ct) };
+}
+function unwrapDK(w, kek, extractable){
+  return crypto.subtle.unwrapKey('raw', unb64(w.ct), kek, { name: 'AES-GCM', iv: unb64(w.iv) }, { name: 'AES-GCM', length: 256 }, extractable, ['encrypt', 'decrypt']);
+}
+
+// Base32 (RFC 4648 alphabet) for the recovery key: 20 bytes -> 32 characters.
+const B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+function b32(bytes){
+  let bits = 0, val = 0, out = '';
+  for(const b of bytes){
+    val = ((val << 8) | b) & 0xfffff;
+    bits += 8;
+    while(bits >= 5){ out += B32[(val >>> (bits - 5)) & 31]; bits -= 5; }
+  }
+  if(bits > 0) out += B32[(val << (5 - bits)) & 31];
+  return out;
+}
+function unb32(str){
+  const s = String(str).toUpperCase().replace(/[^A-Z2-7]/g, '');
+  let bits = 0, val = 0;
+  const out = [];
+  for(const c of s){
+    val = ((val << 5) | B32.indexOf(c)) & 0xfffff;
+    bits += 5;
+    if(bits >= 8){ out.push((val >>> (bits - 8)) & 255); bits -= 8; }
+  }
+  return Uint8Array.from(out);
+}
+const formatKey = s => s.match(/.{1,4}/g).join('-');
+
+const aad = (kind, id) => `${S.user.uid}|${kind}|${id}|v1`;
+async function seal(obj, ad){
+  const iv = rnd(12);
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: enc.encode(ad) }, S.dk, enc.encode(JSON.stringify(obj)));
+  return { v: 1, iv: b64(iv), ct: b64(ct) };
+}
+async function unseal(rec, ad){
+  if(!rec || rec.v !== 1) throw new UserError('Unsupported vault data version.');
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(rec.iv), additionalData: enc.encode(ad) }, S.dk, unb64(rec.ct));
+  return JSON.parse(dec.decode(pt));
+}
+
+/* ---------- vault metadata: create / unlock / change / recover ---------- */
+const metaRef = name => doc(db, 'users', S.user.uid, 'secureVaultMeta', name);
+const itemRef = id => doc(db, 'users', S.user.uid, 'secureVaultItems', id);
+
+// Writes a fresh wrap of the SAME vault key under a master password and a new recovery key.
+async function commitMeta(dkExtractable, master){
+  const salt = rnd(16), rsalt = rnd(16), rawRec = rnd(20);
+  const kek = await kekFromMaster(master, salt, PBKDF2_ITER);
+  const wm = await wrapDK(dkExtractable, kek);
+  const wr = await wrapDK(dkExtractable, await kekFromRecovery(rawRec, rsalt));
+  const next = {
+    v: 1,
+    kdf: { name: 'PBKDF2-SHA256', iter: PBKDF2_ITER, salt: b64(salt) },
+    wrappedKey: wm,
+    recovery: { kdf: 'HKDF-SHA256', salt: b64(rsalt), iv: wr.iv, ct: wr.ct },
+    updatedAt: Date.now()
+  };
+  await setDoc(metaRef('main'), next);
+  S.meta = next;
+  S.metaUid = S.user.uid;
+  S.dk = await unwrapDK(wm, kek, false);   // in-memory copy becomes non-extractable again
+  return formatKey(b32(rawRec));
+}
+
+async function createVault(master){
+  const existing = await getDoc(metaRef('main'));
+  if(existing.exists()) throw new UserError('A vault already exists for this account.');
+  const dk = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+  return commitMeta(dk, master);
+}
+
+async function keyWithMaster(master){
+  const m = S.meta;
+  const kek = await kekFromMaster(master, unb64(m.kdf.salt), m.kdf.iter);
+  return unwrapDK(m.wrappedKey, kek, true);
+}
+async function unlockWith(master){
+  const m = S.meta;
+  const kek = await kekFromMaster(master, unb64(m.kdf.salt), m.kdf.iter);
+  S.dk = await unwrapDK(m.wrappedKey, kek, false);
+  S.fails = 0;
+  await enterVault();
+}
+async function recoverKey(raw){
+  const r = S.meta.recovery;
+  const kek = await kekFromRecovery(raw, unb64(r.salt));
+  return unwrapDK(r, kek, true);
+}
+
+/* ---------- records: load, save, delete ---------- */
+async function enterVault(){
+  const snap = await getDocs(collection(db, 'users', S.user.uid, 'secureVaultItems'));
+  const list = [];
+  let bad = 0;
+  for(const d of snap.docs){
+    try{ list.push({ id: d.id, ...(await unseal(d.data(), aad('item', d.id))) }); }
+    catch(e){ bad++; }
+  }
+  S.items = list;
+  S.cats = [];
+  const cs = await getDoc(metaRef('categories'));
+  if(cs.exists()){
+    try{ S.cats = (await unseal(cs.data(), aad('cats', 'categories'))).categories || []; }
+    catch(e){ bad++; }
+  }
+  if(bad) toast(bad + ' item(s) could not be decrypted and were skipped.', 'error');
+  S.locked = false;
+  S.lastActive = Date.now();
+  S.sec = 'all'; S.q = ''; S.sort = 'updated';
+  $('#gate').hidden = true;
+  $('#app').hidden = false;
+  $('#search').value = '';
+  render();
+  startTimers();
+}
+
+async function saveItem(input){
+  const now = Date.now();
+  const it = { ...input, updatedAt: now };
+  if(!it.id){ it.id = hex(16); it.createdAt = now; }
+  const { id, ...payload } = it;
+  await setDoc(itemRef(id), await seal(payload, aad('item', id)));
+  const i = S.items.findIndex(x => x.id === id);
+  if(i >= 0) S.items[i] = it; else S.items.push(it);
+}
+async function patchItem(id, patch){
+  const it = S.items.find(x => x.id === id);
+  if(!it) return;
+  await saveItem({ ...it, ...patch });
+}
+async function purge(it){
+  await deleteDoc(itemRef(it.id));
+  S.items = S.items.filter(x => x.id !== it.id);
+}
+async function saveCats(list){
+  await setDoc(metaRef('categories'), await seal({ categories: list }, aad('cats', 'categories')));
+  S.cats = list;
+}
+
+const catsAll = () => [...BUILTIN, ...S.cats];
+const catOf = id => catsAll().find(c => c.id === id);
+const live = () => S.items.filter(i => !i.trashed);
+const defaultCatId = () => S.sec.startsWith('cat:') ? S.sec.slice(4) : 'passwords';
+
+/* =====================================================================
+   AUTO-LOCK, TAB-HIDDEN LOCK, TIMERS
+   ===================================================================== */
+function touch(){ S.lastActive = Date.now(); }
+function startTimers(){
+  clearInterval(S.tick);
+  S.tick = setInterval(() => {
+    if(S.locked) return;
+    if(Date.now() - S.lastActive > S.prefs.idle * 60000) lockVault('Vault locked after inactivity');
+  }, 15000);
+}
+
+function lockVault(msg){
+  const wasOpen = !S.locked;
+  S.dk = null; S.items = []; S.cats = []; S.locked = true;
+  clearInterval(S.tick);
+  const d = $('#dlg');
+  if(d.open) d.close();
+  d.replaceChildren();
+  $('#main').replaceChildren();
+  $('#side').replaceChildren();
+  $('#search').value = '';
+  S.q = '';
+  toggleSide(false);
+  if(!S.user) showGate('signedout');
+  else if(S.meta) showGate('unlock');
+  else showGate('loading');
+  if(wasOpen && msg) toast(msg);
+}
+
+async function logout(){
+  lockVault();
+  try{ await signOut(auth); }
+  catch(e){ toast(errMsg(e), 'error'); }
+}
+
+function lockWait(){ return Math.max(0, Math.ceil((S.lockUntil - Date.now()) / 1000)); }
+
+/* =====================================================================
+   GATE SCREENS (signed out, setup, unlock, recovery, reset, recovery key)
+   ===================================================================== */
+async function loadMeta(){
+  showGate('loading');
+  const uid = S.user.uid;
+  try{
+    const s = await getDoc(metaRef('main'));
+    if(!S.user || S.user.uid !== uid) return;
+    S.meta = s.exists() ? s.data() : null;
+    S.metaUid = uid;
+    showGate(S.meta ? 'unlock' : 'setup');
+  }catch(e){
+    showGate('error', errMsg(e));
+  }
+}
+
+function recoveryBlock(key){
+  const ack = el('input', { type: 'checkbox' });
+  const node = el('div', { class: 'recovery' },
+    el('p', { class: 'warn', text: 'Save this recovery key now. It is shown only once. Anyone who has this key and your MART Drive login can open your vault, so keep it offline and never share it.' }),
+    el('div', { class: 'recovery-key', text: key }),
+    el('div', { class: 'btn-row' },
+      el('button', { type: 'button', class: 'btn', onclick: () => copyText(key, 'Recovery key') }, ms('content_copy'), ' Copy'),
+      el('button', { type: 'button', class: 'btn', onclick: () => downloadKey(key) }, ms('download'), ' Download .txt')),
+    el('label', { class: 'chk' }, ack, ' I have saved my recovery key somewhere safe'));
+  return { node, ack };
+}
+function downloadKey(key){
+  const blob = new Blob([
+    'MART Drive · Sensitive Data recovery key\n\n' + key + '\n\n' +
+    'Keep this file offline. Anyone with this key and your MART Drive login can open your vault.\n'
+  ], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = el('a', { href: url, download: 'mart-vault-recovery-key.txt' });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+function showGate(state, arg){
+  const g = $('#gate');
+  $('#app').hidden = true;
+  g.hidden = false;
+  g.replaceChildren();
+
+  const title = el('h1', { id: 'gate-title', text: 'Sensitive Data' });
+  const msg = el('p', { class: 'err', role: 'alert' });
+  const say = t => { msg.textContent = t; };
+  const btn = (label, fn, primary = true) => {
+    const b = el('button', { type: 'button', class: 'btn' + (primary ? ' btn-primary' : '') }, label);
+    b.addEventListener('click', async () => {
+      b.disabled = true;
+      try{ await fn(); }
+      catch(e){ say(errMsg(e)); }
+      finally{ b.disabled = false; }
+    });
+    return b;
+  };
+  const link = (label, fn) => el('button', { type: 'button', class: 'link', onclick: fn }, label);
+  const p = (text, cls = '') => el('p', { class: cls, text });
+  let body = [];
+
+  switch(state){
+    case 'loading':
+      body = [p('Loading…', 'muted')];
+      break;
+
+    case 'error':
+      body = [p(arg, 'err'), btn('Try again', loadMeta)];
+      break;
+
+    case 'signedout':
+      title.textContent = 'Sign in required';
+      body = [
+        p('Sign in to MART Drive first, then open Sensitive Data again. This page uses the same sign-in.', 'muted'),
+        btn('Go to MART Drive', () => { location.href = './index.html'; })
+      ];
+      break;
+
+    case 'setup': {
+      title.textContent = 'Create your Vault';
+      const a = pwInput('Master password (at least 12 characters)');
+      const b = pwInput('Confirm master password');
+      const ack = el('input', { type: 'checkbox' });
+      body = [
+        p('Your master password is the only key to this vault. It is never stored or sent to any server. If you forget it and also lose your recovery key, nobody, including the developer and admins, can recover your data.', 'warn'),
+        labeled('Master password', a),
+        labeled('Confirm', b),
+        el('label', { class: 'chk' }, ack, ' I understand that data cannot be recovered without the master password or recovery key'),
+        btn('Create Vault', async () => {
+          if(a.value.length < MIN_MASTER) return say(`Use at least ${MIN_MASTER} characters.`);
+          if(a.value !== b.value) return say('The two passwords do not match.');
+          if(!ack.checked) return say('Please confirm the warning first.');
+          const key = await createVault(a.value);
+          showGate('recovery', key);
+        })
+      ];
+      break;
+    }
+
+    case 'unlock': {
+      title.textContent = 'Unlock Sensitive Data';
+      const a = pwInput('Master password');
+      a.setAttribute('autocomplete', 'current-password');
+      const go = btn('Unlock', async () => {
+        const wait = lockWait();
+        if(wait) return say(`Too many attempts. Try again in ${wait} s.`);
+        try{
+          await unlockWith(a.value);
+        }catch(e){
+          S.fails++;
+          S.lockUntil = Date.now() + Math.min(30000, 1000 * 2 ** S.fails);
+          say(e && e.name === 'OperationError' ? 'Wrong master password.' : errMsg(e));
+        }finally{
+          a.value = '';
+        }
+      });
+      a.addEventListener('keydown', e => { if(e.key === 'Enter') go.click(); });
+      body = [
+        p('Enter your master password to open the vault.', 'muted'),
+        labeled('Master password', a),
+        go,
+        el('div', { class: 'row-links' },
+          link('Forgot master password?', () => showGate('recover')),
+          link('Log out', logout))
+      ];
+      break;
+    }
+
+    case 'recover': {
+      title.textContent = 'Recover with recovery key';
+      const rk = el('textarea', { rows: 3, autocomplete: 'off', spellcheck: 'false', 'aria-label': 'Recovery key', placeholder: 'XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX' });
+      body = [
+        p('Enter the recovery key you saved. After it is verified you will set a new master password.', 'muted'),
+        labeled('Recovery key', rk),
+        btn('Verify recovery key', async () => {
+          const raw = unb32(rk.value);
+          if(raw.length !== 20) return say('The recovery key format is not valid.');
+          let dkx;
+          try{ dkx = await recoverKey(raw); }
+          catch(e){ return say(e && e.name === 'OperationError' ? 'The recovery key is incorrect.' : errMsg(e)); }
+          showGate('reset', dkx);
+        }),
+        link('Back', () => showGate('unlock'))
+      ];
+      break;
+    }
+
+    case 'reset': {
+      title.textContent = 'Set a new master password';
+      const a = pwInput('New master password (at least 12 characters)');
+      const b = pwInput('Confirm new master password');
+      body = [
+        p('Recovery worked. Your data is intact. Choose a new master password. A new recovery key will be created after this step.', 'muted'),
+        labeled('New master password', a),
+        labeled('Confirm', b),
+        btn('Save new master password', async () => {
+          if(a.value.length < MIN_MASTER) return say(`Use at least ${MIN_MASTER} characters.`);
+          if(a.value !== b.value) return say('The two passwords do not match.');
+          const key = await commitMeta(arg, a.value);
+          arg = null;
+          showGate('recovery', key);
+        })
+      ];
+      break;
+    }
+
+    case 'recovery': {
+      title.textContent = 'Save your recovery key';
+      const { node, ack } = recoveryBlock(arg);
+      body = [
+        node,
+        btn('Continue to Vault', async () => {
+          if(!ack.checked) return say('Please confirm you saved the recovery key.');
+          await enterVault();
+        })
+      ];
+      break;
+    }
+  }
+
+  const card = el('section', { class: 'gate-card', 'aria-labelledby': 'gate-title' }, title, ...body, msg);
+  g.append(el('div', { class: 'gate-wrap' }, card));
+  const firstField = card.querySelector('input,textarea');
+  if(firstField) firstField.focus();
+}
+
+/* =====================================================================
+   MAIN UI: SIDEBAR, LIST, DASHBOARD
+   ===================================================================== */
+function toggleSide(open){
+  $('#side').classList.toggle('open', open);
+  $('#scrim').hidden = !open;
+  $('#menuBtn').setAttribute('aria-expanded', String(open));
+}
+
+function go(sec){
+  S.sec = sec;
+  S.q = '';
+  $('#search').value = '';
+  toggleSide(false);
+  render();
+  window.scrollTo(0, 0);
+}
+
+function render(){
+  renderSide();
+  renderMain();
+}
+
+function renderSide(){
+  const active = live();
+  const navItem = (sec, icon, label, count) => el('button', {
+    type: 'button',
+    class: 'nav-btn' + (S.sec === sec ? ' active' : ''),
+    'aria-current': S.sec === sec ? 'page' : undefined,
+    onclick: () => go(sec)
+  },
+    ms(icon),
+    el('span', { class: 'nav-lbl', text: label }),
+    count !== undefined ? el('span', { class: 'count', text: String(count) }) : null);
+
+  $('#side').replaceChildren(
+    navItem('all', 'dashboard', 'All items', active.filter(i => !i.archived).length),
+    navItem('fav', 'star', 'Favorites', active.filter(i => i.favorite && !i.archived).length),
+    el('div', { class: 'nav-h', text: 'Built-in categories' }),
+    ...BUILTIN.map(c => navItem('cat:' + c.id, c.icon, c.name, active.filter(i => i.catId === c.id && !i.archived).length)),
+    el('div', { class: 'nav-h', text: 'My categories' }),
+    ...S.cats.map(c => navItem('cat:' + c.id, c.icon, c.name, active.filter(i => i.catId === c.id && !i.archived).length)),
+    el('button', { type: 'button', class: 'nav-btn add', onclick: () => openCategoryEditor(null) }, ms('add'), el('span', { class: 'nav-lbl', text: 'New category' })),
+    el('div', { class: 'nav-h', text: 'More' }),
+    navItem('arch', 'archive', 'Archived', active.filter(i => i.archived).length),
+    navItem('trash', 'delete', 'Trash', S.items.filter(i => i.trashed).length),
+    el('button', { type: 'button', class: 'nav-btn', onclick: openGenerator }, ms('password'), el('span', { class: 'nav-lbl', text: 'Password generator' }))
+  );
+}
+
+function viewTitle(){
+  if(S.q.trim()) return 'Search results';
+  if(S.sec === 'all') return 'All items';
+  if(S.sec === 'fav') return 'Favorites';
+  if(S.sec === 'arch') return 'Archived';
+  if(S.sec === 'trash') return 'Trash';
+  const c = catOf(S.sec.slice(4));
+  return c ? c.name : 'Category';
+}
+
+function matches(it, q){
+  const c = catOf(it.catId);
+  const values = Object.values(it.fields || {}).filter(v => typeof v === 'string' || typeof v === 'number').map(String);
+  const hay = [it.title || '', c ? c.name : '', it.notes || '', ...values].join(' ').toLowerCase();
+  return hay.includes(q);
+}
+
+function visibleItems(){
+  const q = S.q.trim().toLowerCase();
+  let list = S.items.filter(i => {
+    if(S.sec === 'trash') return !!i.trashed;
+    if(i.trashed) return false;
+    if(i.archived && S.sec !== 'arch' && !q) return false;
+    if(S.sec === 'arch') return !!i.archived;
+    if(S.sec === 'fav') return !!i.favorite;
+    if(S.sec.startsWith('cat:')) return i.catId === S.sec.slice(4);
+    return true;
+  });
+  if(q) list = list.filter(i => matches(i, q));
+  if(S.sort === 'name') list.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+  else list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  return list;
+}
+
+function renderMain(){
+  const head = el('div', { class: 'page-head' }, el('h2', { text: viewTitle() }), el('div', { class: 'grow' }));
+  if(S.sec === 'trash'){
+    const hasTrash = S.items.some(i => i.trashed);
+    head.append(el('button', { type: 'button', class: 'btn btn-danger', disabled: !hasTrash || undefined, onclick: emptyTrash }, ms('delete_forever'), ' Empty trash'));
+  }else{
+    const sort = el('select', { class: 'sort', 'aria-label': 'Sort items' },
+      el('option', { value: 'updated', text: 'Recently updated' }),
+      el('option', { value: 'name', text: 'Name A–Z' }));
+    sort.value = S.sort;
+    sort.addEventListener('change', () => { S.sort = sort.value; renderMain(); });
+    head.append(sort, el('button', { type: 'button', class: 'btn btn-primary', onclick: () => openEditor(null) }, ms('add'), ' New item'));
+  }
+
+  const nodes = [head];
+  if(S.sec === 'all' && !S.q.trim()) nodes.push(dashboard());
+  const c = S.sec.startsWith('cat:') ? catOf(S.sec.slice(4)) : null;
+  if(c && c.desc) nodes.push(el('p', { class: 'hint', text: c.desc }));
+  if(S.sec === 'trash') nodes.push(el('p', { class: 'hint', text: 'Trashed items are hidden everywhere else. Restore them or delete them permanently.' }));
+  nodes.push(listEl());
+  $('#main').replaceChildren(...nodes);
+}
+
+function dashboard(){
+  const active = live().filter(i => !i.archived);
+  const recent = [...active].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))[0];
+  const card = (icon, label, value, sub) => el('div', { class: 'stat' },
+    ms(icon, 'stat-ic'),
+    el('div', { class: 'stat-v', text: String(value) }),
+    el('div', { class: 'stat-l', text: label }),
+    sub ? el('div', { class: 'stat-s', text: sub }) : null);
+  return el('section', { class: 'stats', 'aria-label': 'Overview' },
+    card('inventory_2', 'Total items', active.length),
+    card('category', 'Categories', catsAll().length),
+    card('star', 'Favorites', active.filter(i => i.favorite).length),
+    card('update', 'Recently updated', recent ? (recent.title || 'Untitled') : '—', recent ? fmtDate(recent.updatedAt) : ''));
+}
+
+function listEl(){
+  const list = visibleItems();
+  if(!list.length){
+    const text = S.q.trim() ? 'No items match your search.'
+      : S.sec === 'trash' ? 'Trash is empty.'
+      : S.sec === 'arch' ? 'No archived items.'
+      : 'Nothing here yet. Use “New item” to add one.';
+    return el('div', { class: 'empty' }, ms('lock_open'), el('p', { text }));
+  }
+  return el('ul', { class: 'list', role: 'list' }, list.map(rowEl));
+}
+
+function rowEl(it){
+  const c = catOf(it.catId);
+  const starLabel = it.favorite ? 'Remove from favorites' : 'Add to favorites';
+  const star = el('button', {
+    type: 'button',
+    class: 'icon-btn sm' + (it.favorite ? ' on' : ''),
+    title: starLabel,
+    'aria-label': starLabel,
+    'aria-pressed': it.favorite ? 'true' : 'false',
+    onclick: async e => {
+      e.stopPropagation();
+      try{ await patchItem(it.id, { favorite: !it.favorite }); render(); }
+      catch(err){ toast(errMsg(err), 'error'); }
+    }
+  }, ms(it.favorite ? 'star' : 'star_border'));
+  return el('li', { class: 'row' },
+    ms(c ? c.icon : 'help', 'row-ic'),
+    el('button', { type: 'button', class: 'row-main', onclick: () => openDetail(it.id) },
+      el('span', { class: 'row-title', text: it.title || 'Untitled' }),
+      el('span', { class: 'row-sub', text: `${c ? c.name : 'Unknown category'} · ${fmtDate(it.updatedAt)}` })),
+    star);
+}
+
+/* =====================================================================
+   FIELD RENDERING (view + edit), driven by the category schema
+   ===================================================================== */
+function secretView(v){
+  let shown = false, timer = null;
+  const out = el('span', { class: 'secret', text: '••••••••' });
+  const ic = ms('visibility');
+  const eye = el('button', { type: 'button', class: 'icon-btn sm', title: 'Show value', 'aria-label': 'Show value' }, ic);
+  const hide = () => { clearTimeout(timer); shown = false; out.textContent = '••••••••'; ic.textContent = 'visibility'; eye.title = eye.ariaLabel = 'Show value'; };
+  eye.addEventListener('click', () => {
+    if(shown){ hide(); return; }
+    shown = true;
+    out.textContent = v;
+    ic.textContent = 'visibility_off';
+    eye.title = 'Hide value';
+    timer = setTimeout(hide, REVEAL_MS);
+    touch();
+  });
+  const copy = iconBtn('content_copy', 'Copy value', () => copyText(v, 'Value'), 'sm');
+  return el('div', { class: 'secret-row' }, out, eye, copy);
+}
+
+function fieldView(f, v){
+  if(f.type === 'checkbox') return document.createTextNode(v ? 'Yes' : 'No');
+  if(isEmptyVal(v)) return el('span', { class: 'muted', text: '—' });
+  if(isSecret(f)) return secretView(String(v));
+  if(f.type === 'url'){
+    const href = safeHref(String(v));
+    return href ? el('a', { href, target: '_blank', rel: 'noopener noreferrer', text: String(v) }) : document.createTextNode(String(v));
+  }
+  if(f.type === 'longtext') return el('div', { class: 'pre', text: String(v) });
+  return document.createTextNode(String(v));
+}
+
+// Returns {f, wrap, get} for one field in the editor.
+function fieldInput(f, v){
+  const idAttr = 'f_' + f.fieldId;
+  const secret = isSecret(f);
+
+  if(f.type === 'checkbox'){
+    const input = el('input', { type: 'checkbox', id: idAttr });
+    input.checked = !!v;
+    return { f, get: () => input.checked, wrap: el('div', { class: 'chk' }, input, el('label', { for: idAttr, text: f.label })) };
+  }
+
+  let input;
+  if(f.type === 'longtext'){
+    input = el('textarea', { id: idAttr, rows: 3, maxlength: 5000, placeholder: f.placeholder || '' });
+    input.value = v ?? '';
+  }else if(f.type === 'select'){
+    input = el('select', { id: idAttr }, el('option', { value: '', text: '— Select —' }), ...(f.options || []).map(o => el('option', { value: o, text: o })));
+    input.value = v ?? '';
+  }else{
+    const typeMap = { number: 'number', email: 'email', phone: 'tel', url: 'url', date: 'date' };
+    input = el('input', {
+      id: idAttr,
+      type: secret ? 'password' : (typeMap[f.type] || 'text'),
+      placeholder: f.placeholder || '',
+      autocomplete: secret ? (/pass/i.test(f.label) ? 'new-password' : 'off') : 'off',
+      spellcheck: 'false',
+      maxlength: (f.type === 'number' || f.type === 'date') ? undefined : 500
+    });
+    input.value = v ?? '';
+  }
+
+  const row = el('div', { class: 'inp-row' }, input);
+  const extras = [];
+  if(secret){
+    const eye = iconBtn('visibility', 'Show or hide value', () => {
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      eye.firstChild.textContent = show ? 'visibility_off' : 'visibility';
+    }, 'sm');
+    const gen = makeGenPanel(pw => {
+      input.value = pw;
+      input.type = 'text';
+      eye.firstChild.textContent = 'visibility_off';
+      gen.hidden = true;
+    });
+    const genBtn = iconBtn('password', 'Suggest a strong password', () => {
+      gen.hidden = !gen.hidden;
+      if(!gen.hidden) gen.regen();
+    }, 'sm');
+    row.append(eye, genBtn);
+    extras.push(gen);
+  }
+  const wrap = el('div', { class: 'fld' }, el('label', { for: idAttr, class: 'lbl', text: f.label + (f.required ? ' *' : '') }), row, ...extras);
+  return { f, wrap, get: () => input.value };
+}
+
+/* =====================================================================
+   DIALOG HELPER (one native <dialog>, content cleared on close)
+   ===================================================================== */
+function dialog({ title, body = [], actions = [{ label: 'Close' }], wide = false }){
+  const d = $('#dlg');
+  if(d.open) d.close();
+  d.className = wide ? 'dlg wide' : 'dlg';
+  const foot = el('footer', { class: 'dlg-foot' }, actions.map(a => {
+    const b = el('button', { type: 'button', class: 'btn' + (a.primary ? ' btn-primary' : '') + (a.danger ? ' btn-danger' : '') }, a.label);
+    b.addEventListener('click', async () => {
+      b.disabled = true;
+      try{
+        const r = a.run ? await a.run() : undefined;
+        if(r !== false) d.close();
+      }catch(err){
+        toast(errMsg(err), 'error');
+      }finally{
+        b.disabled = false;
+      }
+    });
+    return b;
+  }));
+  const head = el('header', { class: 'dlg-head' },
+    el('h2', { text: title }),
+    iconBtn('close', 'Close', () => d.close()));
+  d.replaceChildren(head, el('div', { class: 'dlg-body' }, body), foot);
+  d.showModal();
+  const first = d.querySelector('.dlg-body input,.dlg-body select,.dlg-body textarea');
+  if(first) first.focus();
+}
+
+/* =====================================================================
+   ITEM DETAIL
+   ===================================================================== */
+const kvRow = (label, valueNode) => el('div', { class: 'kv' }, el('div', { class: 'k', text: label }), el('div', { class: 'v' }, valueNode));
+
+function openDetail(id){
+  const it = S.items.find(x => x.id === id);
+  if(!it) return;
+  const c = catOf(it.catId);
+  const body = [];
+  if(it.trashed) body.push(el('p', { class: 'warn', text: 'This item is in Trash.' }));
+  if(c) body.push(el('div', { class: 'cat-tag' }, ms(c.icon), el('span', { text: c.name })));
+  if(!c) body.push(el('p', { class: 'warn', text: 'The category of this item was deleted. Restoring it moves the item to Secure Notes.' }));
+  if(c) body.push(...c.fields.map(f => kvRow(f.label, fieldView(f, (it.fields || {})[f.fieldId]))));
+  if(it.notes) body.push(kvRow('Notes', el('div', { class: 'pre', text: it.notes })));
+  body.push(el('p', { class: 'muted small', text: `Created ${fmtDate(it.createdAt)} · Updated ${fmtDate(it.updatedAt)}` }));
+
+  const actions = it.trashed ? [
+    { label: 'Delete permanently', danger: true, run: async () => {
+        if(!confirm('Delete this item permanently? This cannot be undone.')) return false;
+        await purge(it);
+        toast('Item deleted permanently');
+        render();
+    }},
+    { label: 'Restore', primary: true, run: async () => {
+        await patchItem(it.id, { trashed: false, trashedAt: null, catId: catOf(it.catId) ? it.catId : 'notes' });
+        toast('Item restored');
+        render();
+    }}
+  ] : [
+    { label: 'Move to Trash', danger: true, run: async () => {
+        if(!confirm('Move this item to Trash?')) return false;
+        await patchItem(it.id, { trashed: true, trashedAt: Date.now(), favorite: false });
+        toast('Moved to Trash');
+        render();
+    }},
+    { label: it.archived ? 'Unarchive' : 'Archive', run: async () => {
+        await patchItem(it.id, { archived: !it.archived });
+        toast(it.archived ? 'Unarchived' : 'Archived');
+        render();
+    }},
+    { label: 'Duplicate', run: async () => {
+        const copy = { ...it, title: `${it.title || 'Untitled'} (copy)`, favorite: false, archived: false };
+        delete copy.id;
+        delete copy.createdAt;
+        await saveItem(copy);
+        toast('Duplicated');
+        render();
+    }},
+    { label: 'Edit', primary: true, run: () => { setTimeout(() => openEditor(it), 150); } }
+  ];
+  dialog({ title: it.title || 'Untitled', body, actions, wide: true });
+}
+
+/* =====================================================================
+   ITEM EDITOR (add / edit, dynamic fields)
+   ===================================================================== */
+function openEditor(item){
+  const editing = !!item;
+  const base = item
+    ? { ...item, fields: { ...(item.fields || {}) } }
+    : { title: '', catId: defaultCatId(), fields: {}, notes: '', favorite: false };
+
+  const title = el('input', { type: 'text', maxlength: 120, placeholder: 'e.g. Gmail, HDFC card, Home Wi-Fi', required: true, 'aria-label': 'Title' });
+  title.value = base.title || '';
+  const catSel = el('select', { class: 'sel', 'aria-label': 'Category' }, catsAll().map(c => el('option', { value: c.id, text: c.name })));
+  catSel.value = base.catId;
+  const notes = el('textarea', { rows: 3, maxlength: 5000, placeholder: 'Extra notes (encrypted)' });
+  notes.value = base.notes || '';
+  const fav = el('input', { type: 'checkbox' });
+  fav.checked = !!base.favorite;
+  const fieldsBox = el('div', { class: 'fields' });
+  let inputs = [];
+
+  const collect = () => {
+    const o = {};
+    for(const x of inputs) o[x.f.fieldId] = x.get();
+    return o;
+  };
+  const drawFields = () => {
+    inputs = [];
+    fieldsBox.replaceChildren();
+    const c = catOf(catSel.value);
+    if(!c) return;
+    for(const f of c.fields){
+      const x = fieldInput(f, base.fields[f.fieldId]);
+      inputs.push(x);
+      fieldsBox.append(x.wrap);
+    }
+  };
+  catSel.addEventListener('change', () => {
+    Object.assign(base.fields, collect());   // keep values of the old category, in case the user switches back
+    drawFields();
+  });
+  drawFields();
+
+  dialog({
+    title: editing ? 'Edit item' : 'New item',
+    wide: true,
+    body: [
+      labeled('Title *', title),
+      labeled('Category', catSel),
+      fieldsBox,
+      labeled('Notes', notes),
+      el('label', { class: 'chk' }, fav, ' Add to favorites')
+    ],
+    actions: [
+      { label: 'Cancel' },
+      { label: 'Save', primary: true, run: async () => {
+          const t = title.value.trim();
+          if(!t){ toast('Title is required.', 'error'); return false; }
+          const vals = collect();
+          for(const x of inputs){
+            const v = vals[x.f.fieldId];
+            if(x.f.required && isEmptyVal(v)){ toast(`"${x.f.label}" is required.`, 'error'); return false; }
+            if(x.f.type === 'number' && !isEmptyVal(v) && isNaN(Number(v))){ toast(`"${x.f.label}" must be a number.`, 'error'); return false; }
+          }
+          const payload = {
+            title: t,
+            catId: catSel.value,
+            fields: vals,
+            notes: notes.value.slice(0, 5000),
+            favorite: fav.checked,
+            archived: !!base.archived,
+            trashed: false
+          };
+          if(editing){ payload.id = item.id; payload.createdAt = item.createdAt; }
+          await saveItem(payload);
+          toast('Item saved', 'success');
+          render();
+          return true;
+      }}
+    ]
+  });
+}
+
+/* =====================================================================
+   CATEGORY BUILDER (custom categories with unlimited fields)
+   ===================================================================== */
+function openCategoryEditor(cat){
+  const editing = !!cat;
+  const orig = cat ? JSON.parse(JSON.stringify(cat)) : null;
+  const draft = (cat ? cat.fields : []).map(f => ({ ...f, options: [...(f.options || [])] }));
+  const nameIn = el('input', { type: 'text', maxlength: 60, placeholder: 'e.g. My Server', 'aria-label': 'Category name' });
+  nameIn.value = cat ? cat.name : '';
+  const iconSel = el('select', { class: 'sel', 'aria-label': 'Icon' }, ICONS.map(i => el('option', { value: i, text: i })));
+  iconSel.value = cat ? cat.icon : 'category';
+  const list = el('ol', { class: 'fdraft' });
+
+  const redraw = () => { list.replaceChildren(...draft.map((f, i) => draftRow(f, i, draft, redraw))); };
+  const addBtn = el('button', { type: 'button', class: 'btn', onclick: () => {
+    if(draft.length >= 40) return toast('A category can have at most 40 fields.', 'error');
+    draft.push({ fieldId: 'f' + hex(6), label: '', type: 'text', required: false, secret: false, placeholder: '', options: [] });
+    redraw();
+  } }, ms('add'), ' Add field');
+  redraw();
+
+  const actions = [{ label: 'Cancel' }];
+  if(editing) actions.push({ label: 'Delete category', danger: true, run: () => { setTimeout(() => deleteCategory(orig), 150); } });
+  actions.push({ label: 'Save', primary: true, run: async () => {
+    const name = nameIn.value.trim();
+    if(!name){ toast('Category name is required.', 'error'); return false; }
+    const fields = draft.map((f, i) => ({
+      fieldId: f.fieldId,
+      label: (f.label || '').trim(),
+      type: f.type,
+      required: !!f.required,
+      secret: f.type === 'secret' || (!!f.secret && !['checkbox', 'select'].includes(f.type)),
+      placeholder: (f.placeholder || '').trim(),
+      options: f.type === 'select' ? (f.options || []) : [],
+      displayOrder: i
+    }));
+    if(fields.some(f => !f.label)){ toast('Every field needs a label.', 'error'); return false; }
+    if(new Set(fields.map(f => f.label.toLowerCase())).size !== fields.length){ toast('Field labels must be unique.', 'error'); return false; }
+    if(fields.some(f => f.type === 'select' && !f.options.length)){ toast('Dropdown fields need at least one option.', 'error'); return false; }
+    if(editing){
+      const changed = fields.filter(f => {
+        const o = orig.fields.find(x => x.fieldId === f.fieldId);
+        return o && o.type !== f.type && S.items.some(it => it.catId === orig.id && !isEmptyVal((it.fields || {})[f.fieldId]));
+      });
+      if(changed.length && !confirm(`The type changed for: ${changed.map(f => f.label).join(', ')}. Existing values stay stored but may display differently. Continue?`)) return false;
+    }
+    const catObj = { id: editing ? orig.id : 'cat_' + hex(8), name, icon: iconSel.value, fields };
+    const next = editing ? S.cats.map(c => c.id === orig.id ? catObj : c) : [...S.cats, catObj];
+    await saveCats(next);
+    toast('Category saved', 'success');
+    render();
+    return true;
+  } });
+
+  dialog({
+    title: editing ? 'Edit category' : 'New category',
+    wide: true,
+    body: [
+      labeled('Name *', nameIn),
+      labeled('Icon', iconSel),
+      el('h3', { text: 'Fields' }),
+      list,
+      addBtn,
+      el('p', { class: 'hint', text: 'Changing a field type keeps the stored values, but they may not display correctly. Secret fields are masked.' })
+    ],
+    actions
+  });
+}
+
+function draftRow(f, i, draft, redraw){
+  const label = el('input', { type: 'text', maxlength: 60, placeholder: 'Field label', 'aria-label': 'Field label' });
+  label.value = f.label || '';
+  label.addEventListener('input', () => { f.label = label.value; });
+
+  const type = el('select', { 'aria-label': 'Field type' }, FIELD_TYPES.map(([v, t]) => el('option', { value: v, text: t })));
+  type.value = f.type;
+  type.addEventListener('change', () => {
+    f.type = type.value;
+    if(f.type !== 'select') f.options = [];
+    if(f.type === 'secret') f.secret = true;
+    redraw();
+  });
+
+  const req = el('input', { type: 'checkbox' });
+  req.checked = !!f.required;
+  req.addEventListener('change', () => { f.required = req.checked; });
+
+  const sec = el('input', { type: 'checkbox' });
+  sec.checked = f.type === 'secret' || !!f.secret;
+  sec.disabled = ['secret', 'checkbox', 'select'].includes(f.type);
+  sec.addEventListener('change', () => { f.secret = sec.checked; });
+
+  const ph = el('input', { type: 'text', maxlength: 120, placeholder: 'Placeholder (optional)', 'aria-label': 'Placeholder' });
+  ph.value = f.placeholder || '';
+  ph.addEventListener('input', () => { f.placeholder = ph.value; });
+
+  const opts = el('input', { type: 'text', maxlength: 500, placeholder: 'Options, comma separated (e.g. Home, Office)', 'aria-label': 'Dropdown options' });
+  opts.value = (f.options || []).join(', ');
+  opts.addEventListener('input', () => {
+    f.options = opts.value.split(',').map(s => s.trim()).filter(Boolean).slice(0, 50);
+  });
+
+  const up = iconBtn('arrow_upward', 'Move up', () => { if(i > 0){ [draft[i - 1], draft[i]] = [draft[i], draft[i - 1]]; redraw(); } }, 'sm');
+  const down = iconBtn('arrow_downward', 'Move down', () => { if(i < draft.length - 1){ [draft[i + 1], draft[i]] = [draft[i], draft[i + 1]]; redraw(); } }, 'sm');
+  const del = iconBtn('delete', 'Remove field', () => { draft.splice(i, 1); redraw(); }, 'sm danger');
+
+  return el('li', { class: 'frow' },
+    el('div', { class: 'frow-top' }, label, type, up, down, del),
+    el('div', { class: 'frow-opts' },
+      el('label', { class: 'chk' }, req, ' Required'),
+      el('label', { class: 'chk' }, sec, ' Secret (masked)'),
+      ph,
+      f.type === 'select' ? opts : null));
+}
+
+function deleteCategory(cat){
+  const affected = S.items.filter(i => !i.trashed && i.catId === cat.id);
+  dialog({
+    title: `Delete “${cat.name}”?`,
+    body: [
+      el('p', { text: `${affected.length} record(s) in this category will move to Trash. You can restore them from Trash. Restored records go to Secure Notes, because this category will no longer exist.` }),
+      el('p', { class: 'muted', text: 'The category itself is removed right away.' })
+    ],
+    actions: [
+      { label: 'Cancel' },
+      { label: 'Delete category', danger: true, run: async () => {
+          for(const it of affected) await saveItem({ ...it, trashed: true, trashedAt: Date.now() });
+          await saveCats(S.cats.filter(c => c.id !== cat.id));
+          S.sec = 'all';
+          render();
+          toast('Category deleted');
+          return true;
+      }}
+    ]
+  });
+}
+
+async function emptyTrash(){
+  const list = S.items.filter(i => i.trashed);
+  dialog({
+    title: 'Empty trash?',
+    body: [el('p', { text: `${list.length} item(s) will be deleted permanently. This cannot be undone.` })],
+    actions: [
+      { label: 'Cancel' },
+      { label: 'Delete permanently', danger: true, run: async () => {
+          for(const it of list) await purge(it);
+          render();
+          toast('Trash emptied');
+          return true;
+      }}
+    ]
+  });
+}
+
+/* =====================================================================
+   PASSWORD GENERATOR (standalone) + SETTINGS
+   ===================================================================== */
+function openGenerator(){
+  const panel = makeGenPanel(pw => copyText(pw, 'Password'));
+  panel.hidden = false;
+  panel.regen();
+  dialog({ title: 'Password generator', body: [panel], actions: [{ label: 'Close' }] });
+}
+
+function openSettings(){
+  const idle = el('select', { 'aria-label': 'Auto-lock after inactivity' }, [1, 2, 5, 10, 15, 30].map(m => el('option', { value: m, text: `${m} min` })));
+  idle.value = String(S.prefs.idle);
+  const hid = el('input', { type: 'checkbox' });
+  hid.checked = S.prefs.lockHidden;
+  dialog({
+    title: 'Vault settings',
+    body: [
+      labeled('Auto-lock after inactivity', idle),
+      el('label', { class: 'chk' }, hid, ' Lock when this tab is hidden or I switch away'),
+      el('p', { class: 'hint', text: 'Clipboard: copied values are cleared after 30 s when the browser allows it. Some browsers block clipboard reads, so this is best effort.' }),
+      el('p', { class: 'hint', text: 'Backups: the vault has no export yet. Export is planned as an encrypted file only.' })
+    ],
+    actions: [
+      { label: 'Change master password', run: () => { setTimeout(openChangeMaster, 150); } },
+      { label: 'New recovery key', run: () => { setTimeout(openRegenRecovery, 150); } },
+      { label: 'Save', primary: true, run: () => {
+          S.prefs = { idle: Number(idle.value), lockHidden: hid.checked };
+          savePrefs();
+          startTimers();
+          toast('Settings saved', 'success');
+          return true;
+      }}
+    ]
+  });
+}
+
+function showRecoveryDialog(key, title){
+  const { node, ack } = recoveryBlock(key);
+  dialog({
+    title,
+    body: [node],
+    actions: [{ label: 'Done', primary: true, run: () => {
+        if(!ack.checked){ toast('Please confirm you saved the key first.', 'error'); return false; }
+    } }]
+  });
+}
+
+function openChangeMaster(){
+  const cur = pwInput('Current master password');
+  const n1 = pwInput('New master password (at least 12 characters)');
+  const n2 = pwInput('Confirm new master password');
+  dialog({
+    title: 'Change master password',
+    body: [
+      labeled('Current master password', cur),
+      labeled('New master password', n1),
+      labeled('Confirm new', n2),
+      el('p', { class: 'hint', text: 'A new recovery key is created with the change. The old recovery key stops working.' })
+    ],
+    actions: [
+      { label: 'Cancel' },
+      { label: 'Change password', primary: true, run: async () => {
+          if(n1.value.length < MIN_MASTER){ toast(`Use at least ${MIN_MASTER} characters.`, 'error'); return false; }
+          if(n1.value !== n2.value){ toast('The new passwords do not match.', 'error'); return false; }
+          let dkx;
+          try{ dkx = await keyWithMaster(cur.value); }
+          catch(e){ toast(e && e.name === 'OperationError' ? 'Current master password is wrong.' : errMsg(e), 'error'); return false; }
+          const key = await commitMeta(dkx, n1.value);
+          dkx = null;
+          setTimeout(() => showRecoveryDialog(key, 'Your new recovery key'), 150);
+      }}
+    ]
+  });
+}
+
+function openRegenRecovery(){
+  const cur = pwInput('Master password');
+  dialog({
+    title: 'New recovery key',
+    body: [
+      labeled('Master password', cur),
+      el('p', { class: 'hint', text: 'The old recovery key stops working as soon as the new one is created.' })
+    ],
+    actions: [
+      { label: 'Cancel' },
+      { label: 'Create new key', primary: true, run: async () => {
+          let dkx;
+          try{ dkx = await keyWithMaster(cur.value); }
+          catch(e){ toast(e && e.name === 'OperationError' ? 'Master password is wrong.' : errMsg(e), 'error'); return false; }
+          const key = await commitMeta(dkx, cur.value);
+          dkx = null;
+          setTimeout(() => showRecoveryDialog(key, 'Your new recovery key'), 150);
+      }}
+    ]
+  });
+}
+
+/* =====================================================================
+   INIT: wiring, auth state, activity tracking
+   ===================================================================== */
+$('#lockBtn').addEventListener('click', () => lockVault('Vault locked'));
+$('#logoutBtn').addEventListener('click', logout);
+$('#settingsBtn').addEventListener('click', openSettings);
+$('#menuBtn').addEventListener('click', () => toggleSide(!$('#side').classList.contains('open')));
+$('#scrim').addEventListener('click', () => toggleSide(false));
+$('#search').addEventListener('input', e => { S.q = e.target.value; renderMain(); });
+$('#dlg').addEventListener('close', () => { if(!$('#dlg').open) $('#dlg').replaceChildren(); });
+
+['pointerdown', 'keydown', 'input'].forEach(ev => document.addEventListener(ev, touch, { passive: true }));
+document.addEventListener('visibilitychange', () => {
+  if(document.hidden && S.prefs.lockHidden && !S.locked) lockVault('Vault locked (tab hidden)');
+});
+
+showGate('loading');
+
+onAuthStateChanged(auth, user => {
+  S.user = user;
+  if(!user){
+    S.meta = null;
+    S.metaUid = null;
+    lockVault();
+    return;
+  }
+  if(S.metaUid && S.metaUid !== user.uid){
+    // Another account signed in on this tab: forget the previous account's state.
+    S.meta = null;
+    S.metaUid = null;
+    lockVault();
+  }
+  if(S.meta){
+    if(S.locked) showGate('unlock');
+    return;
+  }
+  loadMeta();
+});
+</script>
+</body>
+</html>
