@@ -431,6 +431,7 @@ html.has-session.app-locked body{overflow:hidden}
 <li><div class="nav-item" data-v="trash" onclick="setView('trash')"><span class="material-symbols-outlined">delete</span> Trash</div></li>
 <!--SEC:nav--><li><div class="nav-item" data-vx="vault" onclick="openVault()"><span class="material-symbols-outlined">lock</span> Vault</div></li>
 <li><div class="nav-item" onclick="openSecurity()"><span class="material-symbols-outlined">shield_lock</span> Security</div></li><!--/SEC:nav-->
+<li><a class="nav-item" href="./mart.secure-vault.html" data-mart-patch="sensitive-data" style="text-decoration:none;color:inherit"><span class="material-symbols-outlined">enhanced_encryption</span> Sensitive Data</a></li>
 <li><div class="nav-item" onclick="openThemeModal()"><span class="material-symbols-outlined">palette</span> Theme</div></li>
 <li><div class="nav-item" onclick="openInbox()"><span class="material-symbols-outlined">notifications</span> Notifications <span class="badge" id="inbox-badge" style="display:none"></span></div></li>
 <li><div class="nav-item" onclick="enablePush()"><span class="material-symbols-outlined">notifications_active</span> Enable push alerts</div></li>
@@ -4291,4 +4292,4 @@ ${me_?'':`<button class="btn" data-sx="sess-out" data-id="${esc(s.id)}">Sign out
 </script>
 <a id="admin-fab" href="admin.html" title="Open Admin Panel"><span class="material-symbols-outlined">admin_panel_settings</span>Admin Panel</a>
 </body>
- </html>
+</html>
