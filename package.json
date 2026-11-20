@@ -1,0 +1,11 @@
+{
+  "name": "mart-drive",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@simplewebauthn/server": "^14.1.0",
+    "firebase-admin": "^14.5.1"
+  }
+}
