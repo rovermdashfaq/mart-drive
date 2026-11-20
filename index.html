@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#163A5F" />
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon 192.jpg">
 <link rel="apple-touch-icon" href="icons/icon 192.jpg">
@@ -347,6 +348,18 @@ html.has-session.app-locked body{overflow:hidden}
 .sx-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--success);margin-right:5px}
 .sx-sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px}
 </style><script>(function(){try{var c=JSON.parse(localStorage.getItem("mart_lock_v1")||"null");if(!c||!c.on)return;var h=document.documentElement;if(!h.classList.contains("has-session"))return;var a=+sessionStorage.getItem("mart_last_active")||0;var lim=Math.max((c.after||0)*60000,4000);if(!a||Date.now()-a>lim)h.classList.add("app-locked")}catch(e){}})();</script><!--/SEC:head-->
+<style>#drive-banner{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:4000;display:flex;align-items:center;gap:12px;background:var(--surface);color:var(--text);border:1px solid var(--error);border-radius:12px;box-shadow:var(--shadow-lg);padding:10px 14px;font-size:13px;max-width:calc(100vw - 32px)}
+#drive-banner button{background:var(--navy);color:var(--surface);border-radius:20px;padding:6px 14px;font-weight:600;white-space:nowrap}
+.em-auth{max-width:380px;margin:14px 0;display:flex;flex-direction:column;gap:8px}
+.em-tabs{display:flex;gap:4px;background:var(--soft);border-radius:24px;padding:4px}
+.em-tabs button{flex:1;padding:8px;border-radius:20px;font-weight:600;color:var(--muted)}
+.em-tabs button.on{background:var(--surface);color:var(--text);box-shadow:var(--shadow-md)}
+.em-auth input{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font:inherit}
+.em-auth .btn{width:100%}
+.em-links{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:13px}
+.em-links button{color:var(--blue);font-weight:600}
+#em-msg{font-size:13px;min-height:18px}
+.em-err{color:var(--error)}.em-ok{color:var(--success)}</style>
 </head>
 <body>
 <!--SEC:lock--><div id="sx-lock" role="dialog" aria-modal="true" aria-label="MART Drive is locked">
@@ -373,7 +386,17 @@ html.has-session.app-locked body{overflow:hidden}
 <p>MART Drive is a cloud storage and collaboration web app. Upload files to your own Google Drive, organize them in folders, share them with your team or organization, and keep notes and web links with live previews, all in one place.</p>
 <div id="invite-banner" class="ld-note" style="display:none;margin-bottom:14px;color:var(--blue);font-weight:600;font-size:15px">You have been invited to join an organization. Log in or sign up to send your join request.</div>
 <div class="ld-cta"><button class="btn btn-primary ld-btn-lg" onclick="signIn()">Sign up with Google</button><button class="btn ld-btn-lg" onclick="signIn()">Log in with Google</button></div>
-<div class="ld-note">Free to use. No new password: sign-in is handled securely by Google.<br>By continuing you agree to our <a href="terms_conditions.html">Terms &amp; Conditions</a> and <a href="privacy_policy.html">Privacy Policy</a>.</div>
+<div class="em-auth" id="em-auth">
+<div class="em-tabs"><button type="button" id="em-tab-in" class="on">Log in</button><button type="button" id="em-tab-up">Sign up</button></div>
+<input id="em-name" type="text" placeholder="Full name" autocomplete="name" style="display:none">
+<input id="em-email" type="email" placeholder="Email" autocomplete="email">
+<input id="em-pass" type="password" placeholder="Password" autocomplete="current-password">
+<input id="em-pass2" type="password" placeholder="Confirm password" autocomplete="new-password" style="display:none">
+<button class="btn btn-primary" id="em-go" type="button">Log in</button>
+<div class="em-links"><button type="button" id="em-forgot">Forgot password?</button><button type="button" id="em-passkey">Sign in with passkey</button></div>
+<div id="em-msg" role="status"></div>
+</div>
+<div class="ld-note">Free to use. Sign in with Google, or with your email and password.<br>By continuing you agree to our <a href="terms_conditions.html">Terms &amp; Conditions</a> and <a href="privacy_policy.html">Privacy Policy</a>.</div>
 </section>
 
 <section id="features" class="ld-sec ld-wrap">
@@ -517,7 +540,7 @@ html.has-session.app-locked body{overflow:hidden}
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, indexedDBLocalPersistence, deleteUser } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, indexedDBLocalPersistence, deleteUser, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithCustomToken, sendPasswordResetEmail, updateProfile, linkWithPopup, reauthenticateWithPopup } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, addDoc, setDoc, getDoc, deleteDoc, updateDoc, onSnapshot, query, where, serverTimestamp, getDocs, arrayUnion, arrayRemove, increment } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js';
@@ -878,13 +901,151 @@ function saveToken(t,uid){accessToken=t;try{localStorage.setItem(TOKEN_KEY,JSON.
 function loadToken(uid){try{const s=JSON.parse(localStorage.getItem(TOKEN_KEY)||'null');if(s&&s.uid===uid&&s.exp>Date.now())return s.t}catch{}return null}
 function clearToken(){accessToken=null;try{localStorage.removeItem(TOKEN_KEY)}catch{}}
 function makeProvider(hint){const p=new GoogleAuthProvider();p.addScope('https://www.googleapis.com/auth/drive.file');p.setCustomParameters(hint?{login_hint:hint}:{prompt:'consent'});return p}
-async function ensureToken(){
-  const c=currentUser&&loadToken(currentUser.uid);if(c){accessToken=c;return c}
-  if(!tokenPromise)tokenPromise=signInWithPopup(auth,makeProvider(currentUser?.email)).then(r=>{saveToken(GoogleAuthProvider.credentialFromResult(r).accessToken,r.user.uid);return accessToken}).finally(()=>{tokenPromise=null});
-  return tokenPromise;
+/*MART-PATCH-V1*/
+const GIS_CLIENT_ID='829348083361-5q4raoou5ia32tf0dc8ak6086hhbushv.apps.googleusercontent.com';
+const PASSKEY_API='https://mart-drive.vercel.app/api/passkey';
+const TOKEN_MARGIN=5*60*1000;
+let silentPromise=null,reauthPromise=null;
+function tokenFresh(uid){try{const s=JSON.parse(localStorage.getItem(TOKEN_KEY)||'null');return(s&&s.uid===uid&&s.exp-TOKEN_MARGIN>Date.now())?s.t:null}catch{return null}}
+function gisReady(){return new Promise(res=>{const has=()=>!!(window.google&&google.accounts&&google.accounts.oauth2);if(has())return res(true);let n=0;const t=setInterval(()=>{if(has()||++n>50){clearInterval(t);res(has())}},100)})}
+function silentGoogleToken(email){
+  return new Promise((resolve,reject)=>{
+    if(!GIS_CLIENT_ID||GIS_CLIENT_ID.indexOf('__')===0)return reject(new Error('gis-not-configured'));
+    const to=setTimeout(()=>reject(new Error('timeout')),12000);
+    const tc=google.accounts.oauth2.initTokenClient({client_id:GIS_CLIENT_ID,scope:'https://www.googleapis.com/auth/drive.file',hint:email||undefined,
+      callback:r=>{clearTimeout(to);if(r&&r.access_token)resolve(r.access_token);else reject(new Error((r&&r.error)||'no-token'))},
+      error_callback:e=>{clearTimeout(to);reject(new Error((e&&e.type)||'silent-failed'))}});
+    tc.requestAccessToken({prompt:'none'});
+  });
 }
+function silentRefresh(){
+  if(!currentUser)return Promise.reject(new Error('not-signed-in'));
+  if(!silentPromise){
+    const u=currentUser;
+    silentPromise=gisReady().then(ok=>{if(!ok)throw new Error('gis-missing');return silentGoogleToken(u.email)})
+      .then(t=>{saveToken(t,u.uid);hideDriveBanner();return t})
+      .finally(()=>{silentPromise=null});
+  }
+  return silentPromise;
+}
+function reconnectDrive(){
+  if(!reauthPromise){
+    const u=auth.currentUser;
+    if(!u)return Promise.reject(new Error('not-signed-in'));
+    reauthPromise=(async()=>{
+      const p=makeProvider(u.email);
+      const linked=u.providerData.some(x=>x.providerId==='google.com');
+      const r=linked?await reauthenticateWithPopup(u,p):await linkWithPopup(u,p);
+      const t=GoogleAuthProvider.credentialFromResult(r).accessToken;
+      saveToken(t,u.uid);hideDriveBanner();return t;
+    })().finally(()=>{reauthPromise=null});
+  }
+  return reauthPromise;
+}
+async function ensureToken(){
+  if(!currentUser)throw new Error('not-signed-in');
+  const f=tokenFresh(currentUser.uid);if(f){accessToken=f;return f}
+  try{return await silentRefresh()}catch(e){}
+  if(navigator.userActivation&&navigator.userActivation.isActive)return reconnectDrive();
+  showDriveBanner();throw new Error('drive-disconnected');
+}
+async function keepDriveAlive(){
+  if(!currentUser)return null;
+  const f=tokenFresh(currentUser.uid);if(f){accessToken=f;return f}
+  try{return await silentRefresh()}catch(e){if(currentUser)showDriveBanner();return null}
+}
+function showDriveBanner(){
+  if(document.getElementById('drive-banner'))return;
+  const d=document.createElement('div');d.id='drive-banner';
+  d.innerHTML='<span>Google Drive disconnected.</span><button type="button" id="drive-reconnect">Reconnect</button>';
+  document.body.appendChild(d);
+  document.getElementById('drive-reconnect').onclick=async()=>{
+    try{await reconnectDrive();toast('Google Drive connected','success')}catch(e){toast('Could not connect: '+(e.message||e),'error')}
+  };
+}
+function hideDriveBanner(){const d=document.getElementById('drive-banner');if(d)d.remove()}
+setInterval(()=>{if(currentUser)keepDriveAlive()},60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentUser)keepDriveAlive()});
+window.addEventListener('online',()=>{if(currentUser)keepDriveAlive()});
+
+/* ---- Email + password ---- */
+let emMode='in';
+function emMsg(t,ok){const e=$('em-msg');e.textContent=t||'';e.className=ok?'em-ok':'em-err'}
+function emErr(e){const map={'auth/invalid-email':'Enter a valid email address.','auth/missing-password':'Enter your password.','auth/weak-password':'Password must be at least 6 characters.','auth/email-already-in-use':'This email already has an account. Log in instead.','auth/invalid-credential':'Wrong email or password.','auth/wrong-password':'Wrong email or password.','auth/user-not-found':'Wrong email or password.','auth/too-many-requests':'Too many attempts. Please try again later.','auth/network-request-failed':'Network error. Check your connection.'};return map[e.code]||e.message||String(e)}
+function emSetMode(m){
+  emMode=m;
+  $('em-tab-in').classList.toggle('on',m==='in');
+  $('em-tab-up').classList.toggle('on',m==='up');
+  $('em-name').style.display=m==='up'?'':'none';
+  $('em-pass2').style.display=m==='up'?'':'none';
+  $('em-pass').setAttribute('autocomplete',m==='up'?'new-password':'current-password');
+  $('em-go').textContent=m==='up'?'Sign up':'Log in';
+  emMsg('');
+}
+async function emSubmit(){
+  const email=$('em-email').value.trim(),pw=$('em-pass').value;
+  if(!email)return emMsg('Enter your email.');
+  if(!pw)return emMsg('Enter your password.');
+  if(emMode==='up'){
+    if(pw.length<6)return emMsg('Password must be at least 6 characters.');
+    if(pw!==$('em-pass2').value)return emMsg('Passwords do not match.');
+  }
+  $('em-go').disabled=true;
+  try{
+    if(emMode==='up'){
+      const cr=await createUserWithEmailAndPassword(auth,email,pw);
+      const nm=$('em-name').value.trim();
+      if(nm)await updateProfile(cr.user,{displayName:nm});
+    }else{
+      await signInWithEmailAndPassword(auth,email,pw);
+    }
+    emMsg('');
+  }catch(e){emMsg(emErr(e))}
+  finally{$('em-go').disabled=false}
+}
+async function emForgot(){
+  const email=$('em-email').value.trim();
+  if(!email)return emMsg('Enter your email first, then tap Forgot password.');
+  try{await sendPasswordResetEmail(auth,email);emMsg('Password reset link sent to '+email+'.',true)}
+  catch(e){emMsg(emErr(e))}
+}
+
+/* ---- Passkey (needs the passkey backend) ---- */
+async function pkPost(path,body,idToken){
+  const h={'Content-Type':'application/json'};if(idToken)h.Authorization='Bearer '+idToken;
+  const r=await fetch(PASSKEY_API+path,{method:'POST',headers:h,body:JSON.stringify(body||{})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error||('Server error '+r.status));
+  return j;
+}
+function b64uToBuf(s){s=s.split('-').join('+').split('_').join('/');while(s.length%4)s+='=';const bin=atob(s);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u.buffer}
+function bufToB64u(buf){const u=new Uint8Array(buf);let s='';for(let i=0;i<u.length;i++)s+=String.fromCharCode(u[i]);return btoa(s).split('+').join('-').split('/').join('_').split('=').join('')}
+function encCred(c){const r={};['clientDataJSON','attestationObject','authenticatorData','signature','userHandle'].forEach(k=>{if(c.response[k])r[k]=bufToB64u(c.response[k])});return{id:c.id,rawId:bufToB64u(c.rawId),type:c.type,clientExtensionResults:c.getClientExtensionResults?c.getClientExtensionResults():{},response:r}}
+async function pkLogin(){
+  const email=$('em-email').value.trim();
+  if(!email)return emMsg('Enter your email first, then tap Sign in with passkey.');
+  if(!window.PublicKeyCredential)return emMsg('Passkeys are not supported in this browser.');
+  if(!PASSKEY_API||PASSKEY_API.indexOf('__')===0)return emMsg('Passkey server is not configured.');
+  try{
+    emMsg('Waiting for your passkey…',true);
+    const o=(await pkPost('/login-options',{email})).options;
+    const a=await navigator.credentials.get({publicKey:Object.assign({},o,{challenge:b64uToBuf(o.challenge),allowCredentials:(o.allowCredentials||[]).map(c=>Object.assign({},c,{id:b64uToBuf(c.id)}))})});
+    const r=await pkPost('/login-verify',{email:email,response:encCred(a)});
+    await signInWithCustomToken(auth,r.token);
+    emMsg('');
+  }catch(e){emMsg(e&&e.name==='NotAllowedError'?'Passkey cancelled.':emErr(e))}
+}
+
+/* ---- Bind the email form ---- */
+$('em-tab-in').onclick=()=>emSetMode('in');
+$('em-tab-up').onclick=()=>emSetMode('up');
+$('em-go').onclick=emSubmit;
+$('em-forgot').onclick=emForgot;
+$('em-passkey').onclick=pkLogin;
+['em-email','em-pass','em-pass2','em-name'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')emSubmit()}));
+
 const dh=()=>({Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json'});
-window.signIn=async()=>{try{const r=await signInWithPopup(auth,makeProvider());saveToken(GoogleAuthProvider.credentialFromResult(r).accessToken,r.user.uid)}catch(e){toast(e.message,'error')}};
+window.signIn=async()=>{try{const r=await signInWithPopup(auth,makeProvider());saveToken(GoogleAuthProvider.credentialFromResult(r).accessToken,r.user.uid)}catch(e){toast(e.code==='auth/account-exists-with-different-credential'?'This email already has a password account. Log in with your email and password instead.':e.message,'error')}};
 window.logout=async()=>{window.__intentionalOut=true;clearToken();try{localStorage.removeItem('mart_org');localStorage.removeItem('mart_has_session')}catch{}await signOut(auth);location.reload()};
 
 /* ---- Admin panel support: block check + user directory (users/{uid}) ---- */
@@ -1064,7 +1225,7 @@ onAuthStateChanged(auth,user=>{
     $('landing').style.display='none';document.documentElement.classList.add('has-session');try{localStorage.setItem('mart_has_session','1')}catch{}$('app').classList.add('ready');
     if(user.photoURL){$('user-avatar').src=user.photoURL;$('user-avatar').style.display='block'}else $('so-ic').style.display='block';
     $('sort-sel').value=sortBy;setupListeners();listenNotifications();setTimeout(()=>{if(!loaded){loaded=true;render()}},4000);
-    if(accessToken){loadQuota();backfillThumbs()}setTimeout(runPendingFile,400);setTimeout(runPendingFshare,900);
+    keepDriveAlive().then(()=>{if(accessToken){loadQuota();backfillThumbs()}});setTimeout(runPendingFile,400);setTimeout(runPendingFshare,900);
   }else{
     {const f=document.getElementById('admin-fab');if(f)f.style.display='none'}
     /* Coming back from admin.html (bfcache / shared auth storage) can fire a spurious
@@ -4242,6 +4403,15 @@ const ACTIONS={
     if(!ids.length)return toast('No other devices');
     if(!confirm('Sign out '+ids.length+' other device(s)?'))return;await revoke(ids);toast('Other devices signed out','success');
   },
+  async 'pk-add'(){
+    if(!window.PublicKeyCredential)return toast('Passkeys are not supported in this browser','error');
+    if(!PASSKEY_API||PASSKEY_API.indexOf('__')===0)return toast('Passkey server is not configured','error');
+    const idt=await auth.currentUser.getIdToken();
+    const o=(await pkPost('/register-options',{},idt)).options;
+    const cred=await navigator.credentials.create({publicKey:Object.assign({},o,{challenge:b64uToBuf(o.challenge),user:Object.assign({},o.user,{id:b64uToBuf(o.user.id)}),excludeCredentials:(o.excludeCredentials||[]).map(c=>Object.assign({},c,{id:b64uToBuf(c.id)}))})});
+    await pkPost('/register-verify',{response:encCred(cred)},idt);
+    toast('Passkey added. You can now log in with email and passkey.','success');
+  },
   async 'sess-all'(){
     if(!confirm('Sign out from ALL devices, including this one?'))return;
     await revoke(SESS.list.filter(s=>!s.revoked&&s.id!==currentUser.uid+'_'+getSid()).map(s=>s.id));
@@ -4275,6 +4445,7 @@ ${me_?'':`<button class="btn" data-sx="sess-out" data-id="${esc(s.id)}">Sign out
   $('modal-body').innerHTML=`
 <div class="sx-sec"><h4><span class="material-symbols-outlined">lock</span>App lock <span class="sx-chip ${c?'on':''}">${c?'On':'Off'}</span></h4>${lockHTML}</div>
 <div class="sx-sec"><h4><span class="material-symbols-outlined">enhanced_encryption</span>Vault</h4>${vaultHTML}</div>
+<div class="sx-sec"><h4><span class="material-symbols-outlined">passkey</span>Passkeys</h4><p class="sx-note">Add a passkey, then you can log in with your email and passkey without typing your password.</p><div class="sx-btns">${B('pk-add','Add passkey','passkey')}</div></div>
 <div class="sx-sec"><h4><span class="material-symbols-outlined">devices</span>Logged-in devices</h4>
 <div>${sessHTML}</div>
 <div class="sx-btns">${B('sess-others','Sign out other devices','devices_off')}${B('sess-all','Sign out everywhere','logout','',null)}</div>
@@ -4292,4 +4463,4 @@ ${me_?'':`<button class="btn" data-sx="sess-out" data-id="${esc(s.id)}">Sign out
 </script>
 <a id="admin-fab" href="admin.html" title="Open Admin Panel"><span class="material-symbols-outlined">admin_panel_settings</span>Admin Panel</a>
 </body>
-</html>
+ </html>
