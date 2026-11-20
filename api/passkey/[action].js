@@ -40,17 +40,28 @@ class HttpError extends Error {
   }
 }
 
+// Accepts the key file as raw JSON or as base64-encoded JSON.
+function parseServiceAccount(raw) {
+  const text = raw.trim();
+  let sa;
+  for (const candidate of [text, Buffer.from(text, "base64").toString("utf8")]) {
+    try {
+      sa = JSON.parse(candidate);
+      break;
+    } catch {}
+  }
+  if (!sa || sa.type !== "service_account" || !sa.private_key || !sa.client_email) {
+    throw new HttpError(500, "FIREBASE_SERVICE_ACCOUNT must contain the Firebase service account JSON key file");
+  }
+  sa.private_key = sa.private_key.replace(/\\n/g, "\n");
+  return sa;
+}
+
 function admin() {
   if (!getApps().length) {
     const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
     if (!raw) throw new HttpError(500, "FIREBASE_SERVICE_ACCOUNT is not set");
-    let sa;
-    try {
-      sa = JSON.parse(raw);
-    } catch {
-      throw new HttpError(500, "FIREBASE_SERVICE_ACCOUNT is not valid JSON");
-    }
-    if (sa.private_key) sa.private_key = sa.private_key.replace(/\\n/g, "\n");
+    const sa = parseServiceAccount(raw);
     initializeApp({ credential: cert(sa), projectId: sa.project_id });
   }
   return { auth: getAuth(), db: getFirestore() };
