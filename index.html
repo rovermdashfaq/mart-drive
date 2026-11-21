@@ -925,7 +925,7 @@ const TOKEN_KEY='mart_drive_token',TOKEN_TTL=55*60*1000;
 function saveToken(t,uid){accessToken=t;try{localStorage.setItem(TOKEN_KEY,JSON.stringify({t,uid,exp:Date.now()+TOKEN_TTL}))}catch{}}
 function loadToken(uid){try{const s=JSON.parse(localStorage.getItem(TOKEN_KEY)||'null');if(s&&s.uid===uid&&s.exp>Date.now())return s.t}catch{}return null}
 function clearToken(){accessToken=null;try{localStorage.removeItem(TOKEN_KEY)}catch{}}
-function makeProvider(hint){const p=new GoogleAuthProvider();p.addScope('https://www.googleapis.com/auth/drive.file');p.setCustomParameters(hint?{login_hint:hint}:{prompt:'consent'});return p}
+function makeProvider(hint){const p=new GoogleAuthProvider();p.addScope('https://www.googleapis.com/auth/drive.file');p.setCustomParameters(hint?{login_hint:hint,prompt:'select_account'}:{prompt:'select_account consent'});return p}
 /*MART-PATCH-V1*/
 const GIS_CLIENT_ID='829348083361-5q4raoou5ia32tf0dc8ak6086hhbushv.apps.googleusercontent.com';
 const PASSKEY_API='https://mart-drive.vercel.app/api/passkey';
@@ -4482,4 +4482,4 @@ ${me_?'':`<button class="btn" data-sx="sess-out" data-id="${esc(s.id)}">Sign out
 </script>
 <a id="admin-fab" href="admin.html" title="Open Admin Panel"><span class="material-symbols-outlined">admin_panel_settings</span>Admin Panel</a>
 </body>
-</html>
+ </html>
