@@ -348,18 +348,43 @@ html.has-session.app-locked body{overflow:hidden}
 .sx-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--success);margin-right:5px}
 .sx-sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px}
 </style><script>(function(){try{var c=JSON.parse(localStorage.getItem("mart_lock_v1")||"null");if(!c||!c.on)return;var h=document.documentElement;if(!h.classList.contains("has-session"))return;var a=+sessionStorage.getItem("mart_last_active")||0;var lim=Math.max((c.after||0)*60000,4000);if(!a||Date.now()-a>lim)h.classList.add("app-locked")}catch(e){}})();</script><!--/SEC:head-->
-<style>#drive-banner{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:4000;display:flex;align-items:center;gap:12px;background:var(--surface);color:var(--text);border:1px solid var(--error);border-radius:12px;box-shadow:var(--shadow-lg);padding:10px 14px;font-size:13px;max-width:calc(100vw - 32px)}
-#drive-banner button{background:var(--navy);color:var(--surface);border-radius:20px;padding:6px 14px;font-weight:600;white-space:nowrap}
-.em-auth{max-width:380px;margin:14px 0;display:flex;flex-direction:column;gap:8px}
-.em-tabs{display:flex;gap:4px;background:var(--soft);border-radius:24px;padding:4px}
-.em-tabs button{flex:1;padding:8px;border-radius:20px;font-weight:600;color:var(--muted)}
-.em-tabs button.on{background:var(--surface);color:var(--text);box-shadow:var(--shadow-md)}
-.em-auth input{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font:inherit}
-.em-auth .btn{width:100%}
-.em-links{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:13px}
-.em-links button{color:var(--blue);font-weight:600}
-#em-msg{font-size:13px;min-height:18px}
-.em-err{color:var(--error)}.em-ok{color:var(--success)}</style>
+<style>#drive-banner{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:4000;display:flex;align-items:center;gap:12px;background:var(--surface,#fff);color:var(--text,#0F172A);border:1px solid var(--error,#DC2626);border-radius:12px;box-shadow:0 12px 30px -10px rgba(0,0,0,.35);padding:10px 14px;font-size:13px;max-width:calc(100vw - 32px);animation:maRise .4s cubic-bezier(.2,.8,.2,1) both}
+#drive-banner button{background:var(--navy,#1D4F7C);color:#fff;border-radius:20px;padding:6px 14px;font-weight:600;white-space:nowrap;margin:0;cursor:pointer}
+@keyframes maRise{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+.ma-card{position:relative;max-width:400px;margin:18px auto 8px;padding:18px;border-radius:20px;background:var(--surface,#fff);border:1px solid var(--border,#E2E8F0);box-shadow:0 22px 44px -22px rgba(15,35,60,.35);animation:maIn .6s cubic-bezier(.2,.8,.2,1) both}
+@keyframes maIn{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+.ma-card.shake{animation:maShake .45s cubic-bezier(.36,.07,.19,.97)}
+@keyframes maShake{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+.ma-seg{position:relative;display:grid;grid-template-columns:1fr 1fr;background:var(--soft,#EEF2F7);border-radius:999px;padding:4px;margin-bottom:18px}
+.ma-ind{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:999px;background:var(--surface,#fff);box-shadow:0 3px 10px rgba(0,0,0,.12);transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.ma-seg button{position:relative;z-index:1;padding:9px 0;border:0;background:none;font-family:inherit;font-weight:600;font-size:14px;color:var(--muted,#64748B);cursor:pointer;margin:0;transition:color .3s}
+.ma-seg button.on{color:var(--text,#0F172A)}
+.ma-field{position:relative;margin-bottom:6px}
+.ma-field input{width:100%;padding:17px 14px 9px;border:1.5px solid var(--border,#CBD5E1);border-radius:12px;background:var(--bg,#fff);color:var(--text,#0F172A);font-family:inherit;font-size:15px;outline:none;transition:border-color .25s,box-shadow .25s;box-sizing:border-box;margin:0}
+.ma-field input:focus{border-color:#2F6FA3;box-shadow:0 0 0 4px rgba(47,111,163,.16)}
+.ma-field label{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted,#64748B);font-size:15px;pointer-events:none;transition:top .25s cubic-bezier(.2,.8,.2,1),font-size .25s,color .25s;margin:0;font-weight:500;background:transparent}
+.ma-field input:focus+label,.ma-field input:not(:placeholder-shown)+label{top:0;font-size:11.5px;color:#2F6FA3;background:var(--surface,#fff);padding:0 5px;margin-left:-5px}
+.ma-hint{font-size:12.5px;color:var(--muted,#64748B);margin:8px 2px 16px;min-height:34px;animation:maFade .4s both}
+@keyframes maFade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.ma-primary{position:relative;width:100%;padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,#2F6FA3,#1D4F7C);color:#fff;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer;overflow:hidden;transition:transform .15s,box-shadow .25s;box-shadow:0 10px 22px -10px rgba(29,79,124,.7);display:flex;align-items:center;justify-content:center;gap:10px;margin:0}
+.ma-primary:hover{transform:translateY(-1px);box-shadow:0 14px 26px -12px rgba(29,79,124,.75)}
+.ma-primary:active{transform:scale(.98)}
+.ma-primary:disabled{cursor:progress;opacity:.9}
+.ma-primary::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.28) 50%,transparent 70%);transform:translateX(-100%);pointer-events:none}
+.ma-primary:hover::after{animation:maSheen .9s ease}
+@keyframes maSheen{to{transform:translateX(100%)}}
+.ma-spin{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;opacity:0;transition:opacity .2s;flex:0 0 auto}
+.ma-primary.busy .ma-spin{opacity:1;animation:maSpin .7s linear infinite}
+@keyframes maSpin{to{transform:rotate(360deg)}}
+.ma-or{display:flex;align-items:center;gap:10px;color:var(--muted,#64748B);font-size:11px;margin:16px 0;text-transform:uppercase;letter-spacing:.1em}
+.ma-or::before,.ma-or::after{content:"";flex:1;height:1px;background:var(--border,#E2E8F0)}
+.ma-ghost{width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--border,#CBD5E1);background:transparent;color:var(--text,#0F172A);font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;transition:background .2s,transform .15s,border-color .2s;margin:0;display:flex;align-items:center;justify-content:center;gap:8px}
+.ma-ghost:hover{background:var(--soft,#EEF2F7);border-color:#2F6FA3}
+.ma-ghost:active{transform:scale(.98)}
+.ma-msg{font-size:13px;text-align:center;margin-top:12px;min-height:18px;transition:opacity .3s}
+.ma-msg:empty{opacity:0}
+.ma-msg.err{color:var(--error,#DC2626)}.ma-msg.ok{color:var(--success,#15803D)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition-duration:.01ms!important}}</style>
 </head>
 <body>
 <!--SEC:lock--><div id="sx-lock" role="dialog" aria-modal="true" aria-label="MART Drive is locked">
@@ -387,17 +412,16 @@ html.has-session.app-locked body{overflow:hidden}
 <div id="invite-banner" class="ld-note" style="display:none;margin-bottom:14px;color:var(--blue);font-weight:600;font-size:15px">You have been invited to join an organization. Log in or sign up to send your join request.</div>
 <div class="ld-cta"><button class="btn btn-primary ld-btn-lg" onclick="signIn()">Sign up with Google</button><button class="btn ld-btn-lg" onclick="signIn()">Log in with Google</button></div>
 <div style="min-height:0vh; display:flex; align-items:center; justify-content:center;">
-  <div class="em-auth" id="em-auth">
-    <div class="em-tabs"><button type="button" id="em-tab-in" class="on">Log in</button><button type="button" id="em-tab-up">Sign up</button></div>
-    <input id="em-name" type="text" placeholder="Full name" autocomplete="name" style="display:none">
-    <input id="em-email" type="email" placeholder="Email" autocomplete="email">
-    <input id="em-pass" type="password" placeholder="Password" autocomplete="current-password">
-    <input id="em-pass2" type="password" placeholder="Confirm password" autocomplete="new-password" style="display:none">
-    <button class="btn btn-primary" id="em-go" type="button">Log in</button>
-    <div class="em-links"><button type="button" id="em-forgot">Forgot password?</button><button type="button" id="em-passkey">Sign in with passkey</button></div>
-    <div id="em-msg" role="status"></div>
-  </div></div>
-<div class="ld-note">Free to use. Sign in with Google, or with your email and password.<br>By continuing you agree to our <a href="terms_conditions.html">Terms &amp; Conditions</a> and <a href="privacy_policy.html">Privacy Policy</a>.</div>
+  <div class="ma-card" id="ma-card">
+<div class="ma-seg"><span class="ma-ind" id="ma-ind"></span><button type="button" id="em-tab-in" class="on">Log in</button><button type="button" id="em-tab-up">Sign up</button></div>
+<div class="ma-field"><input id="em-email" type="email" placeholder=" " autocomplete="email" inputmode="email"><label for="em-email">Gmail address</label></div>
+<p class="ma-hint" id="em-hint">Type your Gmail address. You will enter your existing Google password on Google’s secure page.</p>
+<button class="ma-primary" id="em-go" type="button"><span class="ma-spin"></span><span id="em-go-label">Continue with Google</span></button>
+<div class="ma-or">or</div>
+<button class="ma-ghost" id="em-passkey" type="button">Sign in with passkey</button>
+<div id="em-msg" class="ma-msg" role="status"></div>
+</div></div>
+<div class="ld-note">Free to use. Sign in with your Gmail address and your existing Google password.<br>By continuing you agree to our <a href="terms_conditions.html">Terms &amp; Conditions</a> and <a href="privacy_policy.html">Privacy Policy</a>.</div>
 </section>
 
 <section id="features" class="ld-sec ld-wrap">
@@ -969,46 +993,41 @@ setInterval(()=>{if(currentUser)keepDriveAlive()},60000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentUser)keepDriveAlive()});
 window.addEventListener('online',()=>{if(currentUser)keepDriveAlive()});
 
-/* ---- Email + password ---- */
+/*MART-PATCH-V2*/
+/* ---- Email-hinted Google sign-in (v2) ---- */
 let emMode='in';
-function emMsg(t,ok){const e=$('em-msg');e.textContent=t||'';e.className=ok?'em-ok':'em-err'}
-function emErr(e){const map={'auth/invalid-email':'Enter a valid email address.','auth/missing-password':'Enter your password.','auth/weak-password':'Password must be at least 6 characters.','auth/email-already-in-use':'This email already has an account. Log in instead.','auth/invalid-credential':'Wrong email or password.','auth/wrong-password':'Wrong email or password.','auth/user-not-found':'Wrong email or password.','auth/too-many-requests':'Too many attempts. Please try again later.','auth/network-request-failed':'Network error. Check your connection.'};return map[e.code]||e.message||String(e)}
+const EM_COPY={in:{btn:'Continue with Google',hint:'Type your Gmail address. You will enter your existing Google password on Google’s secure page.'},up:{btn:'Create with Google',hint:'Use your own Gmail address. No new password is created. Google handles it.'}};
+function emMsg(t,ok){const e=$('em-msg');e.textContent=t||'';e.className='ma-msg '+(ok?'ok':'err');if(t&&!ok){const c=$('ma-card');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake')}}
 function emSetMode(m){
   emMode=m;
   $('em-tab-in').classList.toggle('on',m==='in');
   $('em-tab-up').classList.toggle('on',m==='up');
-  $('em-name').style.display=m==='up'?'':'none';
-  $('em-pass2').style.display=m==='up'?'':'none';
-  $('em-pass').setAttribute('autocomplete',m==='up'?'new-password':'current-password');
-  $('em-go').textContent=m==='up'?'Sign up':'Log in';
+  $('ma-ind').style.transform=m==='up'?'translateX(100%)':'translateX(0)';
+  $('em-go-label').textContent=EM_COPY[m].btn;
+  const h=$('em-hint');h.textContent=EM_COPY[m].hint;h.style.animation='none';void h.offsetWidth;h.style.animation='';
   emMsg('');
 }
-async function emSubmit(){
-  const email=$('em-email').value.trim(),pw=$('em-pass').value;
-  if(!email)return emMsg('Enter your email.');
-  if(!pw)return emMsg('Enter your password.');
-  if(emMode==='up'){
-    if(pw.length<6)return emMsg('Password must be at least 6 characters.');
-    if(pw!==$('em-pass2').value)return emMsg('Passwords do not match.');
-  }
-  $('em-go').disabled=true;
+function emErr(e){const map={'auth/invalid-email':'Enter a valid email address.','auth/network-request-failed':'Network error. Check your connection.','auth/too-many-requests':'Too many attempts. Please try again later.'};return map[e.code]||e.message||String(e)}
+function emValid(v){const at=v.indexOf('@');return at>0&&v.indexOf('.',at)>at+1&&v.length<=254}
+async function emGoogle(){
+  const email=$('em-email').value.trim().toLowerCase();
+  if(!emValid(email))return emMsg('Enter a valid Gmail address.');
+  const btn=$('em-go');btn.classList.add('busy');btn.disabled=true;emMsg('');
   try{
-    if(emMode==='up'){
-      const cr=await createUserWithEmailAndPassword(auth,email,pw);
-      const nm=$('em-name').value.trim();
-      if(nm)await updateProfile(cr.user,{displayName:nm});
-    }else{
-      await signInWithEmailAndPassword(auth,email,pw);
-    }
-    emMsg('');
-  }catch(e){emMsg(emErr(e))}
-  finally{$('em-go').disabled=false}
-}
-async function emForgot(){
-  const email=$('em-email').value.trim();
-  if(!email)return emMsg('Enter your email first, then tap Forgot password.');
-  try{await sendPasswordResetEmail(auth,email);emMsg('Password reset link sent to '+email+'.',true)}
-  catch(e){emMsg(emErr(e))}
+    const p=new GoogleAuthProvider();
+    p.addScope('https://www.googleapis.com/auth/drive.file');
+    p.setCustomParameters({login_hint:email,prompt:'select_account'});
+    const r=await signInWithPopup(auth,p);
+    const got=String(r.user.email||'').toLowerCase();
+    if(got!==email){await signOut(auth);return emMsg('Wrong account selected. Please sign in with '+email+'.')}
+    saveToken(GoogleAuthProvider.credentialFromResult(r).accessToken,r.user.uid);
+    emMsg('Signed in. Opening MART Drive…',true);
+  }catch(e){
+    const c=e&&e.code;
+    if(c==='auth/popup-closed-by-user'||c==='auth/cancelled-popup-request')emMsg('Sign-in was cancelled.');
+    else if(c==='auth/account-exists-with-different-credential')emMsg('This email is already linked to another sign-in method. Please contact your admin.');
+    else emMsg(emErr(e));
+  }finally{btn.classList.remove('busy');btn.disabled=false}
 }
 
 /* ---- Passkey (needs the passkey backend) ---- */
@@ -1037,13 +1056,12 @@ async function pkLogin(){
   }catch(e){emMsg(e&&e.name==='NotAllowedError'?'Passkey cancelled.':emErr(e))}
 }
 
-/* ---- Bind the email form ---- */
+/* ---- Bind the email form (v2) ---- */
 $('em-tab-in').onclick=()=>emSetMode('in');
 $('em-tab-up').onclick=()=>emSetMode('up');
-$('em-go').onclick=emSubmit;
-$('em-forgot').onclick=emForgot;
+$('em-go').onclick=emGoogle;
 $('em-passkey').onclick=pkLogin;
-['em-email','em-pass','em-pass2','em-name'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')emSubmit()}));
+$('em-email').addEventListener('keydown',e=>{if(e.key==='Enter')emGoogle()});
 
 const dh=()=>({Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json'});
 window.signIn=async()=>{try{const r=await signInWithPopup(auth,makeProvider());saveToken(GoogleAuthProvider.credentialFromResult(r).accessToken,r.user.uid)}catch(e){toast(e.code==='auth/account-exists-with-different-credential'?'This email already has a password account. Log in with your email and password instead.':e.message,'error')}};
@@ -4464,4 +4482,4 @@ ${me_?'':`<button class="btn" data-sx="sess-out" data-id="${esc(s.id)}">Sign out
 </script>
 <a id="admin-fab" href="admin.html" title="Open Admin Panel"><span class="material-symbols-outlined">admin_panel_settings</span>Admin Panel</a>
 </body>
- </html>
+</html>
