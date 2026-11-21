@@ -73,10 +73,16 @@ module.exports = async function handler(req, res) {
         expectedOrigin: RP.origin, expectedRPID: RP.id
       });
       if (!v.verified) return res.status(400).json({ error: 'Passkey could not be verified' });
-      const c = v.registrationInfo.credential;
-      await db.collection('passkeys').doc(c.id).set({
+      const info = v.registrationInfo || {};
+      // Support both @simplewebauthn/server result shapes (newer: info.credential, older: flat fields).
+      const c = info.credential
+        ? { id: info.credential.id, publicKey: info.credential.publicKey, counter: info.credential.counter, transports: info.credential.transports }
+        : { id: info.credentialID, publicKey: info.credentialPublicKey, counter: info.counter, transports: (req.body.response || {}).transports };
+      if (!c || !c.id || !c.publicKey) return res.status(400).json({ error: 'Step save-passkey: credential data missing from verification result' });
+      const credId = typeof c.id === 'string' ? c.id : Buffer.from(c.id).toString('base64url');
+      await db.collection('passkeys').doc(credId).set({
         uid, publicKey: Buffer.from(c.publicKey).toString('base64'),
-        counter: c.counter, transports: c.transports || []
+        counter: c.counter || 0, transports: c.transports || []
       });
       return res.json({ ok: true });
     }
@@ -112,6 +118,7 @@ module.exports = async function handler(req, res) {
 
     return res.status(404).json({ error: 'Unknown action' });
   } catch (e) {
-    return res.status(400).json({ error: e.message });
+    console.error('passkey', action, e && e.stack);
+    return res.status(400).json({ error: 'Step ' + action + ': ' + (e && e.message ? e.message : String(e)) });
   }
 };
