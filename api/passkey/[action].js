@@ -104,15 +104,24 @@ module.exports = async function handler(req, res) {
       const pk = await db.collection('passkeys').doc(req.body.response.id).get();
       if (!pk.exists) return res.status(400).json({ error: 'Passkey not found' });
       const x = pk.data();
+      const pubKey = Buffer.from(x.publicKey, 'base64');
+      const stored = {
+        // Field names for both @simplewebauthn/server v9 (authenticator, credentialID/credentialPublicKey)
+        // and v10+ (credential, id/publicKey)
+        id: req.body.response.id, publicKey: pubKey, counter: x.counter || 0, transports: x.transports || [],
+        credentialID: Buffer.from(req.body.response.rawId || req.body.response.id, 'base64url'),
+        credentialPublicKey: pubKey
+      };
       const v = await sw.verifyAuthenticationResponse({
         response: req.body.response, expectedChallenge: ch,
         expectedOrigin: RP.origin, expectedRPID: RP.id,
-        credential: { id: req.body.response.id, publicKey: Buffer.from(x.publicKey, 'base64'), counter: x.counter, transports: x.transports }
+        credential: stored, authenticator: stored
       });
       if (!v.verified) return res.status(400).json({ error: 'Passkey could not be verified' });
       const user = await admin.auth().getUser(x.uid);
       if (normEmail(user.email) !== email) return res.status(400).json({ error: 'This passkey does not belong to that email' });
-      await pk.ref.update({ counter: v.authenticationInfo.newCounter });
+      const newCounter = (v.authenticationInfo && v.authenticationInfo.newCounter) || 0;
+      await pk.ref.update({ counter: newCounter });
       return res.json({ token: await admin.auth().createCustomToken(x.uid) });
     }
 
